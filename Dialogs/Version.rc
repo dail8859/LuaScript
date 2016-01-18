@@ -1,0 +1,38 @@
+
+#include <windows.h>
+#include "Version.h"
+
+
+//
+// Version Information resources
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+1 VERSIONINFO
+    FILEVERSION     VERSION_NUM
+    PRODUCTVERSION  VERSION_NUM
+    FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+    FILEFLAGS       VS_FF_SPECIALBUILD
+    FILEOS          VOS__WINDOWS32
+    FILETYPE        VFT_DLL
+    FILESUBTYPE     VFT2_UNKNOWN
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0"
+        {
+            VALUE "Comments", "Notepad++ plugin for Lua scripting"
+            VALUE "CompanyName", "Justin Dailey <dail8859@yahoo.com>"
+            VALUE "FileDescription", "Notepad++ plugin for Lua scripting"
+            VALUE "FileVersion", VERSION_TEXT
+            VALUE "InternalName", "LuaScript"
+            VALUE "OriginalFilename", "LuaScript.dll"
+            VALUE "ProductName", "LuaScript"
+            VALUE "ProductVersion", VERSION_TEXT
+            VALUE "SpecialBuild", "UNICODE"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 0x01B5
+    }
+}
