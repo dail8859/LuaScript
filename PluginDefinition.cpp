@@ -22,7 +22,7 @@
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
 
-#include "ConsoleDialog.h"
+#include "LuaConsole.h"
 
 // --- Local variables ---
 static bool do_active_commenting;	// active commenting - create or extend a document block
@@ -42,7 +42,7 @@ static void activeCommenting();
 static void showSettings();
 static void showAbout();
 
-static ConsoleDialog *g_console;
+static LuaConsole *g_console;
 
 
 // --- Global variables ---
@@ -131,7 +131,7 @@ void showSettings()
 void showAbout()
 {
 	//CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
-	g_console->doDialog();
+	g_console->showDialog();
 }
 
 
@@ -151,8 +151,9 @@ void handleNotification(SCNotification *notifyCode)
 	case SCN_CHARADDED:
 		break;
 	case NPPN_READY:
-		g_console = new ConsoleDialog();
-		g_console->initDialog((HINSTANCE)_hModule, nppData, NULL);
+		g_console = new LuaConsole(nppData._nppHandle);
+		g_console->init((HINSTANCE)_hModule, nppData);
+		//g_console->initDialog((HINSTANCE)_hModule, nppData, NULL);
 		break;
 	case NPPN_SHUTDOWN:
 		break;
