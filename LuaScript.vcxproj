@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\lua\include;.\Dialogs;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SciTE;.\lua\include;.\Dialogs;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LuaScript_EXPORTS;__STDC_WANT_SECURE_LIB__=1;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -87,7 +87,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\lua\include;.\Dialogs;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SciTE;.\lua\include;.\Dialogs;.\Npp;.\Utilities;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LuaScript_EXPORTS;__STDC_WANT_SECURE_LIB__=1;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -118,7 +118,14 @@
     <ClCompile Include="Dialogs\SettingsDialog.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="LuaScript.cpp" />
+    <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
+    <ClCompile Include="SciTE\FilePath.cxx" />
+    <ClCompile Include="SciTE\GUIWin.cxx" />
+    <ClCompile Include="SciTE\IFaceTable.cxx" />
+    <ClCompile Include="SciTE\LuaExtension.cxx" />
+    <ClCompile Include="SciTE\StringHelpers.cxx" />
+    <ClCompile Include="SciTE\StyleWriter.cxx" />
     <ClCompile Include="Utilities\WcharMbcsConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +138,7 @@
     <ClInclude Include="Dialogs\SettingsDialog.h" />
     <ClInclude Include="Dialogs\StaticDialog.h" />
     <ClInclude Include="Dialogs\Window.h" />
+    <ClInclude Include="NppExtensionAPI.h" />
     <ClInclude Include="Npp\Docking.h" />
     <ClInclude Include="Npp\DockingDlgInterface.h" />
     <ClInclude Include="Npp\dockingResource.h" />
@@ -140,6 +148,13 @@
     <ClInclude Include="Npp\SciLexer.h" />
     <ClInclude Include="Npp\Scintilla.h" />
     <ClInclude Include="PluginDefinition.h" />
+    <ClInclude Include="SciTE\Extender.h" />
+    <ClInclude Include="SciTE\FilePath.h" />
+    <ClInclude Include="SciTE\GUI.h" />
+    <ClInclude Include="SciTE\IFaceTable.h" />
+    <ClInclude Include="SciTE\LuaExtension.h" />
+    <ClInclude Include="SciTE\StringHelpers.h" />
+    <ClInclude Include="SciTE\StyleWriter.h" />
     <ClInclude Include="Utilities\WcharMbcsConverter.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>

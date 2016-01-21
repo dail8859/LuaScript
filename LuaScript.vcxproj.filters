@@ -39,6 +39,27 @@
     <ClCompile Include="Utilities\WcharMbcsConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SciTE\IFaceTable.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\LuaExtension.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\FilePath.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\StyleWriter.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\GUIWin.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\StringHelpers.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NppExtensionAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PluginDefinition.h">
@@ -99,6 +120,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\LuaConsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\IFaceTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\Extender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\LuaExtension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\StringHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\StyleWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\GUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTE\FilePath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NppExtensionAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

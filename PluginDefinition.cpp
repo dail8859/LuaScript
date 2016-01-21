@@ -23,6 +23,8 @@
 #include "AboutDialog.h"
 
 #include "LuaConsole.h"
+#include "LuaExtension.h"
+#include "NppExtensionAPI.h"
 
 // --- Local variables ---
 static bool do_active_commenting;	// active commenting - create or extend a document block
@@ -43,7 +45,6 @@ static void showSettings();
 static void showAbout();
 
 static LuaConsole *g_console;
-
 
 // --- Global variables ---
 //ShortcutKey sk = {true, true, true, 'D'};
@@ -106,6 +107,7 @@ void configLoad()
 void pluginInit(HANDLE hModule)
 {
 	_hModule = hModule;
+	LuaExtension::Instance().Initialise(new NppExtensionAPI());
 }
 
 void pluginCleanUp()
@@ -149,6 +151,7 @@ void handleNotification(SCNotification *notifyCode)
 	case SCN_UPDATEUI:
 		break;
 	case SCN_CHARADDED:
+		LuaExtension::Instance().OnExecute("dostring print(10 .. 20)");
 		break;
 	case NPPN_READY:
 		g_console = new LuaConsole(nppData._nppHandle);
@@ -158,6 +161,8 @@ void handleNotification(SCNotification *notifyCode)
 	case NPPN_SHUTDOWN:
 		break;
 	case NPPN_BUFFERACTIVATED:
+		LuaExtension::Instance().ActivateBuffer(notifyCode->nmhdr.idFrom);
+		break;
 	case NPPN_LANGCHANGED:
 		break;
 	}

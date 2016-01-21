@@ -22,7 +22,7 @@
 #include "LuaExtension.h"
 
 #include "IFaceTable.h"
-#include "SciTEKeys.h"
+//#include "SciTEKeys.h"
 
 extern "C" {
 #include "lua.h"
@@ -1605,7 +1605,7 @@ bool LuaExtension::OnExecute(const char *s) {
 							lua_insert(luaState, stackBase+1);
 							lua_settop(luaState, stackBase+2);
 							if (!call_function(luaState, 1, true)) {
-								host->Trace(">Lua: error occurred while processing command\n");
+								host->Trace("> Lua: error occurred while processing command\n");
 							}
 						}
 					} else {

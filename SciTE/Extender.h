@@ -9,6 +9,7 @@
 #define EXTENDER_H
 
 #include "Scintilla.h"
+#include <string>
 
 class StyleWriter;
 
@@ -26,8 +27,7 @@ inline uptr_t UptrFromString(const char *cp) {
 
 class ExtensionAPI {
 public:
-	virtual ~ExtensionAPI() {
-	}
+	virtual ~ExtensionAPI() {}
 	enum Pane { paneEditor=1, paneOutput=2, paneFindOutput=3 };
 	virtual sptr_t Send(Pane p, unsigned int msg, uptr_t wParam=0, sptr_t lParam=0)=0;
 	virtual char *Range(Pane p, int start, int end)=0;
