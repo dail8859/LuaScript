@@ -17,7 +17,6 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "PluginDefinition.h"
-#include "Utils.h"
 #include "Version.h"
 #include "SettingsDialog.h"
 #include "AboutDialog.h"
@@ -37,10 +36,6 @@ static SettingsDialog sd;			// The settings dialog
 static HANDLE _hModule;				// For dialog initialization
 
 // --- Menu callbacks ---
-static void doxyItFunction();
-static void doxyItFile();
-static void activeCommenting();
-//static void activeWrapping();
 static void showSettings();
 static void showAbout();
 
@@ -107,7 +102,6 @@ void configLoad()
 void pluginInit(HANDLE hModule)
 {
 	_hModule = hModule;
-	LuaExtension::Instance().Initialise(new NppExtensionAPI());
 }
 
 void pluginCleanUp()
@@ -151,12 +145,12 @@ void handleNotification(SCNotification *notifyCode)
 	case SCN_UPDATEUI:
 		break;
 	case SCN_CHARADDED:
-		LuaExtension::Instance().OnExecute("dostring print(10 .. 20)");
+		//LuaExtension::Instance().OnExecute("dostring print(10 .. 20)");
 		break;
 	case NPPN_READY:
 		g_console = new LuaConsole(nppData._nppHandle);
 		g_console->init((HINSTANCE)_hModule, nppData);
-		//g_console->initDialog((HINSTANCE)_hModule, nppData, NULL);
+		LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
 		break;
 	case NPPN_SHUTDOWN:
 		break;

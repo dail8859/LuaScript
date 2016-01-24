@@ -19,17 +19,13 @@
 #include "NppExtensionAPI.h"
 #include "Window.h"
 
-NppExtensionAPI::NppExtensionAPI() {
-
-}
-
-
 NppExtensionAPI::~NppExtensionAPI() {
-
 }
 
 sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
-	return 0;
+	if (p != ExtensionAPI::paneEditor) return 0;
+
+	return SendMessage(m_nppData->_scintillaMainHandle, msg, wParam, lParam);
 }
 
 char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
@@ -46,7 +42,8 @@ void NppExtensionAPI::Insert(ExtensionAPI::Pane p, int pos, const char *s) {
 }
 
 void NppExtensionAPI::Trace(const char *s) {
-	MessageBoxA(NULL, s, "Trace", MB_OK);
+	cd->writeText(strlen(s), s);
+	//MessageBoxA(NULL, s, "Trace", MB_OK);
 }
 
 std::string NppExtensionAPI::Property(const char *key) {

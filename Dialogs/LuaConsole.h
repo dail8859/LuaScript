@@ -16,19 +16,18 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#ifndef LUACONSOLE_H
-#define LUACONSOLE_H
+#pragma once
 
 #include "ConsoleInterface.h"
 #include "ConsoleDialog.h"
+#include "LuaExtension.h"
+#include "PluginInterface.h"
 
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 }
-
-static lua_State *L = 0;
 
 class LuaConsole final : public ConsoleInterface
 {
@@ -49,20 +48,19 @@ public:
 	void init(HINSTANCE hInst, NppData& nppData) {
 		mp_consoleDlg->initDialog(hInst, nppData, this);
 		*m_nppData = nppData;
+
+		const char *msg = LUA_RELEASE "  " LUA_COPYRIGHT "\r\n\r\n";
+		mp_consoleDlg->writeText(strlen(msg), msg);
 	}
 
-	void showDialog() {mp_consoleDlg->doDialog();}
-
-	void runStatement(const char *statement) {};
+	void showDialog() { mp_consoleDlg->doDialog(); }
+	void runStatement(const char *statement);
 	void stopStatement() {};
 	void openFile(const char *filename, size_t lineNumber) {};
 
-private:
 	ConsoleDialog *mp_consoleDlg;
+private:
 	NppData* m_nppData;
 	HWND m_hNotepad;
 };
 
-
-
-#endif

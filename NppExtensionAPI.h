@@ -19,11 +19,16 @@
 #pragma once
 
 #include "Extender.h"
+#include "ConsoleDialog.h"
+#include "PluginInterface.h"
 
 class NppExtensionAPI : public ExtensionAPI
 {
+private:
+	ConsoleDialog *cd;
+	const NppData* m_nppData;
 public:
-	NppExtensionAPI();
+	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { m_nppData = nppData; }
 	~NppExtensionAPI();
 
 	virtual sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);

@@ -1329,14 +1329,14 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	// ...register standard libraries
 	luaL_openlibs(luaState);
 
-	lua_register(luaState, "_ALERT", cf_global_print);
+	//lua_register(luaState, "_ALERT", cf_global_print);
 
 	// although this is mostly redundant with output:append
 	// it is still included for now
-	lua_register(luaState, "trace", cf_global_trace);
+	//lua_register(luaState, "trace", cf_global_trace);
 
 	// emulate a Lua 4 function that is useful in menu commands
-	lua_register(luaState, "dostring", cf_global_dostring);
+	//lua_register(luaState, "dostring", cf_global_dostring);
 
 	// override a library function whose default impl uses stdout
 	lua_register(luaState, "print", cf_global_print);
@@ -1356,8 +1356,8 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	push_pane_object(luaState, ExtensionAPI::paneEditor);
 	lua_setglobal(luaState, "editor");
 
-	push_pane_object(luaState, ExtensionAPI::paneOutput);
-	lua_setglobal(luaState, "output");
+	//push_pane_object(luaState, ExtensionAPI::paneOutput);
+	//lua_setglobal(luaState, "output");
 
 	// scite
 	lua_newtable(luaState);
@@ -1366,9 +1366,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_pushcclosure(luaState, cf_scite_send, 1);
 	lua_setfield(luaState, -2, "SendEditor");
 
-	lua_getglobal(luaState, "output");
-	lua_pushcclosure(luaState, cf_scite_send, 1);
-	lua_setfield(luaState, -2, "SendOutput");
+	//lua_getglobal(luaState, "output");
+	//lua_pushcclosure(luaState, cf_scite_send, 1);
+	//lua_setfield(luaState, -2, "SendOutput");
 
 	lua_pushcfunction(luaState, cf_scite_constname);
 	lua_setfield(luaState, -2, "ConstantName");
@@ -1379,20 +1379,20 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_pushcfunction(luaState, cf_scite_menu_command);
 	lua_setfield(luaState, -2, "MenuCommand");
 
-	lua_pushcfunction(luaState, cf_scite_update_status_bar);
-	lua_setfield(luaState, -2, "UpdateStatusBar");
+	//lua_pushcfunction(luaState, cf_scite_update_status_bar);
+	//lua_setfield(luaState, -2, "UpdateStatusBar");
 
-	lua_pushcfunction(luaState, cf_scite_strip_show);
-	lua_setfield(luaState, -2, "StripShow");
+	///lua_pushcfunction(luaState, cf_scite_strip_show);
+	///lua_setfield(luaState, -2, "StripShow");
 
-	lua_pushcfunction(luaState, cf_scite_strip_set);
-	lua_setfield(luaState, -2, "StripSet");
+	//lua_pushcfunction(luaState, cf_scite_strip_set);
+	//lua_setfield(luaState, -2, "StripSet");
 
-	lua_pushcfunction(luaState, cf_scite_strip_set_list);
-	lua_setfield(luaState, -2, "StripSetList");
+	//lua_pushcfunction(luaState, cf_scite_strip_set_list);
+	//lua_setfield(luaState, -2, "StripSetList");
 
-	lua_pushcfunction(luaState, cf_scite_strip_value);
-	lua_setfield(luaState, -2, "StripValue");
+	//lua_pushcfunction(luaState, cf_scite_strip_value);
+	//lua_setfield(luaState, -2, "StripValue");
 
 	lua_setglobal(luaState, "scite");
 
@@ -1578,9 +1578,83 @@ bool LuaExtension::RemoveBuffer(int index) {
 	return false;
 }
 
-bool LuaExtension::OnExecute(const char *s) {
-	bool handled = false;
+/* mark in error messages for incomplete statements */
+#define EOFMARK         "<eof>"
+#define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
+/*
+** Check whether 'status' signals a syntax error and the error
+** message at the top of the stack ends with the above mark for
+** incomplete statements.
+*/
+static int incomplete(lua_State *L, int status) {
+	if (status == LUA_ERRSYNTAX) {
+		size_t lmsg;
+		const char *msg = lua_tolstring(L, -1, &lmsg);
+		if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
+			lua_pop(L, 1);
+			return 1;
+		}
+	}
+	return 0;  /* else... */
+}
+static int addreturn(lua_State *L) {
+	const char *line = lua_tostring(L, -1);  /* original line */
+	const char *retline = lua_pushfstring(L, "return %s;", line);
+	int status = luaL_loadbuffer(L, retline, strlen(retline), "=Console");
+	if (status == 0)
+		lua_remove(L, -2);  /* remove modified line */
+	else
+		lua_pop(L, 2);  /* pop result from 'luaL_loadbuffer' and modified line */
+	return status;
+}
 
+bool LuaExtension::OnExecute(const char *s) {
+	static bool isFirstLine = true;
+	static std::string chunk;
+
+	if (luaState || InitGlobalScope(false)) {
+		//if (isFirstLine) {
+		//	chunk = s;
+		//	chunk = "return " + chunk + ';';
+		//	if ((status = addreturn(luaState)) != 0) {
+		//		isFirstLine = false;
+		//		chunk = s;
+		//		host->Trace("wait on more...\r\n");
+		//		return true;
+		//	}
+		//}
+		//else {
+		//	// Add the new line to the current chunk
+		//	chunk.append("\r\n");
+		//	chunk.append(s);
+		//	status = luaL_loadbuffer(luaState, chunk.c_str(), chunk.length(), "=Console");
+		//	if (incomplete(luaState, status)) {
+		//		host->Trace("still wait on more...\r\n");
+		//		isFirstLine = false;
+		//		chunk.clear();
+		//		return true;
+		//	}
+		//}
+
+		int status = luaL_loadbuffer(luaState, s, strlen(s), "=Console") || lua_pcall(luaState, 0, LUA_MULTRET, 0);
+		
+		if (status == 0 && lua_gettop(luaState) > 0) {  /* any result to print? */
+			lua_getglobal(luaState, "print");
+			lua_insert(luaState, 1);
+			if (lua_pcall(luaState, lua_gettop(luaState) - 1, 0, 0) != 0)
+				host->Trace("error calling " LUA_QL("print"));
+		}
+		else if (status == 1) {
+			size_t lmsg;
+			const char *msg = lua_tolstring(luaState, -1, &lmsg);
+			host->Trace(msg);
+			host->Trace("\r\n");
+		}
+		lua_settop(luaState, 0);  /* clear stack */
+		return true;
+	}
+	return true;
+#if 0
 	if (luaState || InitGlobalScope(false)) {
 		// May as well use Lua's pattern matcher to parse the command.
 		// Scintilla's RESearch was the other option.
@@ -1621,6 +1695,7 @@ bool LuaExtension::OnExecute(const char *s) {
 	}
 
 	return handled;
+#endif
 }
 
 bool LuaExtension::OnOpen(const char *filename) {
