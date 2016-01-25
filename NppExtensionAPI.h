@@ -27,6 +27,8 @@ class NppExtensionAPI : public ExtensionAPI
 private:
 	ConsoleDialog *cd;
 	const NppData* m_nppData;
+	HWND getScintillaHandle(Pane p);
+
 public:
 	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { m_nppData = nppData; }
 	~NppExtensionAPI();

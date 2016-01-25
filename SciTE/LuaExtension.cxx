@@ -1356,6 +1356,12 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	push_pane_object(luaState, ExtensionAPI::paneEditor);
 	lua_setglobal(luaState, "editor");
 
+	push_pane_object(luaState, ExtensionAPI::paneEditorMain);
+	lua_setglobal(luaState, "editor1");
+
+	push_pane_object(luaState, ExtensionAPI::paneEditorSecondary);
+	lua_setglobal(luaState, "editor2");
+
 	//push_pane_object(luaState, ExtensionAPI::paneOutput);
 	//lua_setglobal(luaState, "output");
 
@@ -1379,22 +1385,28 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_pushcfunction(luaState, cf_scite_menu_command);
 	lua_setfield(luaState, -2, "MenuCommand");
 
-	//lua_pushcfunction(luaState, cf_scite_update_status_bar);
-	//lua_setfield(luaState, -2, "UpdateStatusBar");
+	// Remove SciTE specific functionality for now
+	/*
+	lua_pushcfunction(luaState, cf_scite_update_status_bar);
+	lua_setfield(luaState, -2, "UpdateStatusBar");
 
-	///lua_pushcfunction(luaState, cf_scite_strip_show);
-	///lua_setfield(luaState, -2, "StripShow");
+	lua_pushcfunction(luaState, cf_scite_strip_show);
+	lua_setfield(luaState, -2, "StripShow");
 
-	//lua_pushcfunction(luaState, cf_scite_strip_set);
-	//lua_setfield(luaState, -2, "StripSet");
+	lua_pushcfunction(luaState, cf_scite_strip_set);
+	lua_setfield(luaState, -2, "StripSet");
 
-	//lua_pushcfunction(luaState, cf_scite_strip_set_list);
-	//lua_setfield(luaState, -2, "StripSetList");
+	lua_pushcfunction(luaState, cf_scite_strip_set_list);
+	lua_setfield(luaState, -2, "StripSetList");
 
-	//lua_pushcfunction(luaState, cf_scite_strip_value);
-	//lua_setfield(luaState, -2, "StripValue");
+	lua_pushcfunction(luaState, cf_scite_strip_value);
+	lua_setfield(luaState, -2, "StripValue");
+	*/
 
+	// Keep "scite" for backwards compatibility but also allow "npp"
 	lua_setglobal(luaState, "scite");
+	lua_getglobal(luaState, "scite");
+	lua_setglobal(luaState, "npp");
 
 	// Metatable for global namespace, to publish iface constants
 	if (luaL_newmetatable(luaState, "SciTE_MT_GlobalScope")) {

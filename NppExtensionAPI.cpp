@@ -19,17 +19,29 @@
 #include "NppExtensionAPI.h"
 #include "Window.h"
 
+
 NppExtensionAPI::~NppExtensionAPI() {
 }
 
-sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
-	if (p != ExtensionAPI::paneEditor) return 0;
+HWND NppExtensionAPI::getScintillaHandle(ExtensionAPI::Pane p) {
+	if (p == ExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
+	if (p == ExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
+	if (p == ExtensionAPI::paneEditor) {// Get the current scintilla
+		int which = -1;
+		SendMessage(m_nppData->_nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+		if (which == -1) return nullptr;
+		return (which == 0) ? m_nppData->_scintillaMainHandle : m_nppData->_scintillaSecondHandle;
+	}
+	return nullptr;
+	
+}
 
-	return SendMessage(m_nppData->_scintillaMainHandle, msg, wParam, lParam);
+sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
+	HWND sci = getScintillaHandle(p);
+	return SendMessage(sci, msg, wParam, lParam);
 }
 
 char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
-	if (p != ExtensionAPI::paneEditor) return nullptr;
 	if (end <= start) return nullptr;
 
 	char *dest = new char[end - start + 1];
@@ -37,18 +49,19 @@ char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
 	tr.chrg.cpMin = start;
 	tr.chrg.cpMax = end;
 	tr.lpstrText = dest;
-	SendMessage(this->m_nppData->_scintillaMainHandle, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+	this->Send(p, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
 
 	return dest;
 }
 
 void NppExtensionAPI::Remove(ExtensionAPI::Pane p, int start, int end) {
-	this->Trace("TODO: NppExtensionAPI::Remove()\r\n");
+	if (end <= start) return;
+
+	int deleteLength = end - start;
+	this->Send(p, SCI_DELETERANGE, start, deleteLength);
 }
 void NppExtensionAPI::Insert(ExtensionAPI::Pane p, int pos, const char *s) {
-	if (p != ExtensionAPI::paneEditor) return;
-
-	SendMessage(this->m_nppData->_scintillaMainHandle, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
+	this->Send(p, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
 
 void NppExtensionAPI::Trace(const char *s) {
@@ -80,7 +93,9 @@ void NppExtensionAPI::ShutDown() {
 }
 
 void NppExtensionAPI::Perform(const char *actions) {
-	this->Trace("TODO: NppExtensionAPI::Perform()\r\n");
+	this->Trace("TODO: NppExtensionAPI::Perform(");
+	this->Trace(actions);
+	this->Trace(")\r\n");
 }
 
 void NppExtensionAPI::DoMenuCommand(int cmdID) {
