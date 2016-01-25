@@ -29,67 +29,81 @@ sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wPar
 }
 
 char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
-	char *arr = new char[120];
-	strcpy(arr, "NppExtensionAPI::Range");
-	return arr;
+	if (p != ExtensionAPI::paneEditor) return nullptr;
+	if (end <= start) return nullptr;
+
+	char *dest = new char[end - start + 1];
+	TextRange tr;
+	tr.chrg.cpMin = start;
+	tr.chrg.cpMax = end;
+	tr.lpstrText = dest;
+	SendMessage(this->m_nppData->_scintillaMainHandle, SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+
+	return dest;
 }
 
 void NppExtensionAPI::Remove(ExtensionAPI::Pane p, int start, int end) {
-
+	this->Trace("TODO: NppExtensionAPI::Remove()\r\n");
 }
 void NppExtensionAPI::Insert(ExtensionAPI::Pane p, int pos, const char *s) {
+	if (p != ExtensionAPI::paneEditor) return;
 
+	SendMessage(this->m_nppData->_scintillaMainHandle, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
 
 void NppExtensionAPI::Trace(const char *s) {
 	cd->writeText(strlen(s), s);
-	//MessageBoxA(NULL, s, "Trace", MB_OK);
 }
 
 std::string NppExtensionAPI::Property(const char *key) {
+	this->Trace("TODO: NppExtensionAPI::Property(");
+	this->Trace(key);
+	this->Trace(")\r\n");
 	return std::string("NppExtensionAPI::Property");
 }
 
 void NppExtensionAPI::SetProperty(const char *key, const char *val) {
-
+	this->Trace("TODO: NppExtensionAPI::SetProperty()\r\n");
 }
 
 void NppExtensionAPI::UnsetProperty(const char *key) {
-
+	this->Trace("TODO: NppExtensionAPI::UnsetProperty()\r\n");
 }
 
 uptr_t NppExtensionAPI::GetInstance() {
+	this->Trace("TODO: NppExtensionAPI::GetInstance()\r\n");
 	return NULL;
 }
 
 void NppExtensionAPI::ShutDown() {
-
+	this->Trace("TODO: NppExtensionAPI::ShutDown()\r\n");
 }
 
 void NppExtensionAPI::Perform(const char *actions) {
-	MessageBoxA(NULL, actions, "Perform", MB_OK);
+	this->Trace("TODO: NppExtensionAPI::Perform()\r\n");
 }
 
 void NppExtensionAPI::DoMenuCommand(int cmdID) {
-
+	this->Trace("TODO: NppExtensionAPI::DoMenuCommand()\r\n");
 }
 
 void NppExtensionAPI::UpdateStatusBar(bool bUpdateSlowData) {
-
+	this->Trace("TODO: NppExtensionAPI::UpdateStatusBar()\r\n");
 }
 
 void NppExtensionAPI::UserStripShow(const char *description) {
-
+	this->Trace("TODO: NppExtensionAPI::UserStripShow()\r\n");
 }
 
 void NppExtensionAPI::UserStripSet(int control, const char *value) {
-
+	this->Trace("TODO: NppExtensionAPI::UserStripSet()\r\n");
 }
 
 void NppExtensionAPI::UserStripSetList(int control, const char *value) {
-
+	this->Trace("TODO: NppExtensionAPI::UserStripSetList()\r\n");
 }
 
 const char *NppExtensionAPI::UserStripValue(int control) {
+	this->Trace("TODO: NppExtensionAPI::UserStripValue()\r\n");
 	return "NppExtensionAPI::UserStripValue";
 }

@@ -352,7 +352,7 @@ void ConsoleDialog::historyNext()
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
 {
-	if (line && line[0])
+	if (line && line[0] && line != m_history.back())
 	{
 		m_history.push_back(tstring(line));
 		m_currentHistory = m_history.size();
@@ -737,6 +737,7 @@ void ConsoleDialog::onStyleNeeded(SCNotification* notification)
 
 bool ConsoleDialog::parseLine(LineDetails *lineDetails)
 {
+	return false;
 	// Eg.
 	//   File "C:\Users\Dave\AppData\Roaming\Notepad++\plugins\Config\PythonScript\scripts\fourth.py", line 2, in <module>
 	if (0 == strncmp(lineDetails->line, "  File \"", 8)

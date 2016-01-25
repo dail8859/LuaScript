@@ -1418,7 +1418,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		if (fpTest.Exists()) {
 			luaL_loadfile(luaState, startupScript.c_str());
 			if (!call_function(luaState, 0, true)) {
-				host->Trace(">Lua: error occurred while loading startup script\n");
+				host->Trace("> Lua: error occurred while loading startup script\n");
 			}
 		}
 	}
