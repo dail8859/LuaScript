@@ -36,36 +36,31 @@ static SettingsDialog sd;			// The settings dialog
 static HANDLE _hModule;				// For dialog initialization
 
 // --- Menu callbacks ---
+static void showConsole();
 static void showSettings();
 static void showAbout();
 
 static LuaConsole *g_console;
 
 // --- Global variables ---
-//ShortcutKey sk = {true, true, true, 'D'};
+ShortcutKey sk = {true, false, false, '`'};
 FuncItem funcItem[nbFunc] = {
-	//{TEXT("DoxyIt - Function"), doxyItFunction,   0, false, &sk},
-	//{TEXT("DoxyIt - File"),     doxyItFile,       0, false, NULL},
-	//{TEXT(""),                  NULL,             0, false, NULL}, // separator
-	//{TEXT("Active commenting"), activeCommenting, 0, false, NULL},
-	//{TEXT(""),                  NULL,             0, false, NULL}, // separator
+	{TEXT("Show Console"),      showConsole,      0, false, &sk},
+	{TEXT(""),                  NULL,             0, false, NULL}, // separator
 	{TEXT("Settings..."),       showSettings,     0, false, NULL},
 	{TEXT("About..."),          showAbout,        0, false, NULL}
 };
 
 
-inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam)
-{
+inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam) {
 	return pSciMsg(pSciWndData, Msg, wParam, lParam);
 }
 
-inline LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam)
-{
+inline LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam) {
 	return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
 
-bool updateScintilla()
-{
+bool updateScintilla() {
 	HWND curScintilla;
 
 	// Get the current scintilla
@@ -83,59 +78,52 @@ bool updateScintilla()
 
 // --- Configuration ---
 
-void getIniFilePath(wchar_t *iniPath, int size)
-{
+void getIniFilePath(wchar_t *iniPath, int size) {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM) iniPath);
 	wcscat_s(iniPath, size, TEXT("\\"));
 	wcscat_s(iniPath, size, NPP_PLUGIN_NAME);
 	wcscat_s(iniPath, size, TEXT(".ini"));
 }
 
-void configSave()
-{
+void configSave() {
 }
 
-void configLoad()
-{
+void configLoad() {
 }
 
-void pluginInit(HANDLE hModule)
-{
+void pluginInit(HANDLE hModule) {
 	_hModule = hModule;
 }
 
-void pluginCleanUp()
-{
+void pluginCleanUp() {
 }
 
-void setNppInfo(NppData notepadPlusData)
-{
+void setNppInfo(NppData notepadPlusData) {
 	nppData = notepadPlusData;
-
 	sd.init((HINSTANCE) _hModule, nppData);
 }
 
 
 // --- Menu call backs ---
 
-void showSettings()
-{
+void showConsole() {
+	g_console->showDialog();
+}
+
+void showSettings() {
 	if(!updateScintilla()) return;
 	sd.doDialog();
 }
 
-void showAbout()
-{
-	//CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
-	g_console->showDialog();
+void showAbout() {
+	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }
 
 
 // --- Notification callbacks ---
 
 
-void handleNotification(SCNotification *notifyCode)
-{
+void handleNotification(SCNotification *notifyCode) {
 	static bool do_newline = false;
 	NotifyHeader nh = notifyCode->nmhdr;
 	int ch = notifyCode->ch;

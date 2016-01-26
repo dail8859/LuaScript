@@ -241,8 +241,14 @@ static int cf_scite_send(lua_State *L) {
 
 static int cf_scite_constname(lua_State *L) {
 	char constName[100] = "";
+	const char *hint = nullptr;
 	int message = luaL_checkint(L, 1);
-	if (IFaceTable::GetConstantName(message, constName, 100) > 0) {
+
+	if (lua_gettop(L) == 2) {
+		hint = luaL_checkstring(L, 2);
+	}
+
+	if (IFaceTable::GetConstantName(message, constName, 100, hint) > 0) {
 		lua_pushstring(L, constName);
 		return 1;
 	} else {
@@ -1361,6 +1367,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 	push_pane_object(luaState, ExtensionAPI::paneEditorSecondary);
 	lua_setglobal(luaState, "editor2");
+
+	push_pane_object(luaState, ExtensionAPI::paneOutput);
+	lua_setglobal(luaState, "console");
 
 	//push_pane_object(luaState, ExtensionAPI::paneOutput);
 	//lua_setglobal(luaState, "output");

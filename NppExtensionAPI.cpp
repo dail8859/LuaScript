@@ -24,20 +24,29 @@ NppExtensionAPI::~NppExtensionAPI() {
 }
 
 HWND NppExtensionAPI::getScintillaHandle(ExtensionAPI::Pane p) {
-	if (p == ExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
-	if (p == ExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
 	if (p == ExtensionAPI::paneEditor) {// Get the current scintilla
 		int which = -1;
 		SendMessage(m_nppData->_nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 		if (which == -1) return nullptr;
 		return (which == 0) ? m_nppData->_scintillaMainHandle : m_nppData->_scintillaSecondHandle;
 	}
+	if (p == ExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
+	if (p == ExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
+	if (p == ExtensionAPI::paneOutput) return this->cd->getScintillaHwnd();
+
 	return nullptr;
 	
 }
 
 sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
 	HWND sci = getScintillaHandle(p);
+
+	if (sci == nullptr) {
+		// This is bad :(
+		MessageBox(NULL, TEXT("sci == nullptr"), TEXT("sci == nullptr"), MB_OK);
+		return 0;
+	}
+
 	return SendMessage(sci, msg, wParam, lParam);
 }
 
