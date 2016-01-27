@@ -1602,121 +1602,50 @@ bool LuaExtension::RemoveBuffer(int index) {
 /* mark in error messages for incomplete statements */
 #define EOFMARK         "<eof>"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
-/*
-** Check whether 'status' signals a syntax error and the error
-** message at the top of the stack ends with the above mark for
-** incomplete statements.
-*/
-static int incomplete(lua_State *L, int status) {
-	if (status == LUA_ERRSYNTAX) {
-		size_t lmsg;
-		const char *msg = lua_tolstring(L, -1, &lmsg);
-		if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
-			lua_pop(L, 1);
-			return 1;
-		}
-	}
-	return 0;  /* else... */
-}
-static int addreturn(lua_State *L) {
-	const char *line = lua_tostring(L, -1);  /* original line */
-	const char *retline = lua_pushfstring(L, "return %s;", line);
-	int status = luaL_loadbuffer(L, retline, strlen(retline), "=Console");
-	if (status == 0)
-		lua_remove(L, -2);  /* remove modified line */
-	else
-		lua_pop(L, 2);  /* pop result from 'luaL_loadbuffer' and modified line */
-	return status;
-}
-
+#define LUA_OK          0
 bool LuaExtension::OnExecute(const char *s) {
 	static bool isFirstLine = true;
 	static std::string chunk;
 
 	if (luaState || InitGlobalScope(false)) {
-		//if (isFirstLine) {
-		//	chunk = s;
-		//	chunk = "return " + chunk + ';';
-		//	if ((status = addreturn(luaState)) != 0) {
-		//		isFirstLine = false;
-		//		chunk = s;
-		//		host->Trace("wait on more...\r\n");
-		//		return true;
-		//	}
-		//}
-		//else {
-		//	// Add the new line to the current chunk
-		//	chunk.append("\r\n");
-		//	chunk.append(s);
-		//	status = luaL_loadbuffer(luaState, chunk.c_str(), chunk.length(), "=Console");
-		//	if (incomplete(luaState, status)) {
-		//		host->Trace("still wait on more...\r\n");
-		//		isFirstLine = false;
-		//		chunk.clear();
-		//		return true;
-		//	}
-		//}
+		// First try to compile the chunk as a return statement
+		const char *retline = lua_pushfstring(luaState, "return %s;", s);
+		int status = luaL_loadbuffer(luaState, retline, strlen(retline), "=Console");
+		if (status == 0) lua_remove(luaState, -2);
+		else lua_pop(luaState, 2);
 
-		int status = luaL_loadbuffer(luaState, s, strlen(s), "=Console") || lua_pcall(luaState, 0, LUA_MULTRET, 0);
-		
-		if (status == 0 && lua_gettop(luaState) > 0) {  /* any result to print? */
-			lua_getglobal(luaState, "print");
-			lua_insert(luaState, 1);
-			if (lua_pcall(luaState, lua_gettop(luaState) - 1, 0, 0) != 0)
-				host->Trace("error calling " LUA_QL("print"));
+		if (status == LUA_OK) {
+			// It worked, let's call it
+			status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
 		}
-		else if (status == 1) {
-			size_t lmsg;
-			const char *msg = lua_tolstring(luaState, -1, &lmsg);
-			host->Trace(msg);
+		else {
+			// Else let's just try it as is
+			status = luaL_loadbuffer(luaState, s, strlen(s), "=Console");
+			if (status == LUA_OK) {
+				// Now call it
+				status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+			}
+		}
+
+		// At this point *something* ran
+
+		if (status == LUA_OK) {
+			if (lua_gettop(luaState) > 0) {  /* any result to print? */
+				lua_getglobal(luaState, "print");
+				lua_insert(luaState, 1);
+				if (lua_pcall(luaState, lua_gettop(luaState) - 1, 0, 0) != 0)
+					host->Trace("error calling " LUA_QL("print"));
+			}
+			// else everything finished fine but had no return value
+		}
+		else {
+			// Print an error message
+			host->Trace(lua_tostring(luaState, -1));
 			host->Trace("\r\n");
 		}
 		lua_settop(luaState, 0);  /* clear stack */
-		return true;
 	}
 	return true;
-#if 0
-	if (luaState || InitGlobalScope(false)) {
-		// May as well use Lua's pattern matcher to parse the command.
-		// Scintilla's RESearch was the other option.
-		int stackBase = lua_gettop(luaState);
-
-		lua_pushliteral(luaState, "string");
-		lua_rawget(luaState, LUA_GLOBALSINDEX);
-		if (lua_istable(luaState, -1)) {
-			lua_pushliteral(luaState, "find");
-			lua_rawget(luaState, -2);
-			if (lua_isfunction(luaState, -1)) {
-				lua_pushstring(luaState, s);
-				lua_pushliteral(luaState, "^%s*([%a_][%a%d_]*)%s*(.-)%s*$");
-				int status = lua_pcall(luaState, 2, 4, 0);
-				if (status==0) {
-					lua_insert(luaState, stackBase+1);
-					lua_gettable(luaState, LUA_GLOBALSINDEX);
-					if (!lua_isnil(luaState, -1)) {
-						if (lua_isfunction(luaState, -1)) {
-							// Try calling it and, even if it fails, short-circuit Filerx
-							handled = true;
-							lua_insert(luaState, stackBase+1);
-							lua_settop(luaState, stackBase+2);
-							if (!call_function(luaState, 1, true)) {
-								host->Trace("> Lua: error occurred while processing command\n");
-							}
-						}
-					} else {
-						host->Trace("> Lua: error checking global scope for command\n");
-					}
-				}
-			}
-		} else {
-			host->Trace("> Lua: string library not loaded\n");
-		}
-
-		lua_settop(luaState, stackBase);
-	}
-
-	return handled;
-#endif
 }
 
 bool LuaExtension::OnOpen(const char *filename) {
