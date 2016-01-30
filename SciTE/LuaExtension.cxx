@@ -244,9 +244,7 @@ static int cf_scite_constname(lua_State *L) {
 	const char *hint = nullptr;
 	int message = luaL_checkint(L, 1);
 
-	if (lua_gettop(L) == 2) {
-		hint = luaL_checkstring(L, 2);
-	}
+	hint = luaL_optstring(L, 2, nullptr);
 
 	if (IFaceTable::GetConstantName(message, constName, 100, hint) > 0) {
 		lua_pushstring(L, constName);
@@ -720,28 +718,6 @@ static int cf_global_print(lua_State *L) {
 	}
 
 	host->Trace("\n");
-	return 0;
-}
-
-
-static int cf_global_trace(lua_State *L) {
-	const char *s = lua_tostring(L,1);
-	if (s) {
-		host->Trace(s);
-	}
-	return 0;
-}
-
-static int cf_global_dostring(lua_State *L) {
-	int nargs = lua_gettop(L);
-	const char *code = luaL_checkstring(L, 1);
-	const char *name = luaL_optstring(L, 2, code);
-	if (0 == luaL_loadbuffer(L, code, lua_strlen(L, 1), name)) {
-		lua_call(L, 0, LUA_MULTRET);
-		return lua_gettop(L) - nargs;
-	} else {
-		raise_error(L);
-	}
 	return 0;
 }
 
@@ -1335,15 +1311,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	// ...register standard libraries
 	luaL_openlibs(luaState);
 
-	//lua_register(luaState, "_ALERT", cf_global_print);
-
-	// although this is mostly redundant with output:append
-	// it is still included for now
-	//lua_register(luaState, "trace", cf_global_trace);
-
-	// emulate a Lua 4 function that is useful in menu commands
-	//lua_register(luaState, "dostring", cf_global_dostring);
-
 	// override a library function whose default impl uses stdout
 	lua_register(luaState, "print", cf_global_print);
 
@@ -1510,7 +1477,7 @@ bool LuaExtension::Load(const char *filename) {
 				extensionScript = filename;
 				luaL_loadfile(luaState, filename);
 				if (!call_function(luaState, 0, true)) {
-					host->Trace(">Lua: error occurred while loading extension script\n");
+					host->Trace("> Lua: error occurred while loading extension script\n");
 				}
 				loaded = true;
 			}
@@ -1606,28 +1573,63 @@ bool LuaExtension::RemoveBuffer(int index) {
 bool LuaExtension::OnExecute(const char *s) {
 	static bool isFirstLine = true;
 	static std::string chunk;
+	int status = 0;
 
 	if (luaState || InitGlobalScope(false)) {
-		// First try to compile the chunk as a return statement
-		const char *retline = lua_pushfstring(luaState, "return %s;", s);
-		int status = luaL_loadbuffer(luaState, retline, strlen(retline), "=Console");
-		if (status == 0) lua_remove(luaState, -2);
-		else lua_pop(luaState, 2);
+		if (isFirstLine) {
+			// First try to compile the chunk as a return statement
+			const char *retline = lua_pushfstring(luaState, "return %s;", s);
+			status = luaL_loadbuffer(luaState, retline, strlen(retline), "=Console");
+			if (status == 0) lua_remove(luaState, -2);
+			else lua_pop(luaState, 2);
 
-		if (status == LUA_OK) {
-			// It worked, let's call it
-			status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+			if (status == LUA_OK) {
+				// It worked, let's call it
+				status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+			}
+			else {
+				// Else let's just try it as is
+				status = luaL_loadbuffer(luaState, s, strlen(s), "=Console");
+				if (status == LUA_OK) {
+					status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+				}
+				else if (status == LUA_ERRSYNTAX) {
+					size_t lmsg;
+					const char *msg = lua_tolstring(luaState, -1, &lmsg);
+					const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
+					if (strstr(msg, LUA_QL("<eof>")) == tp) {
+						lua_pop(luaState, 1);
+						isFirstLine = false;
+						chunk = s;
+						//host->Trace("wait on more...\r\n");
+						return false;
+					}
+				}
+			}
 		}
 		else {
-			// Else let's just try it as is
-			status = luaL_loadbuffer(luaState, s, strlen(s), "=Console");
+			// Append the new line to what we've gotten so far
+			chunk.append("\r\n");
+			chunk.append(s);
+			status = luaL_loadbuffer(luaState, chunk.c_str(), chunk.length(), "=Console");
 			if (status == LUA_OK) {
-				// Now call it
 				status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+			}
+			else if (status == LUA_ERRSYNTAX) {
+				size_t lmsg;
+				const char *msg = lua_tolstring(luaState, -1, &lmsg);
+				const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
+				if (strstr(msg, LUA_QL("<eof>")) == tp) {
+					lua_pop(luaState, 1);
+					//host->Trace("wait on even more...\r\n");
+					return false;
+				}
 			}
 		}
 
-		// At this point *something* ran
+		// At this point *something* ran so clear out some data
+		chunk.clear();
+		isFirstLine = true;
 
 		if (status == LUA_OK) {
 			if (lua_gettop(luaState) > 0) {  /* any result to print? */
@@ -1643,7 +1645,7 @@ bool LuaExtension::OnExecute(const char *s) {
 			host->Trace(lua_tostring(luaState, -1));
 			host->Trace("\r\n");
 		}
-		lua_settop(luaState, 0);  /* clear stack */
+		lua_settop(luaState, 0); /* clear stack */
 	}
 	return true;
 }

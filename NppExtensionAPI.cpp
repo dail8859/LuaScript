@@ -78,6 +78,9 @@ void NppExtensionAPI::Trace(const char *s) {
 }
 
 std::string NppExtensionAPI::Property(const char *key) {
+	if (strcmp(key, "ext.lua.debug.traceback") == 0) return std::string("1");
+	if (strcmp(key, "ext.lua.startup.script" ) == 0) return std::string("");
+
 	this->Trace("TODO: NppExtensionAPI::Property(");
 	this->Trace(key);
 	this->Trace(")\r\n");
