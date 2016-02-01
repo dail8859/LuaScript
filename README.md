@@ -10,7 +10,7 @@ editor.MarkerFore[24] = 0xFF0000
 editor.MarkerBack[24] = 0xFF0000
 ```
 
-- Find all instances of `image345.jpg`, `image123,png`, etc and modify the number:
+- Find all instances of `image345.jpg`, `image123.png`, etc and modify the number:
 ```lua
 for m in editor:match("(image)(\\d+)(\\.(jpg|png))", SCFIND_REGEXP) do
     i = tonumber(editor.Tag[2])
@@ -20,6 +20,29 @@ end
 
 
 **Note:** This is still in early development.
+
+## Documentation
+#### Globals
+Global objects/functions are made available to access the editing component.
+ - `editor` - Refers to the current editor view. Since Notepad++ has 2 views, this controls the one currently selected.
+  - `editor1` - Refers to the "first" view.
+  - `editor2` - Refers to the "second" view.
+ - `npp` - The Notepad++ application itself.
+
+#### Editor object
+The full documentation can be found [here](/doc/doc.md). The `editor` also has a few helper functions:
+- `textrange(startPos, endPos)` - gets the text in the specified range
+- `findtext(text, [flags], [startPos, [endPos]])`
+    - returns the start and end of the first match, or `nil` if no match
+    - flags can be 0 (the default), or a combination of [SCFIND](http://www.scintilla.org/ScintillaDoc.html#searchFlags) constants such as `SCFIND_WHOLEWORD`, `SCFIND_MATCHCASE`, and `SCFIND_REGEXP`
+- `match(text, [flags], [startPos])`
+    - returns a generator that allows you to loop over the matches i.e. `for m in editor:match(text, flags) do ... end`
+    - the match object (i.e. the loop counter m in the above example) supports read-only properties `pos`, `len`, and `text`; and also supports a function `replace(replaceText)` to support search and replace.
+    - while looping through matches, if the document is modified by any method other than the loop counter's replace method, this may cause the match generator to lose its place.
+    - also, do not attempt to store the match object for later access outside the loop; it will not be useable.
+- `append(text)` - appends text to the end of the document
+- `insert(pos, text)` - inserts text at the specified position
+- `remove(startPos, endPos)` - removes the text in the range
 
 ## Development
 The code has been developed using MSVC 2013. To compile the code:
@@ -32,3 +55,6 @@ For convenience, MSVC automatically copies the DLL into the Notepad++ plugin dir
 
 ## License
 This code is released under the [GNU General Public License version 2](http://www.gnu.org/licenses/gpl-2.0.txt).
+
+#### Thanks
+Special thanks to the [PythonScript](https://github.com/bruderstein/PythonScript) plugin and [SciTE](http://www.scintilla.org/SciTE.html).
