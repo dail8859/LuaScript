@@ -44,9 +44,8 @@ private:
 	void runStatement();
 	void stopStatement();
 
-	LRESULT run_inputWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT inputWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT scintillaWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+	static LRESULT CALLBACK scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 	void historyNext();
 	void historyPrevious();
@@ -57,23 +56,14 @@ private:
 
 	/* Styler functions */
 	void onStyleNeeded(SCNotification* notification);
-	bool parsePythonErrorLine(LineDetails *lineDetails);
-	bool parseVSErrorLine(LineDetails *lineDetails);
-	bool parseGCCErrorLine(LineDetails *lineDetails);
-	//void styleDefaultLine(int lineNumber, int lineLength, const char *line);
 	void onHotspotClick(SCNotification* notification);
 	bool parseLine(LineDetails *lineDetails);
 
-	bool isValidFilenameChar(char ch) { return (ch != '<' && ch != '>' && ch != ':' && ch != '|' && ch != '\"' && ch != '?'); };
-
-	//HWND m_hNpp;
 	tTbData* m_data;
 	HWND m_scintilla;
-	static WNDPROC s_originalScintillaWndProc;
-	HWND m_hInput;  // Input TextBox
+	HWND m_hInput;
 	ConsoleInterface *m_console;
 	std::string m_prompt;
-	WNDPROC m_originalInputWndProc;
 	HICON m_hTabIcon;
 
 	std::list<tstring> m_history;

@@ -1,14 +1,19 @@
 #include "ConsoleDialog.h"
-#include "Scintilla.h"
-#include "SciLexer.h"
-#include "resource.h"
-//#include "PythonConsole.h"
+#include "Docking.h"
 #include "Notepad_plus_msgs.h"
 #include "PluginInterface.h"
-#include "Docking.h"
+#include "resource.h"
+#include "SciLexer.h"
+#include "Scintilla.h"
 #include "WcharMbcsConverter.h"
 
-#include <windowsx.h>
+#include <Commctrl.h>
+
+#pragma comment(lib, "comctl32.lib") 
+
+// Do this for now instead of including windowsx.h just for these two
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
 ConsoleDialog::ConsoleDialog() :
 	DockingDlgInterface(IDD_CONSOLE),
@@ -17,7 +22,6 @@ ConsoleDialog::ConsoleDialog() :
 	m_hInput(NULL),
 	m_console(NULL),
 	m_prompt("> "),
-	m_originalInputWndProc(NULL),
 	m_hTabIcon(NULL),
 	m_currentHistory(0),
 	m_runButtonIsRun(true),
@@ -26,9 +30,6 @@ ConsoleDialog::ConsoleDialog() :
 	m_historyIter = m_history.end();
 }
 
-//lint -e1554  Direct pointer copy of member 'name' within copy constructor: 'ConsoleDialog::ConsoleDialog(const ConsoleDialog &)')
-// We indeed copy pointers, and it's okay. These are not allocated within the 
-// scope of this class but rather passed in and copied anyway.
 ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	DockingDlgInterface(other),
 	m_data(other.m_data ? new tTbData(*other.m_data) : NULL),
@@ -36,7 +37,6 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_hInput(other.m_hInput),
 	m_console(other.m_console),
 	m_prompt(other.m_prompt),
-	m_originalInputWndProc(NULL),
 	m_hTabIcon(NULL),
 	m_history(other.m_history),
 	m_historyIter(other.m_historyIter),
@@ -46,7 +46,6 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_hContext(NULL)
 {
 }
-//lint +e1554
 
 ConsoleDialog::~ConsoleDialog()
 {
@@ -74,13 +73,10 @@ ConsoleDialog::~ConsoleDialog()
 		m_hContext = NULL;
 	}
 
-	// To please Lint, let's NULL these handles and pointers
 	m_hInput = NULL;
 	m_console = NULL;
 
 }
-
-WNDPROC ConsoleDialog::s_originalScintillaWndProc;
 
 void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterface* console)
 {
@@ -129,11 +125,10 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 					SendMessage(m_hInput, WM_SETFONT, reinterpret_cast<WPARAM>(hCourier), TRUE); 
 					SendMessage(::GetDlgItem(_hSelf, IDC_PROMPT), WM_SETFONT, reinterpret_cast<WPARAM>(hCourier), TRUE); 
 				}
-				// Subclass the Input box
-				::SetWindowLongPtr(::GetDlgItem(_hSelf, IDC_INPUT), GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-				m_originalInputWndProc = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(::GetDlgItem(_hSelf, IDC_INPUT), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(ConsoleDialog::inputWndProc)));
-				// Subclass Scintilla
-				s_originalScintillaWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(m_scintilla, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&ConsoleDialog::scintillaWndProc)));
+
+				// Subclass some stuff
+				SetWindowSubclass(m_hInput, ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
+				SetWindowSubclass(m_scintilla, ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 				::SetFocus(m_hInput);
 				return FALSE;
 			}
@@ -370,52 +365,33 @@ void ConsoleDialog::historyEnd()
 }
 
 
-LRESULT ConsoleDialog::inputWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	ConsoleDialog *dlg = reinterpret_cast<ConsoleDialog*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	return dlg->run_inputWndProc(hWnd, message, wParam, lParam);
-}
-
-LRESULT ConsoleDialog::run_inputWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch(message)
+	ConsoleDialog *cd = reinterpret_cast<ConsoleDialog *>(dwRefData);
+	switch (uMsg)
 	{
-		case WM_KEYDOWN:
-			switch(wParam)
-			{
-				case VK_UP:
-					historyPrevious();
-					return FALSE;
-
-				case VK_DOWN:
-					historyNext();
-					return FALSE;
-
-				default:
-					return CallWindowProc(m_originalInputWndProc, hWnd, message, wParam, lParam);
-			}
-
-		case WM_KEYUP:
-			switch(wParam)
-			{
-				case VK_RETURN:
-					runStatement();
-					return FALSE;
-
-				case VK_ESCAPE:
-					historyEnd();
-					return FALSE;
-
-				default:
-					return CallWindowProc(m_originalInputWndProc, hWnd, message, wParam, lParam);
-			}
-		
-		case WM_SETFOCUS:
-			OutputDebugString(_T("Input SetFocus\r\n"));
-		
-		default:
-			return CallWindowProc(m_originalInputWndProc, hWnd, message, wParam, lParam);
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_UP:
+			cd->historyPrevious();
+			return FALSE;
+		case VK_DOWN:
+			cd->historyNext();
+			return FALSE;
+		}
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case VK_RETURN:
+			cd->runStatement();
+			return FALSE;
+		case VK_ESCAPE:
+			cd->historyEnd();
+			return FALSE;
+		}
 	}
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 void ConsoleDialog::runStatement()
@@ -518,22 +494,11 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 	callScintilla(SCI_SETLEXER, SCLEX_CONTAINER);
 }
 
-LRESULT ConsoleDialog::scintillaWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	switch(message)
-	{
-		case WM_GETDLGCODE:
-			return DLGC_WANTARROWS | DLGC_WANTCHARS;
-
-		case WM_SETFOCUS:
-			OutputDebugString(_T("Scintilla SetFocus\r\n"));
-			break;
-			
-		default:
-			break;
-	}
-
-	return CallWindowProc(s_originalScintillaWndProc, hWnd, message, wParam, lParam);
+	// No idea what this does, but it seems to help a bit.
+	if (uMsg == WM_GETDLGCODE) return DLGC_WANTARROWS | DLGC_WANTCHARS;
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 void ConsoleDialog::writeText(size_t length, const char *text)
@@ -729,7 +694,6 @@ void ConsoleDialog::onStyleNeeded(SCNotification* notification)
 
 	// ensure that everything is set as styled (just move the endStyled variable on to the requested position)
 	callScintilla(SCI_STARTSTYLING, static_cast<WPARAM>(notification->position), 0x0);
-
 }
 
 bool ConsoleDialog::parseLine(LineDetails *lineDetails)
