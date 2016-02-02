@@ -21,16 +21,6 @@
 #include "PluginDefinition.h"
 #include "Hyperlinks.h"
 
-const wchar_t *msg = TEXT("An option is blank (or all whitespace). If this is desired, it is recommended that you disable Active Commenting! Continue anyways?");
-const wchar_t *help = TEXT("\
-Format Keywords:\r\n\
-$FILENAME - The current file name.\r\n\
-$FUNCTION - The name of the function/method.\r\n\
-$PARAM - Expands to a single function/method parameter. Any line containing this will get repeated for each parameter.\r\n\
-$@ - Expands to the prefix character for Doxygen commands.\r\n\
-$| - Marks the alignment position. This is only valid for lines containing $PARAM.\r\n");
-
-
 INT_PTR CALLBACK inputDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -74,10 +64,6 @@ void SettingsDialog::doDialog()
 {
 	if (!isCreated()) create(IDD_SETTINGSDLG);
 	goToCenter();
-
-	//initParserSettings();
-	//loadParserSettings();
-	//updatePreview();
 }
 
 BOOL CALLBACK SettingsDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)

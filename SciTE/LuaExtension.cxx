@@ -63,7 +63,7 @@ static std::string extensionScript;
 static bool tracebackEnabled = true;
 
 static int maxBufferIndex = -1;
-static int curBufferIndex = -1;
+static int curBufferIndex = 0; // HACK: set to 0 for now
 
 static int GetPropertyInt(const char *propName) {
 	int propVal = 0;

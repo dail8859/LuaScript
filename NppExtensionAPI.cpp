@@ -16,9 +16,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <memory>
 #include "NppExtensionAPI.h"
 #include "Window.h"
 
+std::shared_ptr<char> getIniFilePath(wchar_t *buff, size_t size);
 
 NppExtensionAPI::~NppExtensionAPI() {
 }
@@ -79,7 +81,10 @@ void NppExtensionAPI::Trace(const char *s) {
 
 std::string NppExtensionAPI::Property(const char *key) {
 	if (strcmp(key, "ext.lua.debug.traceback") == 0) return std::string("1");
-	if (strcmp(key, "ext.lua.startup.script" ) == 0) return std::string("");
+	if (strcmp(key, "ext.lua.startup.script") == 0) {
+		wchar_t buff[MAX_PATH];
+		return std::string(getIniFilePath(buff, MAX_PATH).get());
+	}
 
 	this->Trace("TODO: NppExtensionAPI::Property(");
 	this->Trace(key);

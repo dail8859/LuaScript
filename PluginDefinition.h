@@ -19,7 +19,6 @@
 #ifndef PLUGINDEFINITION_H
 #define PLUGINDEFINITION_H
 
-#include <sstream>
 #include "PluginInterface.h"
 
 #define SCI_UNUSED 0

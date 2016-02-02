@@ -18,37 +18,33 @@
 
 #include "PluginDefinition.h"
 #include "Version.h"
-#include "SettingsDialog.h"
 #include "AboutDialog.h"
 
 #include "LuaConsole.h"
 #include "LuaExtension.h"
 #include "NppExtensionAPI.h"
+#include "WcharMbcsConverter.h"
 
 // --- Local variables ---
-static bool do_active_commenting;	// active commenting - create or extend a document block
-//static bool do_active_wrapping;	// active wrapping - wrap text inside of document blocks...todo
-
 static NppData nppData;
 static SciFnDirect pSciMsg;			// For direct scintilla call
 static sptr_t pSciWndData;			// For direct scintilla call
-static SettingsDialog sd;			// The settings dialog
 static HANDLE _hModule;				// For dialog initialization
+static LuaConsole *g_console;
 
 // --- Menu callbacks ---
 static void showConsole();
+static void editStartupScript();
 static void showSettings();
 static void showAbout();
-
-static LuaConsole *g_console;
 
 // --- Global variables ---
 ShortcutKey sk = {true, false, false, '`'};
 FuncItem funcItem[nbFunc] = {
-	{TEXT("Show Console"),      showConsole,      0, false, &sk},
-	{TEXT(""),                  NULL,             0, false, NULL}, // separator
-	{TEXT("Settings..."),       showSettings,     0, false, NULL},
-	{TEXT("About..."),          showAbout,        0, false, NULL}
+	{TEXT("Show Console"),        showConsole,       0, false, NULL},
+	{TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL},
+	{TEXT(""),                    NULL,              0, false, NULL}, // separator
+	{TEXT("About..."),            showAbout,         0, false, NULL}
 };
 
 
@@ -76,13 +72,12 @@ bool updateScintilla() {
 	return true;
 }
 
-// --- Configuration ---
-
-void getIniFilePath(wchar_t *iniPath, int size) {
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM) iniPath);
-	wcscat_s(iniPath, size, TEXT("\\"));
-	wcscat_s(iniPath, size, NPP_PLUGIN_NAME);
-	wcscat_s(iniPath, size, TEXT(".ini"));
+std::shared_ptr<char> getIniFilePath(wchar_t *buff, size_t size) {
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM)buff);
+	wcscat_s(buff, size, TEXT("\\"));
+	wcscat_s(buff, size, TEXT("startup"));
+	wcscat_s(buff, size, TEXT(".lua"));
+	return WcharMbcsConverter::wchar2char(buff);
 }
 
 void configSave() {
@@ -100,9 +95,7 @@ void pluginCleanUp() {
 
 void setNppInfo(NppData notepadPlusData) {
 	nppData = notepadPlusData;
-	sd.init((HINSTANCE) _hModule, nppData);
 }
-
 
 // --- Menu call backs ---
 
@@ -110,9 +103,23 @@ void showConsole() {
 	g_console->showDialog();
 }
 
+void editStartupScript() {
+	wchar_t buff[MAX_PATH];
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
+	wcscat_s(buff, MAX_PATH, TEXT("\\"));
+	wcscat_s(buff, MAX_PATH, TEXT("startup"));
+	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
+	if (PathFileExists(buff) == 0) {
+		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
+		DWORD dwBytesWritten;
+		HANDLE h = CreateFile(buff, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		WriteFile(h, s, strlen(s), &dwBytesWritten, NULL);
+		CloseHandle(h);
+	}
+	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);
+}
+
 void showSettings() {
-	if(!updateScintilla()) return;
-	sd.doDialog();
 }
 
 void showAbout() {
@@ -121,31 +128,18 @@ void showAbout() {
 
 
 // --- Notification callbacks ---
-
-
 void handleNotification(SCNotification *notifyCode) {
-	static bool do_newline = false;
 	NotifyHeader nh = notifyCode->nmhdr;
-	int ch = notifyCode->ch;
 
 	switch(nh.code)
 	{
-	case SCN_UPDATEUI:
-		break;
-	case SCN_CHARADDED:
-		//LuaExtension::Instance().OnExecute("dostring print(10 .. 20)");
-		break;
 	case NPPN_READY:
 		g_console = new LuaConsole(nppData._nppHandle);
 		g_console->init((HINSTANCE)_hModule, nppData);
 		LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
 		break;
 	case NPPN_SHUTDOWN:
-		break;
-	case NPPN_BUFFERACTIVATED:
-		LuaExtension::Instance().ActivateBuffer(notifyCode->nmhdr.idFrom);
-		break;
-	case NPPN_LANGCHANGED:
+		LuaExtension::Instance().Finalise();
 		break;
 	}
 	return;
