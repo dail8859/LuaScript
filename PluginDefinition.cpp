@@ -35,6 +35,7 @@ static LuaConsole *g_console;
 // --- Menu callbacks ---
 static void showConsole();
 static void editStartupScript();
+static void runCurrentFile();
 static void showSettings();
 static void showAbout();
 
@@ -43,6 +44,7 @@ ShortcutKey sk = {true, false, false, '`'};
 FuncItem funcItem[nbFunc] = {
 	{TEXT("Show Console"),        showConsole,       0, false, NULL},
 	{TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL},
+	{TEXT("Run Current File"),    runCurrentFile,    0, false, NULL},
 	{TEXT(""),                    NULL,              0, false, NULL}, // separator
 	{TEXT("About..."),            showAbout,         0, false, NULL}
 };
@@ -117,6 +119,14 @@ void editStartupScript() {
 		CloseHandle(h);
 	}
 	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);
+}
+
+
+static void runCurrentFile() {
+	updateScintilla();
+	// NOTE: potential bug if multi-line chunk is still being processed by the console
+	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
+	LuaExtension::Instance().OnExecute(doc);
 }
 
 void showSettings() {

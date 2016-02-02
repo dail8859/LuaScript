@@ -24,7 +24,7 @@
 #define SCI_UNUSED 0
 
 const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
-const int nbFunc = 4;
+const int nbFunc = 5;
 
 // --- Helper functions ---
 LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
