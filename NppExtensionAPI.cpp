@@ -116,7 +116,7 @@ void NppExtensionAPI::Perform(const char *actions) {
 }
 
 void NppExtensionAPI::DoMenuCommand(int cmdID) {
-	this->Trace("TODO: NppExtensionAPI::DoMenuCommand()\r\n");
+	SendMessage(m_nppData->_nppHandle, NPPM_MENUCOMMAND, 0, (LPARAM)cmdID);
 }
 
 void NppExtensionAPI::UpdateStatusBar(bool bUpdateSlowData) {
