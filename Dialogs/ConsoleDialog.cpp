@@ -351,7 +351,7 @@ void ConsoleDialog::historyNext()
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
 {
-	if (line && line[0] && !m_history.empty() && line != m_history.back())
+	if (line && line[0] && (m_history.empty() || line != m_history.back()))
 	{
 		m_history.push_back(tstring(line));
 		m_currentHistory = m_history.size();
@@ -401,12 +401,24 @@ void ConsoleDialog::runStatement()
 	assert(m_console != NULL);
 	if (m_console)
 	{
-		const char *text = (const char *)SendMessage(m_sciInput, SCI_GETCHARACTERPOINTER, 0, 0);
+		Sci_TextRange tr;
+		tr.chrg.cpMin = 0;
+		tr.chrg.cpMax = SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0);
+		tr.lpstrText = new char[2 * (tr.chrg.cpMax - tr.chrg.cpMin) + 2]; // See documentation
+		SendMessage(m_sciInput, SCI_GETSTYLEDTEXT, 0, (LPARAM)&tr);
+
 		writeText(m_prompt.size(), m_prompt.c_str());
-		writeText(strlen(text), text);
+		SendMessage(m_sciOutput, SCI_SETREADONLY, 0, 0);
+		SendMessage(m_sciOutput, SCI_ADDSTYLEDTEXT, 2 * (tr.chrg.cpMax - tr.chrg.cpMin), (LPARAM)tr.lpstrText);
+		SendMessage(m_sciOutput, SCI_SETREADONLY, 1, 0);
 		writeText(2, "\r\n");
+
+		delete[] tr.lpstrText;
+
+		const char *text = (const char *)SendMessage(m_sciInput, SCI_GETCHARACTERPOINTER, 0, 0);
 		historyAdd(WcharMbcsConverter::char2tchar(text).get());
 		m_console->runStatement(text);
+
 		SendMessage(m_sciInput, SCI_CLEARALL, 0, 0);
 	}
 }
@@ -432,97 +444,57 @@ void ConsoleDialog::setPrompt(const char *prompt)
 void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 {
 	m_sciOutput = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
-	
 	LONG currentStyle = GetWindowLong(m_sciOutput, GWL_STYLE);
 	SetWindowLong(m_sciOutput, GWL_STYLE, currentStyle | WS_TABSTOP);
 
 	callScintilla(SCI_SETREADONLY, 1, 0);
-
-	/*  Style bits
-	 *  LSB  0 - stderr = 1
-	 *       1 - hotspot 
-	 *       2 - warning
-	 *       ... to be continued
-	 */
-
-	// Set the codepage to UTF-8
-	callScintilla(SCI_SETCODEPAGE, 65001);
-
-	// 0 is stdout, black text
-	callScintilla(SCI_STYLESETSIZE, 0 /* = style number */, 8 /* = size in points */);   
-
-	// 1 is stderr, red text
-	callScintilla(SCI_STYLESETSIZE, 1 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 1, RGB(250, 0, 0));
-
-	// 2 is stdout, black text, underline hotspot
-	callScintilla(SCI_STYLESETSIZE, 2 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETUNDERLINE, 2 /* = style number */, 1 /* = underline */);   
-	callScintilla(SCI_STYLESETHOTSPOT, 2, 1);
-
-	// 3 is stderr, red text, underline hotspot
-	callScintilla(SCI_STYLESETSIZE, 3 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 3, RGB(250, 0, 0));
-	callScintilla(SCI_STYLESETUNDERLINE, 3 /* = style number */, 1 /* = underline */);   
-	callScintilla(SCI_STYLESETHOTSPOT, 3, 1);
-	
-	// 4 stdout warning without hotspot
-	callScintilla(SCI_STYLESETSIZE, 4 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 4, RGB(199, 175, 7));  // mucky yellow
-
-	// 5 stderr warning without hotspot
-	callScintilla(SCI_STYLESETSIZE, 5 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 5, RGB(255, 128, 64));  // orange
-
-	// 6 is hotspot, stdout, warning
-	callScintilla(SCI_STYLESETSIZE, 6 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 6, RGB(199, 175, 7));  // mucky yellow
-	callScintilla(SCI_STYLESETUNDERLINE, 6 /* = style number */, 1 /* = underline */);   
-	callScintilla(SCI_STYLESETHOTSPOT, 6, 1);
-
-	// 7 is hotspot, stderr, warning
-	callScintilla(SCI_STYLESETSIZE, 7 /* = style number */, 8 /* = size in points */);   
-	callScintilla(SCI_STYLESETFORE, 7, RGB(255, 128, 64));  // orange
-	callScintilla(SCI_STYLESETUNDERLINE, 7 /* = style number */, 1 /* = underline */);   
-	callScintilla(SCI_STYLESETHOTSPOT, 7, 1);
-
 	callScintilla(SCI_USEPOPUP, 0);
-	callScintilla(SCI_SETLEXER, SCLEX_CONTAINER);
+
+	// Set up the styles
+	setStyles(m_sciOutput);
 }
 
 void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	m_sciInput = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
 	LONG currentStyle = GetWindowLong(m_sciInput, GWL_STYLE);
 	SetWindowLong(m_sciInput, GWL_STYLE, currentStyle | WS_TABSTOP);
+
 	SendMessage(m_sciInput, SCI_SETMARGINWIDTHN, 1, 0);
 
-	// Set it as a Lua lexer and use the style from Notepad++
+	// Have it actually do the lexing
 	SendMessage(m_sciInput, SCI_SETLEXER, SCLEX_LUA, 0);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENT, 0x008000);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENTLINE, 0x008000);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENTDOC, 0x808000);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_LITERALSTRING, 0x4A0095);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_PREPROCESSOR, 0x004080);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD, 0xFF0000);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD, 1); // keywordClass="instre1"
-	SendMessage(m_sciInput, SCI_SETKEYWORDS, 0, (LPARAM)"and break do else elseif end false for function goto if in local nil not or repeat return then true until while");
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_NUMBER, 0x0080FF);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_STRING, 0x808080);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_CHARACTER, 0x808080);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_OPERATOR, 0x800000);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_OPERATOR, 1);
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD2, 0xC08000);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD2, 1); // keywordClass="instre2"
-	SendMessage(m_sciInput, SCI_SETKEYWORDS, 1, (LPARAM)"_ENV _G _VERSION assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring module next pairs pcall print rawequal rawget rawlen rawset require select setfenv setmetatable tonumber tostring type unpack xpcall string table math bit32 coroutine io os debug package __index __newindex __call __add __sub __mul __div __mod __pow __unm __concat __len __eq __lt __le __gc __mode");
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD3, 0xFF0080);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD3, 1); // keywordClass="type1"
-	SendMessage(m_sciInput, SCI_SETKEYWORDS, 2, (LPARAM)"byte char dump find format gmatch gsub len lower rep reverse sub upper abs acos asin atan atan2 ceil cos cosh deg exp floor fmod frexp ldexp log log10 max min modf pow rad random randomseed sin sinh sqrt tan tanh arshift band bnot bor btest bxor extract lrotate lshift replace rrotate rshift shift string.byte string.char string.dump string.find string.format string.gmatch string.gsub string.len string.lower string.match string.rep string.reverse string.sub string.upper table.concat table.insert table.maxn table.pack table.remove table.sort table.unpack math.abs math.acos math.asin math.atan math.atan2 math.ceil math.cos math.cosh math.deg math.exp math.floor math.fmod math.frexp math.huge math.ldexp math.log math.log10 math.max math.min math.modf math.pi math.pow math.rad math.random math.randomseed math.sin math.sinh math.sqrt math.tan math.tanh bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift");
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD4, 0xA00000);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD4, 1);
-	SendMessage(m_sciInput, SCI_STYLESETITALIC, SCE_LUA_WORD4, 1); // keywordClass="type2"
-	SendMessage(m_sciInput, SCI_SETKEYWORDS, 3, (LPARAM)"close flush lines read seek setvbuf write clock date difftime execute exit getenv remove rename setlocale time tmpname coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield io.close io.flush io.input io.lines io.open io.output io.popen io.read io.tmpfile io.type io.write io.stderr io.stdin io.stdout os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue debug.traceback debug.upvalueid debug.upvaluejoin package.cpath package.loaded package.loaders package.loadlib package.path package.preload package.seeall");
-	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_LABEL, 0x008080);
-	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_LABEL, 1);
+
+	// Set up the styles
+	setStyles(m_sciInput);
+}
+
+void ConsoleDialog::setStyles(HWND sci) {
+	SendMessage(sci, SCI_SETCODEPAGE, 65001, 0);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_COMMENT, 0x008000);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_COMMENTLINE, 0x008000);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_COMMENTDOC, 0x808000);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_LITERALSTRING, 0x4A0095);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_PREPROCESSOR, 0x004080);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_WORD, 0xFF0000);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_WORD, 1); // keywordClass="instre1"
+	SendMessage(sci, SCI_SETKEYWORDS, 0, (LPARAM)"and break do else elseif end false for function goto if in local nil not or repeat return then true until while");
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_NUMBER, 0x0080FF);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_STRING, 0x808080);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_CHARACTER, 0x808080);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_OPERATOR, 0x800000);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_OPERATOR, 1);
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_WORD2, 0xC08000);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_WORD2, 1); // keywordClass="instre2"
+	SendMessage(sci, SCI_SETKEYWORDS, 1, (LPARAM)"_ENV _G _VERSION assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring module next pairs pcall print rawequal rawget rawlen rawset require select setfenv setmetatable tonumber tostring type unpack xpcall string table math bit32 coroutine io os debug package __index __newindex __call __add __sub __mul __div __mod __pow __unm __concat __len __eq __lt __le __gc __mode");
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_WORD3, 0xFF0080);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_WORD3, 1); // keywordClass="type1"
+	SendMessage(sci, SCI_SETKEYWORDS, 2, (LPARAM)"byte char dump find format gmatch gsub len lower rep reverse sub upper abs acos asin atan atan2 ceil cos cosh deg exp floor fmod frexp ldexp log log10 max min modf pow rad random randomseed sin sinh sqrt tan tanh arshift band bnot bor btest bxor extract lrotate lshift replace rrotate rshift shift string.byte string.char string.dump string.find string.format string.gmatch string.gsub string.len string.lower string.match string.rep string.reverse string.sub string.upper table.concat table.insert table.maxn table.pack table.remove table.sort table.unpack math.abs math.acos math.asin math.atan math.atan2 math.ceil math.cos math.cosh math.deg math.exp math.floor math.fmod math.frexp math.huge math.ldexp math.log math.log10 math.max math.min math.modf math.pi math.pow math.rad math.random math.randomseed math.sin math.sinh math.sqrt math.tan math.tanh bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift");
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_WORD4, 0xA00000);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_WORD4, 1);
+	SendMessage(sci, SCI_STYLESETITALIC, SCE_LUA_WORD4, 1); // keywordClass="type2"
+	SendMessage(sci, SCI_SETKEYWORDS, 3, (LPARAM)"close flush lines read seek setvbuf write clock date difftime execute exit getenv remove rename setlocale time tmpname coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield io.close io.flush io.input io.lines io.open io.output io.popen io.read io.tmpfile io.type io.write io.stderr io.stdin io.stdout os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue debug.traceback debug.upvalueid debug.upvaluejoin package.cpath package.loaded package.loaders package.loadlib package.path package.preload package.seeall");
+	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_LABEL, 0x008080);
+	SendMessage(sci, SCI_STYLESETBOLD, SCE_LUA_LABEL, 1);
 }
 
 LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)

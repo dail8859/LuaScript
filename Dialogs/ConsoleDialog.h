@@ -42,6 +42,7 @@ private:
 
 	void createOutputWindow(HWND hParentWindow);
 	void createInputWindow(HWND hParentWindow);
+	void setStyles(HWND sci);
 	void runStatement();
 	void stopStatement();
 
