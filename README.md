@@ -56,7 +56,7 @@ The full documentation can be found [here](/doc/doc.md). The `editor` also has a
 The code has been developed using MSVC 2013. To compile the code:
 
 1. Open the `LuaScript.sln` file
-2. Select the `Unicode Release` target
+2. Select the `Release` target
 3. Press `F7` and that's it!
 
 For convenience, MSVC automatically copies the DLL into the Notepad++ plugin directory. 

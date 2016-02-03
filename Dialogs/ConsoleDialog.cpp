@@ -351,7 +351,7 @@ void ConsoleDialog::historyNext()
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
 {
-	if (line && line[0] && line != m_history.back())
+	if (line && line[0] && !m_history.empty() && line != m_history.back())
 	{
 		m_history.push_back(tstring(line));
 		m_currentHistory = m_history.size();

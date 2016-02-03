@@ -150,4 +150,7 @@ $RECYCLE.BIN/
 .DS_Store
 
 /Unicode Release
+/Unicode Debug
+/Release
+/Debug
 /ResEdit-x64
