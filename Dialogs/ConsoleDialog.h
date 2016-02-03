@@ -28,9 +28,9 @@ public:
 	void writeError(size_t length, const char *text);
 	void clearText();
 	void setPrompt(const char *prompt);
-	HWND getScintillaHwnd() { return m_scintilla; }
+	HWND getScintillaHwnd() { return m_sciOutput; }
 
-	void giveInputFocus() { SetFocus(m_hInput); }
+	void giveInputFocus() { SetFocus(m_sciInput); }
 
 	void runEnabled(bool enabled);
 
@@ -41,6 +41,7 @@ private:
 	ConsoleDialog& operator = (const ConsoleDialog&); // assignment operator disabled
 
 	void createOutputWindow(HWND hParentWindow);
+	void createInputWindow(HWND hParentWindow);
 	void runStatement();
 	void stopStatement();
 
@@ -52,7 +53,7 @@ private:
 	void historyAdd(const TCHAR *line);
 	void historyEnd();
 
-	LRESULT callScintilla(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {	return ::SendMessage(m_scintilla, message, wParam, lParam); }
+	LRESULT callScintilla(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {	return ::SendMessage(m_sciOutput, message, wParam, lParam); }
 
 	/* Styler functions */
 	void onStyleNeeded(SCNotification* notification);
@@ -60,8 +61,8 @@ private:
 	bool parseLine(LineDetails *lineDetails);
 
 	tTbData* m_data;
-	HWND m_scintilla;
-	HWND m_hInput;
+	HWND m_sciOutput;
+	HWND m_sciInput;
 	ConsoleInterface *m_console;
 	std::string m_prompt;
 	HICON m_hTabIcon;

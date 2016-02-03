@@ -37,7 +37,6 @@
 #define IDI_ICON1                       214
 #define IDD_PROMPTDIALOG                216
 #define IDB_PYTHONPOWERED               218
-#define IDC_INPUT                       2001
 #define IDC_RUN                         2002
 #define IDC_PROMPT                      2003
 #define IDC_FILETREE                    2004

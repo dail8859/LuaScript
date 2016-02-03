@@ -18,8 +18,8 @@
 ConsoleDialog::ConsoleDialog() :
 	DockingDlgInterface(IDD_CONSOLE),
 	m_data(new tTbData),
-	m_scintilla(NULL),
-	m_hInput(NULL),
+	m_sciOutput(NULL),
+	m_sciInput(NULL),
 	m_console(NULL),
 	m_prompt("> "),
 	m_hTabIcon(NULL),
@@ -33,8 +33,8 @@ ConsoleDialog::ConsoleDialog() :
 ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	DockingDlgInterface(other),
 	m_data(other.m_data ? new tTbData(*other.m_data) : NULL),
-	m_scintilla(other.m_scintilla),
-	m_hInput(other.m_hInput),
+	m_sciOutput(other.m_sciOutput),
+	m_sciInput(other.m_sciInput),
 	m_console(other.m_console),
 	m_prompt(other.m_prompt),
 	m_hTabIcon(NULL),
@@ -49,10 +49,16 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 
 ConsoleDialog::~ConsoleDialog()
 {
-	if (m_scintilla)
+	if (m_sciOutput)
 	{
-		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_scintilla));
-		m_scintilla = NULL;
+		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_sciOutput));
+		m_sciOutput = NULL;
+	}
+
+	if (m_sciInput)
+	{
+		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_sciInput));
+		m_sciInput = NULL;
 	}
 
 	if (m_data)
@@ -73,7 +79,6 @@ ConsoleDialog::~ConsoleDialog()
 		m_hContext = NULL;
 	}
 
-	m_hInput = NULL;
 	m_console = NULL;
 
 }
@@ -84,6 +89,7 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterfa
 	
 	Window::init(hInst, nppData._nppHandle);
 	createOutputWindow(nppData._nppHandle);
+	createInputWindow(nppData._nppHandle);
 
 	m_console = console;
 	m_hContext = CreatePopupMenu();
@@ -116,28 +122,27 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 	{
 		case WM_INITDIALOG:
 			{
-				SetParent(m_scintilla, _hSelf);
-				ShowWindow(m_scintilla, SW_SHOW);
-				m_hInput = ::GetDlgItem(_hSelf, IDC_INPUT);
+				SetParent(m_sciOutput, _hSelf);
+				ShowWindow(m_sciOutput, SW_SHOW);
+				SetParent(m_sciInput, _hSelf);
+				ShowWindow(m_sciInput, SW_SHOW);
 				HFONT hCourier = CreateFont(14,0,0,0,FW_DONTCARE,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, FIXED_PITCH, _T("Courier New"));
 				if (hCourier != NULL)
 				{
-					SendMessage(m_hInput, WM_SETFONT, reinterpret_cast<WPARAM>(hCourier), TRUE); 
 					SendMessage(::GetDlgItem(_hSelf, IDC_PROMPT), WM_SETFONT, reinterpret_cast<WPARAM>(hCourier), TRUE); 
 				}
 
 				// Subclass some stuff
-				SetWindowSubclass(m_hInput, ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
-				SetWindowSubclass(m_scintilla, ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
-				::SetFocus(m_hInput);
+				SetWindowSubclass(m_sciInput, ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
+				SetWindowSubclass(m_sciOutput, ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
+				::SetFocus(m_sciInput);
 				return FALSE;
 			}
 		case WM_SIZE:
-			MoveWindow(m_scintilla, 0, 0, LOWORD(lParam), HIWORD(lParam)-30, TRUE);
+			MoveWindow(m_sciOutput, 0, 0, LOWORD(lParam), HIWORD(lParam)-30, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_PROMPT), 0, HIWORD(lParam)-25, 30, 25, TRUE);
-			MoveWindow(m_hInput, 30, HIWORD(lParam)-30, LOWORD(lParam) - 85, 25, TRUE);
+			MoveWindow(m_sciInput, 30, HIWORD(lParam) - 30, LOWORD(lParam) - 85, 25, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), LOWORD(lParam) - 50, HIWORD(lParam) - 30, 50, 25, TRUE);  
-			// ::SendMessage(m_scintilla, WM_SIZE, 0, MAKEWORD(LOWORD(lParam) - 10, HIWORD(lParam) - 30));
 			return FALSE;
 
 		case WM_CONTEXTMENU:
@@ -227,7 +232,7 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 		case WM_NOTIFY:
 			{
 				LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
-				if (m_scintilla == nmhdr->hwndFrom)
+				if (m_sciOutput == nmhdr->hwndFrom)
 				{
 					switch(nmhdr->code)
 					{
@@ -259,23 +264,22 @@ void ConsoleDialog::historyPrevious()
 {
 	if (m_currentHistory > 0)
 	{
-		size_t length = GetWindowTextLength(m_hInput);
-		TCHAR *buffer = new TCHAR[length + 1];
-		GetWindowText(m_hInput, buffer, length + 1);
-		
+		const char *text = (const char *)SendMessage(m_sciInput, SCI_GETCHARACTERPOINTER, 0, 0);
+		auto wtext = WcharMbcsConverter::char2tchar(text);
+
 		// Not an empty string and different from orig
-		if (buffer[0] && (m_historyIter == m_history.end() || *m_historyIter != buffer)) 
+		if (wtext.get()[0] && (m_historyIter == m_history.end() || *m_historyIter != wtext.get()))
 		{
 			if (m_changes.find(m_currentHistory) == m_changes.end())
 			{
-				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(buffer)));
+				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(wtext.get())));
 			}
 			else
 			{
-				m_changes[m_currentHistory] = tstring(buffer);
+				m_changes[m_currentHistory] = tstring(wtext.get());
 			}
 		}
-		delete [] buffer;
+		//delete[] buffer;
 
 		--m_currentHistory;
 		--m_historyIter;
@@ -283,14 +287,16 @@ void ConsoleDialog::historyPrevious()
 		// If there's no changes to the line, just copy the original
 		if (m_changes.find(m_currentHistory) == m_changes.end())
 		{
-			::SetWindowText(m_hInput, m_historyIter->c_str());
-			::SendMessage(m_hInput, EM_SETSEL, m_historyIter->size(), (LPARAM)m_historyIter->size());
+			SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_historyIter->c_str()).get());
+			// Go to end?
+			SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 		}
 		else
 		{
 			// Set it as the changed string
-			::SetWindowText(m_hInput, m_changes[m_currentHistory].c_str());
-			::SendMessage(m_hInput, EM_SETSEL, m_changes[m_currentHistory].size(), (LPARAM)m_changes[m_currentHistory].size());
+			SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_changes[m_currentHistory].c_str()).get());
+			// Go to end?
+			SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 		}
 
 	}
@@ -300,24 +306,22 @@ void ConsoleDialog::historyNext()
 {
 	if (static_cast<size_t>(m_currentHistory) < m_history.size())
 	{
-		int length = GetWindowTextLength(m_hInput);
-		TCHAR *buffer = new TCHAR[length + 1];
-		GetWindowText(m_hInput, buffer, length + 1);
-
+		const char *text = (const char *)SendMessage(m_sciInput, SCI_GETCHARACTERPOINTER, 0, 0);
+		auto wtext = WcharMbcsConverter::char2tchar(text);
 
 		// Not an empty string and different from orig
-		if (buffer[0] && *m_historyIter != buffer) 
+		if (wtext.get()[0] && *m_historyIter != wtext.get())
 		{
 			if (m_changes.find(m_currentHistory) == m_changes.end())
 			{
-				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(buffer)));
+				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(wtext.get())));
 			}
 			else
 			{
-				m_changes[m_currentHistory] = tstring(buffer);
+				m_changes[m_currentHistory] = tstring(wtext.get());
 			}
 		}
-		delete [] buffer;
+		//delete[] buffer;
 
 		++m_currentHistory;
 		++m_historyIter;
@@ -327,19 +331,19 @@ void ConsoleDialog::historyNext()
 		{
 			if (m_historyIter != m_history.end())
 			{
-				::SetWindowText(m_hInput, m_historyIter->c_str());
-				::SendMessage(m_hInput, EM_SETSEL, m_historyIter->size(), (LPARAM)m_historyIter->size());
+				SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_historyIter->c_str()).get());
+				SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 			}
 			else
 			{
-				::SetWindowTextA(m_hInput, "");
+				SendMessage(m_sciInput, SCI_CLEARALL, 0, 0);
 			}
 		}
 		else
 		{
 			// Set it as the changed string
-			::SetWindowText(m_hInput, m_changes[m_currentHistory].c_str());
-			::SendMessage(m_hInput, EM_SETSEL, m_changes[m_currentHistory].size(), (LPARAM)m_changes[m_currentHistory].size());
+			SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_changes[m_currentHistory].c_str()).get());
+			SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 		}
 	}
 }
@@ -361,35 +365,33 @@ void ConsoleDialog::historyEnd()
 {
 	m_currentHistory = m_history.size();
 	m_historyIter = m_history.end();
-	::SetWindowText(m_hInput, _T(""));
+	SendMessage(m_sciInput, SCI_CLEARALL, 0, 0);
 }
-
 
 LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	ConsoleDialog *cd = reinterpret_cast<ConsoleDialog *>(dwRefData);
-	switch (uMsg)
-	{
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_UP:
-			cd->historyPrevious();
-			return FALSE;
-		case VK_DOWN:
-			cd->historyNext();
-			return FALSE;
-		}
-	case WM_KEYUP:
-		switch (wParam)
-		{
-		case VK_RETURN:
-			cd->runStatement();
-			return FALSE;
-		case VK_ESCAPE:
-			cd->historyEnd();
-			return FALSE;
-		}
+	switch (uMsg) {
+		case WM_GETDLGCODE:
+			return DLGC_WANTARROWS | DLGC_WANTCHARS;
+		case WM_KEYDOWN:
+			switch (wParam) {
+				case VK_UP:
+					cd->historyPrevious();
+					return FALSE;
+				case VK_DOWN:
+					cd->historyNext();
+					return FALSE;
+			}
+		case WM_KEYUP:
+			switch (wParam) {
+				case VK_RETURN:
+					cd->runStatement();
+					return FALSE;
+				case VK_ESCAPE:
+					cd->historyEnd();
+					return FALSE;
+			}
 	}
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -399,19 +401,13 @@ void ConsoleDialog::runStatement()
 	assert(m_console != NULL);
 	if (m_console)
 	{
-		HWND hText = ::GetDlgItem(_hSelf, IDC_INPUT);
-		size_t length = GetWindowTextLengthW(hText);
-		TCHAR *buffer = new TCHAR[length + 1];
-		GetWindowText(hText, buffer, length + 1);
-		historyAdd(buffer);
-		std::shared_ptr<char> charBuffer = WcharMbcsConverter::tchar2char(buffer);
-		delete [] buffer;
-
+		const char *text = (const char *)SendMessage(m_sciInput, SCI_GETCHARACTERPOINTER, 0, 0);
 		writeText(m_prompt.size(), m_prompt.c_str());
-		writeText(strlen(charBuffer.get()), charBuffer.get());
-		writeText(1, "\n");
-		SetWindowText(hText, _T(""));
-		m_console->runStatement(charBuffer.get());
+		writeText(strlen(text), text);
+		writeText(2, "\r\n");
+		historyAdd(WcharMbcsConverter::char2tchar(text).get());
+		m_console->runStatement(text);
+		SendMessage(m_sciInput, SCI_CLEARALL, 0, 0);
 	}
 }
 
@@ -435,10 +431,10 @@ void ConsoleDialog::setPrompt(const char *prompt)
 
 void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 {
-	m_scintilla = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
+	m_sciOutput = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
 	
-	LONG currentStyle = GetWindowLong(m_scintilla, GWL_STYLE);
-	SetWindowLong(m_scintilla, GWL_STYLE, currentStyle | WS_TABSTOP);
+	LONG currentStyle = GetWindowLong(m_sciOutput, GWL_STYLE);
+	SetWindowLong(m_sciOutput, GWL_STYLE, currentStyle | WS_TABSTOP);
 
 	callScintilla(SCI_SETREADONLY, 1, 0);
 
@@ -494,6 +490,41 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 	callScintilla(SCI_SETLEXER, SCLEX_CONTAINER);
 }
 
+void ConsoleDialog::createInputWindow(HWND hParentWindow) {
+	m_sciInput = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
+	LONG currentStyle = GetWindowLong(m_sciInput, GWL_STYLE);
+	SetWindowLong(m_sciInput, GWL_STYLE, currentStyle | WS_TABSTOP);
+	SendMessage(m_sciInput, SCI_SETMARGINWIDTHN, 1, 0);
+
+	// Set it as a Lua lexer and use the style from Notepad++
+	SendMessage(m_sciInput, SCI_SETLEXER, SCLEX_LUA, 0);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENT, 0x008000);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENTLINE, 0x008000);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_COMMENTDOC, 0x808000);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_LITERALSTRING, 0x4A0095);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_PREPROCESSOR, 0x004080);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD, 0xFF0000);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD, 1); // keywordClass="instre1"
+	SendMessage(m_sciInput, SCI_SETKEYWORDS, 0, (LPARAM)"and break do else elseif end false for function goto if in local nil not or repeat return then true until while");
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_NUMBER, 0x0080FF);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_STRING, 0x808080);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_CHARACTER, 0x808080);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_OPERATOR, 0x800000);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_OPERATOR, 1);
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD2, 0xC08000);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD2, 1); // keywordClass="instre2"
+	SendMessage(m_sciInput, SCI_SETKEYWORDS, 1, (LPARAM)"_ENV _G _VERSION assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring module next pairs pcall print rawequal rawget rawlen rawset require select setfenv setmetatable tonumber tostring type unpack xpcall string table math bit32 coroutine io os debug package __index __newindex __call __add __sub __mul __div __mod __pow __unm __concat __len __eq __lt __le __gc __mode");
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD3, 0xFF0080);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD3, 1); // keywordClass="type1"
+	SendMessage(m_sciInput, SCI_SETKEYWORDS, 2, (LPARAM)"byte char dump find format gmatch gsub len lower rep reverse sub upper abs acos asin atan atan2 ceil cos cosh deg exp floor fmod frexp ldexp log log10 max min modf pow rad random randomseed sin sinh sqrt tan tanh arshift band bnot bor btest bxor extract lrotate lshift replace rrotate rshift shift string.byte string.char string.dump string.find string.format string.gmatch string.gsub string.len string.lower string.match string.rep string.reverse string.sub string.upper table.concat table.insert table.maxn table.pack table.remove table.sort table.unpack math.abs math.acos math.asin math.atan math.atan2 math.ceil math.cos math.cosh math.deg math.exp math.floor math.fmod math.frexp math.huge math.ldexp math.log math.log10 math.max math.min math.modf math.pi math.pow math.rad math.random math.randomseed math.sin math.sinh math.sqrt math.tan math.tanh bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift");
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_WORD4, 0xA00000);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_WORD4, 1);
+	SendMessage(m_sciInput, SCI_STYLESETITALIC, SCE_LUA_WORD4, 1); // keywordClass="type2"
+	SendMessage(m_sciInput, SCI_SETKEYWORDS, 3, (LPARAM)"close flush lines read seek setvbuf write clock date difftime execute exit getenv remove rename setlocale time tmpname coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield io.close io.flush io.input io.lines io.open io.output io.popen io.read io.tmpfile io.type io.write io.stderr io.stdin io.stdout os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue debug.traceback debug.upvalueid debug.upvaluejoin package.cpath package.loaded package.loaders package.loadlib package.path package.preload package.seeall");
+	SendMessage(m_sciInput, SCI_STYLESETFORE, SCE_LUA_LABEL, 0x008080);
+	SendMessage(m_sciInput, SCI_STYLESETBOLD, SCE_LUA_LABEL, 1);
+}
+
 LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	// No idea what this does, but it seems to help a bit.
@@ -503,12 +534,12 @@ LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wP
 
 void ConsoleDialog::writeText(size_t length, const char *text)
 {
-	::SendMessage(m_scintilla, SCI_SETREADONLY, 0, 0);
+	::SendMessage(m_sciOutput, SCI_SETREADONLY, 0, 0);
 	for (idx_t i = 0; i < length; ++i)
 	{
 		if (text[i] == '\r')
 		{
-			::SendMessage(m_scintilla, SCI_APPENDTEXT, i, reinterpret_cast<LPARAM>(text));
+			::SendMessage(m_sciOutput, SCI_APPENDTEXT, i, reinterpret_cast<LPARAM>(text));
 			text += i + 1;
 			length -= i + 1;
 			i = 0;
@@ -517,12 +548,12 @@ void ConsoleDialog::writeText(size_t length, const char *text)
 	
 	if (length > 0)
 	{
-		::SendMessage(m_scintilla, SCI_APPENDTEXT, length, reinterpret_cast<LPARAM>(text));
+		::SendMessage(m_sciOutput, SCI_APPENDTEXT, length, reinterpret_cast<LPARAM>(text));
 	}
 
-	::SendMessage(m_scintilla, SCI_SETREADONLY, 1, 0);
+	::SendMessage(m_sciOutput, SCI_SETREADONLY, 1, 0);
 	
-	::SendMessage(m_scintilla, SCI_GOTOPOS, ::SendMessage(m_scintilla, SCI_GETLENGTH, 0, 0), 0);
+	::SendMessage(m_sciOutput, SCI_GOTOPOS, ::SendMessage(m_sciOutput, SCI_GETLENGTH, 0, 0), 0);
 	
 }
 
@@ -608,15 +639,15 @@ void ConsoleDialog::runEnabled(bool enabled)
 	{
 		::SetForegroundWindow(_hSelf);
 		//::SetActiveWindow(_hSelf);
-		::SetFocus(m_hInput);
+		::SetFocus(m_sciInput);
 	}
 }
 
 void ConsoleDialog::clearText()
 {
-	::SendMessage(m_scintilla, SCI_SETREADONLY, 0, 0);
-	::SendMessage(m_scintilla, SCI_CLEARALL, 0, 0);
-	::SendMessage(m_scintilla, SCI_SETREADONLY, 1, 0);
+	::SendMessage(m_sciOutput, SCI_SETREADONLY, 0, 0);
+	::SendMessage(m_sciOutput, SCI_CLEARALL, 0, 0);
+	::SendMessage(m_sciOutput, SCI_SETREADONLY, 1, 0);
 }
 
 void ConsoleDialog::onStyleNeeded(SCNotification* notification)
