@@ -442,6 +442,7 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 
 	callScintilla(SCI_SETREADONLY, 1, 0);
 	callScintilla(SCI_USEPOPUP, 0);
+	callScintilla(SCI_SETLEXER, SCLEX_NULL);
 
 	// Set up the styles
 	setStyles(m_sciOutput);
@@ -464,6 +465,21 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 }
 
 void ConsoleDialog::setStyles(HWND sci) {
+	SendMessage(sci, SCI_SETEOLMODE, SC_EOL_CRLF, 0);
+
+	SendMessage(sci, SCI_STYLESETFORE, STYLE_DEFAULT, 0x000000);
+	SendMessage(sci, SCI_STYLESETBACK, STYLE_DEFAULT, 0xFFFFFF);
+	SendMessage(sci, SCI_STYLECLEARALL, 0, 0);
+
+	// Remove all margins
+	SendMessage(sci, SCI_SETMARGINWIDTHN, 0, 0);
+	SendMessage(sci, SCI_SETMARGINWIDTHN, 1, 0);
+	SendMessage(sci, SCI_SETMARGINWIDTHN, 2, 0);
+	SendMessage(sci, SCI_SETMARGINWIDTHN, 3, 0);
+	SendMessage(sci, SCI_SETMARGINWIDTHN, 4, 0);
+
+	SendMessage(sci, SCI_SETMARGINLEFT, 0, 2);
+
 	SendMessage(sci, SCI_SETCODEPAGE, 65001, 0);
 	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_COMMENT, 0x008000);
 	SendMessage(sci, SCI_STYLESETFORE, SCE_LUA_COMMENTLINE, 0x008000);

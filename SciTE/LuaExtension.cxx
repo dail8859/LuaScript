@@ -717,7 +717,7 @@ static int cf_global_print(lua_State *L) {
 		}
 	}
 
-	host->Trace("\n");
+	host->Trace("\r\n");
 	return 0;
 }
 
@@ -757,11 +757,11 @@ static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValu
 		} else {
 			lua_pop(L, 1);
 			if (result == LUA_ERRMEM) {
-				host->Trace("> Lua: memory allocation error\n");
+				host->Trace("> Lua: memory allocation error\r\n");
 			} else if (result == LUA_ERRERR) {
-				host->Trace("> Lua: an error occurred, but cannot be reported due to failure in _TRACEBACK\n");
+				host->Trace("> Lua: an error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
 			} else {
-				host->Trace("> Lua: unexpected error\n");
+				host->Trace("> Lua: unexpected error\r\n");
 			}
 		}
 	}
@@ -1188,7 +1188,7 @@ static int LuaPanicFunction(lua_State *L) {
 		luaState = NULL;
 		luaDisabled = true;
 	}
-	host->Trace("\n> Lua: error occurred in unprotected call.  This is very bad.\n");
+	host->Trace("\r\n> Lua: error occurred in unprotected call.  This is very bad.\r\n");
 	return 1;
 }
 
@@ -1299,7 +1299,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		luaState = lua_open();
 		if (!luaState) {
 			luaDisabled = true;
-			host->Trace("> Lua: scripting engine failed to initialise\n");
+			host->Trace("> Lua: scripting engine failed to initialise\r\n");
 			return false;
 		}
 		lua_atpanic(luaState, LuaPanicFunction);
@@ -1406,7 +1406,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		if (fpTest.Exists()) {
 			luaL_loadfile(luaState, startupScript.c_str());
 			if (!call_function(luaState, 0, true)) {
-				host->Trace("> Lua: error occurred while loading startup script\n");
+				host->Trace("> Lua: error occurred while loading startup script\r\n");
 			}
 		}
 	}
@@ -1477,7 +1477,7 @@ bool LuaExtension::Load(const char *filename) {
 				extensionScript = filename;
 				luaL_loadfile(luaState, filename);
 				if (!call_function(luaState, 0, true)) {
-					host->Trace("> Lua: error occurred while loading extension script\n");
+					host->Trace("> Lua: error occurred while loading extension script\r\n");
 				}
 				loaded = true;
 			}
