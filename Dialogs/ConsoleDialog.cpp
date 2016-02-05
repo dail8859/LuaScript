@@ -459,6 +459,8 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 
 	// Set up the styles
 	setStyles(m_sciInput);
+
+	SendMessage(m_sciInput, SCI_SETHSCROLLBAR, 0, 0);
 }
 
 void ConsoleDialog::setStyles(HWND sci) {
