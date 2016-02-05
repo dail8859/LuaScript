@@ -125,7 +125,10 @@ void editStartupScript() {
 static void runCurrentFile() {
 	updateScintilla();
 	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
-	if (LuaExtension::Instance().RunString(doc) == false) g_console->showDialog();
+	if (LuaExtension::Instance().RunString(doc) == false) {
+		g_console->showDialog();
+		SendScintilla(SCI_GRABFOCUS);
+	}
 }
 
 void showSettings() {
