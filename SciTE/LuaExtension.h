@@ -27,6 +27,8 @@ public:
 	virtual bool ActivateBuffer(int);
 	virtual bool RemoveBuffer(int);
 
+	bool RunString(const char *s);
+
 	virtual bool OnOpen(const char *filename);
 	virtual bool OnSwitchFile(const char *filename);
 	virtual bool OnBeforeSave(const char *filename);

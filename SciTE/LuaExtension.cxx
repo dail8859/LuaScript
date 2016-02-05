@@ -1566,10 +1566,34 @@ bool LuaExtension::RemoveBuffer(int index) {
 	return false;
 }
 
+
+
 /* mark in error messages for incomplete statements */
 #define EOFMARK         "<eof>"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 #define LUA_OK          0
+bool LuaExtension::RunString(const char *s) {
+	if (luaState || InitGlobalScope(false)) {
+		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
+		//if (status != 0) lua_pop(luaState, 1);
+
+		if (status == LUA_OK) {
+			status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
+		}
+
+		if (status != LUA_OK) {
+			// Print an error message
+			host->Trace(lua_tostring(luaState, -1));
+			host->Trace("\r\n");
+			lua_settop(luaState, 0); /* clear stack */
+			return false;
+		}
+
+		lua_settop(luaState, 0); /* clear stack */
+	}
+
+	return true;
+}
 bool LuaExtension::OnExecute(const char *s) {
 	static bool isFirstLine = true;
 	static std::string chunk;

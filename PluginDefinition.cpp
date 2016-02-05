@@ -124,9 +124,8 @@ void editStartupScript() {
 
 static void runCurrentFile() {
 	updateScintilla();
-	// NOTE: potential bug if multi-line chunk is still being processed by the console
 	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
-	LuaExtension::Instance().OnExecute(doc);
+	if (LuaExtension::Instance().RunString(doc) == false) g_console->showDialog();
 }
 
 void showSettings() {
