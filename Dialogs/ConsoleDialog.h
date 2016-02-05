@@ -61,7 +61,7 @@ private:
 	void onHotspotClick(SCNotification* notification);
 	bool parseLine(LineDetails *lineDetails);
 
-	tTbData* m_data;
+	tTbData m_data;
 	HWND m_sciOutput;
 	HWND m_sciInput;
 	ConsoleInterface *m_console;

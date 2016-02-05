@@ -17,7 +17,6 @@
 
 ConsoleDialog::ConsoleDialog() :
 	DockingDlgInterface(IDD_CONSOLE),
-	m_data(new tTbData),
 	m_sciOutput(NULL),
 	m_sciInput(NULL),
 	m_console(NULL),
@@ -32,7 +31,7 @@ ConsoleDialog::ConsoleDialog() :
 
 ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	DockingDlgInterface(other),
-	m_data(other.m_data ? new tTbData(*other.m_data) : NULL),
+	m_data(other.m_data),
 	m_sciOutput(other.m_sciOutput),
 	m_sciInput(other.m_sciInput),
 	m_console(other.m_console),
@@ -59,12 +58,6 @@ ConsoleDialog::~ConsoleDialog()
 	{
 		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_sciInput));
 		m_sciInput = NULL;
-	}
-
-	if (m_data)
-	{
-		delete m_data;
-		m_data = NULL;
 	}
 
 	if (m_hTabIcon)
@@ -114,6 +107,8 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterfa
 	mi.wID = 4;
 	mi.dwTypeData = _T("To Input");
 	InsertMenuItem(m_hContext, 4, TRUE, &mi);
+
+	ZeroMemory(&m_data, sizeof(m_data));
 }
 
 BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -288,14 +283,12 @@ void ConsoleDialog::historyPrevious()
 		if (m_changes.find(m_currentHistory) == m_changes.end())
 		{
 			SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_historyIter->c_str()).get());
-			// Go to end?
 			SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 		}
 		else
 		{
 			// Set it as the changed string
 			SendMessage(m_sciInput, SCI_SETTEXT, 0, (LPARAM)WcharMbcsConverter::tchar2char(m_changes[m_currentHistory].c_str()).get());
-			// Go to end?
 			SendMessage(m_sciInput, SCI_GOTOPOS, SendMessage(m_sciInput, SCI_GETLENGTH, 0, 0), 0);
 		}
 
@@ -568,29 +561,23 @@ void ConsoleDialog::doDialog()
 {
 	if (!isCreated())
 	{
-		create(m_data);
+		//create(m_data);
+		StaticDialog::create(_dlgID);
 
-		assert(m_data);
-		if (m_data)
-		{
-			// define the default docking behaviour
-			m_data->uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
-			//m_data->pszName = _T("Lua");
-		
-			//m_hTabIcon = (HICON)::LoadImage(_hInst, MAKEINTRESOURCE(IDI_PYTHON8), IMAGE_ICON, 16, 16, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
-			//m_data->hIconTab			= m_hTabIcon;
-			m_data->pszModuleName	= _T("LuaScript.dll");
-			m_data->dlgID			= -1; /* IDD_CONSOLE */
-			m_data->pszAddInfo		= NULL; //_pExProp->szCurrentPath;
-			m_data->iPrevCont		= -1;
-			m_data->hClient			= _hSelf;
+		m_data.hClient			= _hSelf;
+		m_data.uMask = DWS_DF_CONT_BOTTOM;
+		m_data.pszName = TEXT("LuaScript");
+		m_data.pszAddInfo = NULL;
+		m_data.pszModuleName = TEXT("LuaScript.dll");
+		m_data.dlgID = -1; // -1? IDD_CONSOLE?
+		m_data.iPrevCont = -1;
 
+		//SetWindowPos(_hSelf, 0, 0, 0, 200, 400, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-			::SendMessage(_hParent, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(m_data));
+		::SendMessage(_hParent, NPPM_DMMREGASDCKDLG, 0, (LPARAM)&m_data);
 
-			// Parse the whole doc, in case we've had errors that haven't been parsed yet
-			callScintilla(SCI_COLOURISE, 0, -1);
-		}
+		// Parse the whole doc, in case we've had errors that haven't been parsed yet
+		callScintilla(SCI_COLOURISE, 0, -1);
 	}
 
 	display(true);
