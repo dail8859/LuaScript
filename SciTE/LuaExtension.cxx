@@ -15,14 +15,11 @@
 #include "Scintilla.h"
 
 #include "GUI.h"
-#include "StringHelpers.h"
-#include "FilePath.h"
 #include "StyleWriter.h"
 #include "Extender.h"
 #include "LuaExtension.h"
 
 #include "IFaceTable.h"
-//#include "SciTEKeys.h"
 
 extern "C" {
 #include "lua.h"
@@ -37,6 +34,34 @@ extern "C" {
 #pragma warning(disable: 4702)
 
 #endif
+
+
+// Helper function from SciTE
+static int Substitute(std::string &s, const std::string &sFind, const std::string &sReplace) {
+	int c = 0;
+	size_t lenFind = sFind.size();
+	size_t lenReplace = sReplace.size();
+	size_t posFound = s.find(sFind);
+	while (posFound != std::string::npos) {
+		s.replace(posFound, lenFind, sReplace);
+		posFound = s.find(sFind, posFound + lenReplace);
+		c++;
+	}
+	return c;
+}
+
+// Helper function from SciTE
+static bool Exists(const char *fileName) {
+	bool ret = false;
+	if (fileName && fileName[0]) {
+		FILE *fp = fopen(fileName, "rb");
+		if (fp) {
+			ret = true;
+			fclose(fp);
+		}
+	}
+	return ret;
+}
 
 
 // A note on naming conventions:
@@ -1402,8 +1427,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		// that should be blocked during startup, e.g. the ones that allow
 		// you to add or switch buffers?
 
-		FilePath fpTest(GUI::StringFromUTF8(startupScript));
-		if (fpTest.Exists()) {
+		if (Exists(startupScript.c_str())) {
 			luaL_loadfile(luaState, startupScript.c_str());
 			if (!call_function(luaState, 0, true)) {
 				host->Trace("> Lua: error occurred while loading startup script\r\n");
@@ -1689,6 +1713,7 @@ bool LuaExtension::OnBeforeSave(const char *filename) {
 bool LuaExtension::OnSave(const char *filename) {
 	bool result = CallNamedFunction("OnSave", filename);
 
+#if 0
 	FilePath fpSaving = FilePath(GUI::StringFromUTF8(filename)).NormalizePath();
 	if (startupScript.length() && fpSaving == FilePath(GUI::StringFromUTF8(startupScript)).NormalizePath()) {
 		if (GetPropertyInt("ext.lua.auto.reload") > 0) {
@@ -1697,12 +1722,15 @@ bool LuaExtension::OnSave(const char *filename) {
 				Load(extensionScript.c_str());
 			}
 		}
-	} else if (extensionScript.length() && 0 == strcmp(filename, extensionScript.c_str())) {
+	}
+	else if (extensionScript.length() && 0 == strcmp(filename, extensionScript.c_str())) {
 		if (GetPropertyInt("ext.lua.auto.reload") > 0) {
 			InitGlobalScope(false, false);
 			Load(extensionScript.c_str());
 		}
 	}
+#endif // 0
+
 
 	return result;
 }

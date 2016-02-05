@@ -123,11 +123,9 @@
     <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
-    <ClCompile Include="SciTE\FilePath.cxx" />
     <ClCompile Include="SciTE\GUIWin.cxx" />
     <ClCompile Include="SciTE\IFaceTable.cxx" />
     <ClCompile Include="SciTE\LuaExtension.cxx" />
-    <ClCompile Include="SciTE\StringHelpers.cxx" />
     <ClCompile Include="SciTE\StyleWriter.cxx" />
     <ClCompile Include="Utilities\WcharMbcsConverter.cpp" />
   </ItemGroup>
@@ -151,11 +149,9 @@
     <ClInclude Include="Npp\Scintilla.h" />
     <ClInclude Include="PluginDefinition.h" />
     <ClInclude Include="SciTE\Extender.h" />
-    <ClInclude Include="SciTE\FilePath.h" />
     <ClInclude Include="SciTE\GUI.h" />
     <ClInclude Include="SciTE\IFaceTable.h" />
     <ClInclude Include="SciTE\LuaExtension.h" />
-    <ClInclude Include="SciTE\StringHelpers.h" />
     <ClInclude Include="SciTE\StyleWriter.h" />
     <ClInclude Include="Utilities\WcharMbcsConverter.h" />
     <ClInclude Include="Version.h" />
