@@ -146,8 +146,7 @@ public:
 		fn = 0;
 		ptr = 0;
 		if (wid) {
-			fn = reinterpret_cast<SciFnDirect>(
-				Send(SCI_GETDIRECTFUNCTION, 0, 0));
+			fn = reinterpret_cast<SciFnDirect>(Send(SCI_GETDIRECTFUNCTION, 0, 0));
 			ptr = Send(SCI_GETDIRECTPOINTER, 0, 0);
 		}
 	}

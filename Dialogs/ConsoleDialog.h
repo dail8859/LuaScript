@@ -3,6 +3,8 @@
 
 #include "DockingDlgInterface.h"
 #include "ConsoleInterface.h"
+#include "Scintilla.h"
+#include "GUI.h"
 
 #include <list>
 #include <map>
@@ -28,9 +30,9 @@ public:
 	void writeError(size_t length, const char *text);
 	void clearText();
 	void setPrompt(const char *prompt);
-	HWND getScintillaHwnd() { return m_sciOutput; }
+	HWND getScintillaHwnd() { return (HWND)m_sciOutput.GetID(); }
 
-	void giveInputFocus() { SetFocus(m_sciInput); }
+	void giveInputFocus() { SetFocus((HWND)m_sciInput.GetID()); }
 
 	void runEnabled(bool enabled);
 
@@ -54,16 +56,15 @@ private:
 	void historyAdd(const TCHAR *line);
 	void historyEnd();
 
-	LRESULT callScintilla(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {	return ::SendMessage(m_sciOutput, message, wParam, lParam); }
-
 	/* Styler functions */
 	void onStyleNeeded(SCNotification* notification);
 	void onHotspotClick(SCNotification* notification);
 	bool parseLine(LineDetails *lineDetails);
 
 	tTbData m_data;
-	HWND m_sciOutput;
-	HWND m_sciInput;
+	GUI::ScintillaWindow  m_sciOutput;
+	GUI::ScintillaWindow  m_sciInput;
+
 	ConsoleInterface *m_console;
 	std::string m_prompt;
 	HICON m_hTabIcon;
