@@ -74,8 +74,6 @@ private:
 	std::map<idx_t, tstring> m_changes;
 	idx_t m_currentHistory;
 	bool m_runButtonIsRun;
-
-	HMENU m_hContext;
 };
 
 enum ErrorLevel

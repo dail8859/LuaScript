@@ -21,8 +21,7 @@ ConsoleDialog::ConsoleDialog() :
 	m_prompt("> "),
 	m_hTabIcon(NULL),
 	m_currentHistory(0),
-	m_runButtonIsRun(true),
-	m_hContext(NULL)
+	m_runButtonIsRun(true)
 {
 	m_historyIter = m_history.end();
 }
@@ -37,8 +36,7 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_historyIter(other.m_historyIter),
 	m_changes(other.m_changes),
 	m_currentHistory(other.m_currentHistory),
-	m_runButtonIsRun(other.m_runButtonIsRun),
-	m_hContext(NULL)
+	m_runButtonIsRun(other.m_runButtonIsRun)
 {
 }
 
@@ -63,12 +61,6 @@ ConsoleDialog::~ConsoleDialog()
 		m_hTabIcon = NULL;
 	}
 
-	if (m_hContext)
-	{
-		::DestroyMenu(m_hContext);
-		m_hContext = NULL;
-	}
-
 	m_console = NULL;
 
 }
@@ -82,28 +74,6 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterfa
 	createInputWindow(nppData._nppHandle);
 
 	m_console = console;
-	m_hContext = CreatePopupMenu();
-	MENUITEMINFO mi;
-	mi.cbSize = sizeof(mi);
-	mi.fMask = MIIM_ID | MIIM_STRING;
-	mi.fType = MFT_STRING;
-	mi.fState = MFS_ENABLED;
-
-	mi.wID = 1;
-	mi.dwTypeData = _T("Select all");
-	InsertMenuItem(m_hContext, 0, TRUE, &mi);
-
-	mi.wID = 2;
-	mi.dwTypeData = _T("Copy");
-	InsertMenuItem(m_hContext, 1, TRUE, &mi);
-
-	mi.wID = 3;
-	mi.dwTypeData = _T("Clear");
-	InsertMenuItem(m_hContext, 3, TRUE, &mi);
-
-	mi.wID = 4;
-	mi.dwTypeData = _T("To Input");
-	InsertMenuItem(m_hContext, 4, TRUE, &mi);
 
 	ZeroMemory(&m_data, sizeof(m_data));
 }
@@ -137,53 +107,6 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), LOWORD(lParam) - 50, HIWORD(lParam) - 30, 50, 25, TRUE);  
 			return FALSE;
 
-		case WM_CONTEXTMENU:
-			{
-				MENUITEMINFO mi;
-				mi.cbSize = sizeof(mi);
-				mi.fMask = MIIM_STATE;
-				if (0 == (m_sciOutput.Send(SCI_GETSELECTIONSTART) - m_sciOutput.Send(SCI_GETSELECTIONEND)))
-				{
-					mi.fState = MFS_DISABLED;
-				}
-				else
-				{
-					mi.fState = MFS_ENABLED;
-				}
-				
-				SetMenuItemInfo(m_hContext, 2, FALSE, &mi);
-
-				// Thanks MS for corrupting the value of BOOL. :-/
-				// From the documentation (http://msdn.microsoft.com/en-us/library/ms648002.aspx):
-				//
-				//    If you specify TPM_RETURNCMD in the uFlags parameter, the return value is the menu-item 
-				//    identifier of the item that the user selected. If the user cancels the menu without making 
-				//    a selection, or if an error occurs, then the return value is zero.
-				INT cmdID = (INT)TrackPopupMenu(m_hContext, TPM_RETURNCMD, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 0, _hSelf, NULL);
-
-				switch(cmdID)
-				{
-					case 1: // Select All
-						m_sciOutput.Send(SCI_SELECTALL);
-						break;
-
-					case 2: // Copy
-						m_sciOutput.Send(SCI_COPY);
-						break;
-
-					case 3: // Clear
-						clearText();
-						break;
-
-					case 4: // To input (TODO: TEST only!)
-						giveInputFocus();
-						break;
-
-					default:
-						break;
-				}
-			}
-			break;
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDC_RUN)
 			{
@@ -202,11 +125,6 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 				return FALSE;
 			}
 			break;
-
-		case WM_SETFOCUS:
-			//giveInputFocus();
-			OutputDebugString(_T("ConsoleDialog SetFocus\r\n"));
-			return FALSE;
 
 		case WM_ACTIVATE:
 			if (wParam == WA_ACTIVE)
@@ -248,7 +166,6 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 	}
 
 	return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
-
 }
 
 
@@ -691,7 +608,6 @@ void ConsoleDialog::onStyleNeeded(SCNotification* notification)
 			}
 
 			delete[] lineDetails.line;
-			
 		}
 	}
 
