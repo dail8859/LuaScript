@@ -49,7 +49,7 @@ public:
 		mp_consoleDlg->initDialog(hInst, nppData, this);
 		*m_nppData = nppData;
 
-		const char *msg = LUA_RELEASE "  " LUA_COPYRIGHT "\r\n\r\n";
+		const char *msg = LUA_COPYRIGHT "\r\n\r\n";
 		mp_consoleDlg->writeText(strlen(msg), msg);
 	}
 

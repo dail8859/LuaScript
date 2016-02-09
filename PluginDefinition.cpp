@@ -74,7 +74,7 @@ bool updateScintilla() {
 	return true;
 }
 
-std::shared_ptr<char> getIniFilePath(wchar_t *buff, size_t size) {
+std::shared_ptr<char> getStartupScritFilePath(wchar_t *buff, size_t size) {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM)buff);
 	wcscat_s(buff, size, TEXT("\\"));
 	wcscat_s(buff, size, TEXT("startup"));
@@ -150,6 +150,7 @@ void handleNotification(SCNotification *notifyCode) {
 	switch(nh.code)
 	{
 	case NPPN_READY:
+		// Run the startup script
 		wchar_t buff[MAX_PATH];
 		SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
 		wcscat_s(buff, MAX_PATH, TEXT("\\"));

@@ -144,8 +144,7 @@ inline void raise_error(lua_State *L, const char *errMsg=NULL) {
 }
 
 inline int absolute_index(lua_State *L, int index) {
-	return ((index < 0) && (index != LUA_REGISTRYINDEX) && (index != LUA_GLOBALSINDEX))
-	       ? (lua_gettop(L) + index + 1) : index;
+	return ((index < 0) && (index != LUA_REGISTRYINDEX)) ? (lua_gettop(L) + index + 1) : index;
 }
 
 // copy the contents of one table into another returning the size
@@ -225,7 +224,7 @@ static int cf_scite_send(lua_State *L) {
 
 	int paneIndex = lua_upvalueindex(1);
 	check_pane_object(L, paneIndex);
-	int message = luaL_checkint(L, 1);
+	int message = (int)luaL_checkinteger(L, 1);
 
 	lua_pushvalue(L, paneIndex);
 	lua_replace(L, 1);
@@ -266,7 +265,7 @@ static int cf_scite_send(lua_State *L) {
 static int cf_scite_constname(lua_State *L) {
 	char constName[100] = "";
 	const char *hint = nullptr;
-	int message = luaL_checkint(L, 1);
+	int message = (int)luaL_checkinteger(L, 1);
 
 	hint = luaL_optstring(L, 2, nullptr);
 
@@ -291,7 +290,7 @@ static int cf_scite_open(lua_State *L) {
 }
 
 static int cf_scite_menu_command(lua_State *L) {
-	int cmdID = luaL_checkint(L, 1);
+	int cmdID = (int)luaL_checkinteger(L, 1);
 	if (cmdID) {
 		host->DoMenuCommand(cmdID);
 	}
@@ -313,7 +312,7 @@ static int cf_scite_strip_show(lua_State *L) {
 }
 
 static int cf_scite_strip_set(lua_State *L) {
-	int control = luaL_checkint(L, 1);
+	int control = (int)luaL_checkinteger(L, 1);
 	const char *value = luaL_checkstring(L, 2);
 	if (value) {
 		host->UserStripSet(control, value);
@@ -322,7 +321,7 @@ static int cf_scite_strip_set(lua_State *L) {
 }
 
 static int cf_scite_strip_set_list(lua_State *L) {
-	int control = luaL_checkint(L, 1);
+	int control = (int)luaL_checkinteger(L, 1);
 	const char *value = luaL_checkstring(L, 2);
 	if (value) {
 		host->UserStripSetList(control, value);
@@ -331,7 +330,7 @@ static int cf_scite_strip_set_list(lua_State *L) {
 }
 
 static int cf_scite_strip_value(lua_State *L) {
-	int control = luaL_checkint(L, 1);
+	int control = (int)luaL_checkinteger(L, 1);
 	const char *value = host->UserStripValue(control);
 	if (value) {
 		lua_pushstring(L, value);
@@ -398,7 +397,7 @@ static int cf_pane_textrange(lua_State *L) {
 
 static int cf_pane_insert(lua_State *L) {
 	ExtensionAPI::Pane p = check_pane_object(L, 1);
-	int pos = luaL_checkint(L, 2);
+	int pos = (int)luaL_checkinteger(L, 2);
 	const char *s = luaL_checkstring(L, 3);
 	host->Insert(p, pos, s);
 	return 0;
@@ -432,19 +431,19 @@ static int cf_pane_findtext(lua_State *L) {
 
 		ft.lpstrText = const_cast<char *>(t);
 
-		int flags = (nArgs > 2) ? luaL_checkint(L, 3) : 0;
+		int flags = (nArgs > 2) ? (int)luaL_checkinteger(L, 3) : 0;
 		hasError = (flags == 0 && lua_gettop(L) > nArgs);
 
 		if (!hasError) {
 			if (nArgs > 3) {
-				ft.chrg.cpMin = static_cast<int>(luaL_checkint(L,4));
+				ft.chrg.cpMin = static_cast<int>(luaL_checkinteger(L, 4));
 				hasError = (lua_gettop(L) > nArgs);
 			}
 		}
 
 		if (!hasError) {
 			if (nArgs > 4) {
-				ft.chrg.cpMax = static_cast<int>(luaL_checkint(L,5));
+				ft.chrg.cpMax = static_cast<int>(luaL_checkinteger(L, 5));
 				hasError = (lua_gettop(L) > nArgs);
 			} else {
 				ft.chrg.cpMax = static_cast<long>(host->Send(p, SCI_GETLENGTH, 0, 0));
@@ -503,7 +502,7 @@ static int cf_match_replace(lua_State *L) {
 
 	host->Send(pmo->pane, SCI_SETTARGETSTART, pmo->startPos, 0);
 	host->Send(pmo->pane, SCI_SETTARGETEND, pmo->endPos, 0);
-	host->Send(pmo->pane, SCI_REPLACETARGET, lua_strlen(L, 2), SptrFromString(replacement));
+	host->Send(pmo->pane, SCI_REPLACETARGET, lua_rawlen(L, 2), SptrFromString(replacement));
 	pmo->endPos = static_cast<int>(host->Send(pmo->pane, SCI_GETTARGETEND, 0, 0));
 	return 0;
 }
@@ -594,9 +593,9 @@ static int cf_pane_match(lua_State *L) {
 		pmo->endPos = pmo->endPosOrig = 0;
 		pmo->flags = 0;
 		if (nargs >= 3) {
-			pmo->flags = luaL_checkint(L, 3);
+			pmo->flags = (int)luaL_checkinteger(L, 3);
 			if (nargs >= 4) {
-				pmo->endPos = pmo->endPosOrig = luaL_checkint(L, 4);
+				pmo->endPos = pmo->endPosOrig = (int)luaL_checkinteger(L, 4);
 				if (pmo->endPos < 0) {
 					raise_error(L, "Invalid argument 3 for <pane>:match.  Positive number or zero expected.");
 					return 0;
@@ -872,7 +871,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 	int loopParamCount = 2;
 
 	if (func.paramType[0] == iface_length && func.paramType[1] == iface_string) {
-		params[0] = lua_strlen(L, arg);
+		params[0] = lua_rawlen(L, arg);
 		params[1] = SptrFromString(params[0] ? lua_tostring(L, arg) : "");
 		loopParamCount = 0;
 	} else if ((func.paramType[1] == iface_stringresult) || (func.returnType == iface_stringresult)) {
@@ -937,7 +936,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 		lua_pushboolean(L, static_cast<int>(result));
 		resultCount++;
 	} else if (IFaceTypeIsNumeric(func.returnType)) {
-		lua_pushnumber(L, static_cast<int>(result));
+		lua_pushinteger(L, static_cast<int>(result));
 		resultCount++;
 	}
 
@@ -1216,37 +1215,6 @@ static int LuaPanicFunction(lua_State *L) {
 	return 1;
 }
 
-static void PublishGlobalBufferData() {
-	lua_pushliteral(luaState, "buffer");
-	if (curBufferIndex >= 0) {
-		lua_pushliteral(luaState, "SciTE_BufferData_Array");
-		lua_rawget(luaState, LUA_REGISTRYINDEX);
-		if (!lua_istable(luaState, -1)) {
-			lua_pop(luaState, 1);
-
-			lua_newtable(luaState);
-			lua_pushliteral(luaState, "SciTE_BufferData_Array");
-			lua_pushvalue(luaState, -2);
-			lua_rawset(luaState, LUA_REGISTRYINDEX);
-		}
-		lua_rawgeti(luaState, -1, curBufferIndex);
-		if (!lua_istable(luaState, -1)) {
-			// create new buffer-data
-			lua_pop(luaState, 1);
-			lua_newtable(luaState);
-			// remember it
-			lua_pushvalue(luaState, -1);
-			lua_rawseti(luaState, -3, curBufferIndex);
-		}
-		// Replace SciTE_BufferData_Array in the stack, leaving (buffer=-1, 'buffer'=-2)
-		lua_replace(luaState, -2);
-	} else {
-		// for example, during startup, before any InitBuffer / ActivateBuffer
-		lua_pushnil(luaState);
-	}
-	lua_rawset(luaState, LUA_GLOBALSINDEX);
-}
-
 static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	bool reload = forceReload;
 	if (checkProperties) {
@@ -1267,9 +1235,10 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		if (!reload) {
 			lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialState");
 			if (lua_istable(luaState, -1)) {
-				clear_table(luaState, LUA_GLOBALSINDEX, true);
-				merge_table(luaState, LUA_GLOBALSINDEX, -1, true);
-				lua_pop(luaState, 1);
+				lua_pushglobaltable(luaState);
+				clear_table(luaState, -1, true);
+				merge_table(luaState, -1, -2, true);
+				lua_pop(luaState, 2);
 
 				// restore initial package.loaded state
 				lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialPackageState");
@@ -1277,8 +1246,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 				clear_table(luaState, -1, false);
 				merge_table(luaState, -1, -2, false);
 				lua_pop(luaState, 2);
-
-				PublishGlobalBufferData();
 
 				return true;
 			} else {
@@ -1299,7 +1266,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 		// Don't replace global scope using new_table, because then startup script is
 		// bound to a different copy of the globals than the extension script.
-		clear_table(luaState, LUA_GLOBALSINDEX, true);
+		lua_pushglobaltable(luaState);
+		clear_table(luaState, -1, true);
+		lua_pop(luaState, 1);
 
 		// Lua 5.1: _LOADED is in LUA_REGISTRYINDEX, so it must be cleared before
 		// loading libraries or they will not load because Lua's package system
@@ -1308,7 +1277,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		lua_setfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
 
 	} else if (!luaDisabled) {
-		luaState = lua_open();
+		luaState = luaL_newstate();
 		if (!luaState) {
 			luaDisabled = true;
 			host->Trace("> Lua: scripting engine failed to initialise\r\n");
@@ -1396,17 +1365,24 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_getglobal(luaState, "scite");
 	lua_setglobal(luaState, "npp");
 
+	// get global environment table from registry
+	lua_pushglobaltable(luaState);
 	// Metatable for global namespace, to publish iface constants
 	if (luaL_newmetatable(luaState, "SciTE_MT_GlobalScope")) {
 		lua_pushcfunction(luaState, cf_global_metatable_index);
 		lua_setfield(luaState, -2, "__index");
 	}
-	lua_setmetatable(luaState, LUA_GLOBALSINDEX);
+	// set global index callback hook
+	lua_setmetatable(luaState, -2);
+	// remove the global environment table from the stack
+	lua_pop(luaState, 1);
 
 	// Clone the initial state (including metatable) in the registry so that it can be restored.
 	// (If reset==1 this will not be used, but this is a shallow copy, not very expensive, and
 	// who knows what the value of reset will be the next time InitGlobalScope runs.)
-	clone_table(luaState, LUA_GLOBALSINDEX, true);
+	lua_pushglobaltable(luaState);
+	clone_table(luaState, -1, true);
+	lua_remove(luaState, -2); // remove the global table under the newly cloned table
 	lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialState");
 
 	// Clone loaded packages (package.loaded) state in the registry so that it can be restored.
@@ -1414,8 +1390,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	clone_table(luaState, -1);
 	lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialPackageState");
 	lua_pop(luaState, 1);
-
-	PublishGlobalBufferData();
 
 	return true;
 }
@@ -1578,12 +1552,10 @@ bool LuaExtension::RunString(const char *s) {
 	return true;
 }
 bool LuaExtension::RunFile(const char *filename) {
-	if (luaState || InitGlobalScope(false)) {
-		if (Exists(filename)) {
-			luaL_loadfile(luaState, filename);
-			if (!call_function(luaState, 0, true)) {
-				host->Trace("> Lua: error occurred while loading startup script\r\n");
-			}
+	if (Exists(filename) && (luaState || InitGlobalScope(false))) {
+		luaL_loadfile(luaState, filename);
+		if (!call_function(luaState, 0, true)) {
+			host->Trace("> Lua: error occurred while loading startup script\r\n");
 		}
 	}
 
@@ -1754,51 +1726,51 @@ struct StylingContext {
 
 	static int Line(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = luaL_checkint(L, 2);
+		int position = (int)luaL_checkinteger(L, 2);
 		lua_pushnumber(L, context->styler->GetLine(position));
 		return 1;
 	}
 
 	static int CharAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = luaL_checkint(L, 2);
+		int position = (int)luaL_checkinteger(L, 2);
 		lua_pushnumber(L, context->styler->SafeGetCharAt(position));
 		return 1;
 	}
 
 	static int StyleAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = luaL_checkint(L, 2);
+		int position = (int)luaL_checkinteger(L, 2);
 		lua_pushnumber(L, context->styler->StyleAt(position));
 		return 1;
 	}
 
 	static int LevelAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = luaL_checkint(L, 2);
+		int line = (int)luaL_checkinteger(L, 2);
 		lua_pushnumber(L, context->styler->LevelAt(line));
 		return 1;
 	}
 
 	static int SetLevelAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = luaL_checkint(L, 2);
-		int level = luaL_checkint(L, 3);
+		int line = (int)luaL_checkinteger(L, 2);
+		int level = (int)luaL_checkinteger(L, 3);
 		context->styler->SetLevel(line, level);
 		return 0;
 	}
 
 	static int LineState(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = luaL_checkint(L, 2);
+		int line = (int)luaL_checkinteger(L, 2);
 		lua_pushnumber(L, context->styler->GetLineState(line));
 		return 1;
 	}
 
 	static int SetLineState(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = luaL_checkint(L, 2);
-		int stateOfLine = luaL_checkint(L, 3);
+		int line = (int)luaL_checkinteger(L, 2);
+		int stateOfLine = (int)luaL_checkinteger(L, 3);
 		context->styler->SetLineState(line, stateOfLine);
 		return 0;
 	}
@@ -1874,9 +1846,9 @@ struct StylingContext {
 
 	static int StartStyling(lua_State *L) {
 		StylingContext *context = Context(L);
-		unsigned int startPosStyle = luaL_checkint(L, 2);
-		unsigned int lengthStyle = luaL_checkint(L, 3);
-		int initialStyle = luaL_checkint(L, 4);
+		unsigned int startPosStyle = (int)luaL_checkinteger(L, 2);
+		unsigned int lengthStyle = (int)luaL_checkinteger(L, 3);
+		int initialStyle = (int)luaL_checkinteger(L, 4);
 		context->StartStyling(startPosStyle, lengthStyle, initialStyle);
 		return 0;
 	}
@@ -1935,7 +1907,7 @@ struct StylingContext {
 	static int SetState(lua_State *L) {
 		StylingContext *context = Context(L);
 		context->Colourize();
-		context->state = luaL_checkint(L, 2);
+		context->state = (int)luaL_checkinteger(L, 2);
 		return 0;
 	}
 
@@ -1943,13 +1915,13 @@ struct StylingContext {
 		StylingContext *context = Context(L);
 		context->Forward();
 		context->Colourize();
-		context->state = luaL_checkint(L, 2);
+		context->state = (int)luaL_checkinteger(L, 2);
 		return 0;
 	}
 
 	static int ChangeState(lua_State *L) {
 		StylingContext *context = Context(L);
-		context->state = luaL_checkint(L, 2);
+		context->state = (int)luaL_checkinteger(L, 2);
 		return 0;
 	}
 
