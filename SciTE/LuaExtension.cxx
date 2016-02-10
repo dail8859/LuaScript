@@ -82,7 +82,6 @@ static ExtensionAPI *host = 0;
 static lua_State *luaState = 0;
 static bool luaDisabled = false;
 
-static std::string startupScript;
 static std::string extensionScript;
 
 static bool tracebackEnabled = true;
@@ -1217,18 +1216,6 @@ static int LuaPanicFunction(lua_State *L) {
 	return 1;
 }
 
-// Don't initialise Lua in LuaExtension::Initialise.  Wait and initialise Lua the
-// first time Lua is used, e.g. when a Load event is called with an argument that
-// appears to be the name of a Lua script.  This just-in-time initialisation logic
-// does add a little extra complexity but not a lot.  It's probably worth it,
-// since it means a user who is having trouble with Lua can just refrain from
-// using it.
-
-static bool CheckStartupScript() {
-	startupScript = host->Property("ext.lua.startup.script");
-	return startupScript.length() > 0;
-}
-
 static void PublishGlobalBufferData() {
 	lua_pushliteral(luaState, "buffer");
 	if (curBufferIndex >= 0) {
@@ -1416,25 +1403,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	}
 	lua_setmetatable(luaState, LUA_GLOBALSINDEX);
 
-	if (checkProperties && reload) {
-		CheckStartupScript();
-	}
-
-	if (startupScript.length()) {
-		// TODO: Should buffer be deactivated temporarily, so editor iface
-		// functions won't be available during a reset, just as they are not
-		// available during a normal startup?  Are there any other functions
-		// that should be blocked during startup, e.g. the ones that allow
-		// you to add or switch buffers?
-
-		if (Exists(startupScript.c_str())) {
-			luaL_loadfile(luaState, startupScript.c_str());
-			if (!call_function(luaState, 0, true)) {
-				host->Trace("> Lua: error occurred while loading startup script\r\n");
-			}
-		}
-	}
-
 	// Clone the initial state (including metatable) in the registry so that it can be restored.
 	// (If reset==1 this will not be used, but this is a shallow copy, not very expensive, and
 	// who knows what the value of reset will be the next time InitGlobalScope runs.)
@@ -1455,10 +1423,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 bool LuaExtension::Initialise(ExtensionAPI *host_) {
 	host = host_;
 
-	if (CheckStartupScript()) {
-		InitGlobalScope(false);
-	}
-
 	return false;
 }
 
@@ -1470,11 +1434,6 @@ bool LuaExtension::Finalise() {
 	luaState = NULL;
 	host = NULL;
 
-	// The rest don't strictly need to be cleared since they
-	// are never accessed except when luaState and host are set
-
-	startupScript = "";
-
 	return false;
 }
 
@@ -1485,7 +1444,7 @@ bool LuaExtension::Clear() {
 	if (luaState) {
 		InitGlobalScope(true);
 		extensionScript.clear();
-	} else if ((GetPropertyInt("ext.lua.reset") >= 1) && CheckStartupScript()) {
+	} else if ((GetPropertyInt("ext.lua.reset") >= 1)) {
 		InitGlobalScope(false);
 	}
 	return false;
@@ -1614,6 +1573,18 @@ bool LuaExtension::RunString(const char *s) {
 		}
 
 		lua_settop(luaState, 0); /* clear stack */
+	}
+
+	return true;
+}
+bool LuaExtension::RunFile(const char *filename) {
+	if (luaState || InitGlobalScope(false)) {
+		if (Exists(filename)) {
+			luaL_loadfile(luaState, filename);
+			if (!call_function(luaState, 0, true)) {
+				host->Trace("> Lua: error occurred while loading startup script\r\n");
+			}
+		}
 	}
 
 	return true;

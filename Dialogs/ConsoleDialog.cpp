@@ -501,7 +501,7 @@ void ConsoleDialog::doDialog()
 		m_data.pszName = TEXT("LuaScript");
 		m_data.pszAddInfo = NULL;
 		m_data.pszModuleName = TEXT("LuaScript.dll");
-		m_data.dlgID = -1; // -1? IDD_CONSOLE?
+		m_data.dlgID = 0; // The index of the menu command to run
 		m_data.iPrevCont = -1;
 
 		//SetWindowPos(_hSelf, 0, 0, 0, 200, 400, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);

@@ -97,6 +97,10 @@ void pluginCleanUp() {
 
 void setNppInfo(NppData notepadPlusData) {
 	nppData = notepadPlusData;
+
+	g_console = new LuaConsole(nppData._nppHandle);
+	g_console->init((HINSTANCE)_hModule, nppData);
+	LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
 }
 
 // --- Menu call backs ---
@@ -146,9 +150,12 @@ void handleNotification(SCNotification *notifyCode) {
 	switch(nh.code)
 	{
 	case NPPN_READY:
-		g_console = new LuaConsole(nppData._nppHandle);
-		g_console->init((HINSTANCE)_hModule, nppData);
-		LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
+		wchar_t buff[MAX_PATH];
+		SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
+		wcscat_s(buff, MAX_PATH, TEXT("\\"));
+		wcscat_s(buff, MAX_PATH, TEXT("startup"));
+		wcscat_s(buff, MAX_PATH, TEXT(".lua"));
+		LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get());
 		break;
 	case NPPN_SHUTDOWN:
 		LuaExtension::Instance().Finalise();
