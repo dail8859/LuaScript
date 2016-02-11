@@ -18,38 +18,52 @@
 
 #pragma once
 
-#include "Extender.h"
 #include "ConsoleDialog.h"
 #include "PluginInterface.h"
 
-class NppExtensionAPI : public ExtensionAPI
-{
+class StyleWriter;
+
+inline sptr_t SptrFromPointer(void *p) {
+	return reinterpret_cast<sptr_t>(p);
+}
+
+inline sptr_t SptrFromString(const char *cp) {
+	return reinterpret_cast<sptr_t>(cp);
+}
+
+inline uptr_t UptrFromString(const char *cp) {
+	return reinterpret_cast<uptr_t>(cp);
+}
+
+
+class NppExtensionAPI final {
+public:
+	enum Pane { paneEditor = 1, paneEditorMain = 2, paneEditorSecondary = 3, paneOutput = 4, paneFindOutput = 5 };
+
+	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { m_nppData = nppData; }
+	~NppExtensionAPI();
+
+	sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);
+	char *Range(Pane p, int start, int end);
+	void Remove(Pane p, int start, int end);
+	void Insert(Pane p, int pos, const char *s);
+	void Trace(const char *s);
+	std::string Property(const char *key);
+	void SetProperty(const char *key, const char *val);
+	void UnsetProperty(const char *key);
+	uptr_t GetInstance();
+	void ShutDown();
+	void Perform(const char *actions);
+	void DoMenuCommand(int cmdID);
+	void UpdateStatusBar(bool bUpdateSlowData);
+	void UserStripShow(const char *description);
+	void UserStripSet(int control, const char *value);
+	void UserStripSetList(int control, const char *value);
+	const char *UserStripValue(int control);
+
 private:
 	ConsoleDialog *cd;
 	const NppData* m_nppData;
 	HWND getScintillaHandle(Pane p);
-
-public:
-	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { m_nppData = nppData; }
-	~NppExtensionAPI();
-
-	virtual sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);
-	virtual char *Range(Pane p, int start, int end);
-	virtual void Remove(Pane p, int start, int end);
-	virtual void Insert(Pane p, int pos, const char *s);
-	virtual void Trace(const char *s);
-	virtual std::string Property(const char *key);
-	virtual void SetProperty(const char *key, const char *val);
-	virtual void UnsetProperty(const char *key);
-	virtual uptr_t GetInstance();
-	virtual void ShutDown();
-	virtual void Perform(const char *actions);
-	virtual void DoMenuCommand(int cmdID);
-	virtual void UpdateStatusBar(bool bUpdateSlowData);
-	virtual void UserStripShow(const char *description);
-	virtual void UserStripSet(int control, const char *value);
-	virtual void UserStripSetList(int control, const char *value);
-	virtual const char *UserStripValue(int control);
-
 };
 

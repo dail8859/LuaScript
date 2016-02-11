@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "Extender.h"
+#include "NppExtensionAPI.h"
 
-class LuaExtension : public Extension {
+class LuaExtension final {
 private:
 	LuaExtension(); // Singleton
 	LuaExtension(const LuaExtension &);   // Disable copy ctor
@@ -18,34 +18,34 @@ public:
 
 	virtual ~LuaExtension();
 
-	virtual bool Initialise(ExtensionAPI *host_);
-	virtual bool Finalise();
-	virtual bool Clear();
-	virtual bool Load(const char *filename);
+	bool Initialise(NppExtensionAPI *host_);
+	bool Finalise();
+	bool Clear();
+	bool Load(const char *filename);
 
-	virtual bool InitBuffer(int);
-	virtual bool ActivateBuffer(int);
-	virtual bool RemoveBuffer(int);
+	bool InitBuffer(int);
+	bool ActivateBuffer(int);
+	bool RemoveBuffer(int);
 
 	bool RunString(const char *s);
 	bool RunFile(const char *filename);
 
-	virtual bool OnOpen(const char *filename);
-	virtual bool OnSwitchFile(const char *filename);
-	virtual bool OnBeforeSave(const char *filename);
-	virtual bool OnSave(const char *filename);
-	virtual bool OnChar(char ch);
-	virtual bool OnExecute(const char *s);
-	virtual bool OnSavePointReached();
-	virtual bool OnSavePointLeft();
-	virtual bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
-	virtual bool OnDoubleClick();
-	virtual bool OnUpdateUI();
-	virtual bool OnMarginClick();
-	virtual bool OnUserListSelection(int listType, const char *selection);
-	virtual bool OnKey(int keyval, int modifiers);
-	virtual bool OnDwellStart(int pos, const char *word);
-	virtual bool OnClose(const char *filename);
-	virtual bool OnUserStrip(int control, int change);
-	virtual bool NeedsOnClose();
+	bool OnOpen(const char *filename);
+	bool OnSwitchFile(const char *filename);
+	bool OnBeforeSave(const char *filename);
+	bool OnSave(const char *filename);
+	bool OnChar(char ch);
+	bool OnExecute(const char *s);
+	bool OnSavePointReached();
+	bool OnSavePointLeft();
+	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
+	bool OnDoubleClick();
+	bool OnUpdateUI();
+	bool OnMarginClick();
+	bool OnUserListSelection(int listType, const char *selection);
+	bool OnKey(int keyval, int modifiers);
+	bool OnDwellStart(int pos, const char *word);
+	bool OnClose(const char *filename);
+	bool OnUserStrip(int control, int change);
+	bool NeedsOnClose();
 };

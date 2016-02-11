@@ -148,7 +148,6 @@
     <ClInclude Include="Npp\SciLexer.h" />
     <ClInclude Include="Npp\Scintilla.h" />
     <ClInclude Include="PluginDefinition.h" />
-    <ClInclude Include="SciTE\Extender.h" />
     <ClInclude Include="SciTE\GUI.h" />
     <ClInclude Include="SciTE\IFaceTable.h" />
     <ClInclude Include="SciTE\LuaExtension.h" />

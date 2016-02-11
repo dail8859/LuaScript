@@ -25,22 +25,22 @@ std::shared_ptr<char> getStartupScritFilePath(wchar_t *buff, size_t size);
 NppExtensionAPI::~NppExtensionAPI() {
 }
 
-HWND NppExtensionAPI::getScintillaHandle(ExtensionAPI::Pane p) {
-	if (p == ExtensionAPI::paneEditor) {// Get the current scintilla
+HWND NppExtensionAPI::getScintillaHandle(NppExtensionAPI::Pane p) {
+	if (p == NppExtensionAPI::paneEditor) {// Get the current scintilla
 		int which = -1;
 		SendMessage(m_nppData->_nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 		if (which == -1) return nullptr;
 		return (which == 0) ? m_nppData->_scintillaMainHandle : m_nppData->_scintillaSecondHandle;
 	}
-	if (p == ExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
-	if (p == ExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
-	if (p == ExtensionAPI::paneOutput) return this->cd->getScintillaHwnd();
+	if (p == NppExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
+	if (p == NppExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
+	if (p == NppExtensionAPI::paneOutput) return this->cd->getScintillaHwnd();
 
 	return nullptr;
 	
 }
 
-sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
+sptr_t NppExtensionAPI::Send(NppExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
 	HWND sci = getScintillaHandle(p);
 
 	if (sci == nullptr) {
@@ -52,7 +52,7 @@ sptr_t NppExtensionAPI::Send(ExtensionAPI::Pane p, unsigned int msg, uptr_t wPar
 	return SendMessage(sci, msg, wParam, lParam);
 }
 
-char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
+char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, int start, int end) {
 	if (end <= start) return nullptr;
 
 	char *dest = new char[end - start + 1];
@@ -65,13 +65,13 @@ char *NppExtensionAPI::Range(ExtensionAPI::Pane p, int start, int end) {
 	return dest;
 }
 
-void NppExtensionAPI::Remove(ExtensionAPI::Pane p, int start, int end) {
+void NppExtensionAPI::Remove(NppExtensionAPI::Pane p, int start, int end) {
 	if (end <= start) return;
 
 	int deleteLength = end - start;
 	this->Send(p, SCI_DELETERANGE, start, deleteLength);
 }
-void NppExtensionAPI::Insert(ExtensionAPI::Pane p, int pos, const char *s) {
+void NppExtensionAPI::Insert(NppExtensionAPI::Pane p, int pos, const char *s) {
 	this->Send(p, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
 

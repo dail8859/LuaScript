@@ -16,7 +16,7 @@
 
 #include "GUI.h"
 #include "StyleWriter.h"
-#include "Extender.h"
+#include "NppExtensionAPI.h"
 #include "LuaExtension.h"
 
 #include "IFaceTable.h"
@@ -78,7 +78,7 @@ static bool Exists(const char *fileName) {
 // and for these I just make a judgement call
 
 
-static ExtensionAPI *host = 0;
+static NppExtensionAPI *host = 0;
 static lua_State *luaState = 0;
 static bool luaDisabled = false;
 
@@ -110,8 +110,8 @@ LuaExtension &LuaExtension::Instance() {
 }
 
 // Forward declarations
-static ExtensionAPI::Pane check_pane_object(lua_State *L, int index);
-static void push_pane_object(lua_State *L, ExtensionAPI::Pane p);
+static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index);
+static void push_pane_object(lua_State *L, NppExtensionAPI::Pane p);
 static int iface_function_helper(lua_State *L, const IFaceFunction &func);
 
 inline bool IFaceTypeIsScriptable(IFaceType t, int index) {
@@ -342,19 +342,19 @@ static int cf_scite_strip_value(lua_State *L) {
 	return 0;
 }
 
-static ExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
-	ExtensionAPI::Pane *pPane = static_cast<ExtensionAPI::Pane *>(checkudata(L, index, "SciTE_MT_Pane"));
+static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
+	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "SciTE_MT_Pane"));
 
 	if ((!pPane) && lua_istable(L, index)) {
 		// so that nested objects have a convenient way to do a back reference
 		int absIndex = absolute_index(L, index);
 		lua_pushliteral(L, "pane");
 		lua_gettable(L, absIndex);
-		pPane = static_cast<ExtensionAPI::Pane *>(checkudata(L, -1, "SciTE_MT_Pane"));
+		pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, -1, "SciTE_MT_Pane"));
 	}
 
 	if (pPane) {
-		if ((*pPane == ExtensionAPI::paneEditor) && (curBufferIndex < 0))
+		if ((*pPane == NppExtensionAPI::paneEditor) && (curBufferIndex < 0))
 			raise_error(L, "Editor pane is not accessible at this time.");
 
 		return *pPane;
@@ -368,11 +368,11 @@ static ExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 		lua_pushliteral(L, "Pane object expected.");
 
 	raise_error(L);
-	return ExtensionAPI::paneOutput; // this line never reached
+	return NppExtensionAPI::paneOutput; // this line never reached
 }
 
 static int cf_pane_textrange(lua_State *L) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
 	if (lua_gettop(L) >= 3) {
 		int cpMin = static_cast<int>(luaL_checknumber(L, 2));
@@ -396,7 +396,7 @@ static int cf_pane_textrange(lua_State *L) {
 }
 
 static int cf_pane_insert(lua_State *L) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 	int pos = (int)luaL_checkinteger(L, 2);
 	const char *s = luaL_checkstring(L, 3);
 	host->Insert(p, pos, s);
@@ -404,7 +404,7 @@ static int cf_pane_insert(lua_State *L) {
 }
 
 static int cf_pane_remove(lua_State *L) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 	int cpMin = static_cast<int>(luaL_checknumber(L, 2));
 	int cpMax = static_cast<int>(luaL_checknumber(L, 3));
 	host->Remove(p, cpMin, cpMax);
@@ -412,14 +412,14 @@ static int cf_pane_remove(lua_State *L) {
 }
 
 static int cf_pane_append(lua_State *L) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 	const char *s = luaL_checkstring(L, 2);
 	host->Insert(p, static_cast<int>(host->Send(p, SCI_GETLENGTH, 0, 0)), s);
 	return 0;
 }
 
 static int cf_pane_findtext(lua_State *L) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
 	int nArgs = lua_gettop(L);
 
@@ -475,7 +475,7 @@ static int cf_pane_findtext(lua_State *L) {
 // loops and is more tamper-resistant.
 
 struct PaneMatchObject {
-	ExtensionAPI::Pane pane;
+	NppExtensionAPI::Pane pane;
 	int startPos;
 	int endPos;
 	int flags; // this is really part of the state, but is kept here for convenience
@@ -570,7 +570,7 @@ static int cf_match_metatable_tostring(lua_State *L) {
 static int cf_pane_match(lua_State *L) {
 	int nargs = lua_gettop(L);
 
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 	luaL_checkstring(L, 2);
 
 	int generatorIndex = lua_upvalueindex(1);
@@ -859,7 +859,7 @@ static bool CallNamedFunction(const char *name, int numberArg, int numberArg2) {
 }
 
 static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
-	ExtensionAPI::Pane p = check_pane_object(L, 1);
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
 	int arg = 2;
 
@@ -944,7 +944,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 }
 
 struct IFacePropertyBinding {
-	ExtensionAPI::Pane pane;
+	NppExtensionAPI::Pane pane;
 	const IFaceProperty *prop;
 };
 
@@ -1037,7 +1037,7 @@ static int push_iface_propval(lua_State *L, const char *name) {
 		} else if (prop.paramType == iface_bool) {
 			// The bool getter is untested since there are none in the iface.
 			// However, the following is suggested as a reference protocol.
-			ExtensionAPI::Pane p = check_pane_object(L, 1);
+			NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
 			if (prop.getter) {
 				if (host->Send(p, prop.getter, 1, 0)) {
@@ -1144,8 +1144,8 @@ static int cf_pane_metatable_newindex(lua_State *L) {
 	return 0;
 }
 
-void push_pane_object(lua_State *L, ExtensionAPI::Pane p) {
-	*static_cast<ExtensionAPI::Pane *>(lua_newuserdata(L, sizeof(p))) = p;
+void push_pane_object(lua_State *L, NppExtensionAPI::Pane p) {
+	*static_cast<NppExtensionAPI::Pane *>(lua_newuserdata(L, sizeof(p))) = p;
 	if (luaL_newmetatable(L, "SciTE_MT_Pane")) {
 		lua_pushcfunction(L, cf_pane_metatable_index);
 		lua_setfield(L, -2, "__index");
@@ -1307,19 +1307,19 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_setglobal(luaState, "props");
 
 	// pane objects
-	push_pane_object(luaState, ExtensionAPI::paneEditor);
+	push_pane_object(luaState, NppExtensionAPI::paneEditor);
 	lua_setglobal(luaState, "editor");
 
-	push_pane_object(luaState, ExtensionAPI::paneEditorMain);
+	push_pane_object(luaState, NppExtensionAPI::paneEditorMain);
 	lua_setglobal(luaState, "editor1");
 
-	push_pane_object(luaState, ExtensionAPI::paneEditorSecondary);
+	push_pane_object(luaState, NppExtensionAPI::paneEditorSecondary);
 	lua_setglobal(luaState, "editor2");
 
-	push_pane_object(luaState, ExtensionAPI::paneOutput);
+	push_pane_object(luaState, NppExtensionAPI::paneOutput);
 	lua_setglobal(luaState, "console");
 
-	//push_pane_object(luaState, ExtensionAPI::paneOutput);
+	//push_pane_object(luaState, NppExtensionAPI::paneOutput);
 	//lua_setglobal(luaState, "output");
 
 	// scite
@@ -1394,7 +1394,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	return true;
 }
 
-bool LuaExtension::Initialise(ExtensionAPI *host_) {
+bool LuaExtension::Initialise(NppExtensionAPI *host_) {
 	host = host_;
 
 	return false;
@@ -1994,7 +1994,7 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 			sc.lengthDoc = lengthDoc;
 			sc.initStyle = initStyle;
 			sc.styler = styler;
-			sc.codePage = static_cast<int>(host->Send(ExtensionAPI::paneEditor, SCI_GETCODEPAGE));
+			sc.codePage = static_cast<int>(host->Send(NppExtensionAPI::paneEditor, SCI_GETCODEPAGE));
 
 			lua_newtable(luaState);
 

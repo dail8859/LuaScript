@@ -116,9 +116,6 @@
     <ClInclude Include="SciTE\IFaceTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SciTE\Extender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SciTE\LuaExtension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
