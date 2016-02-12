@@ -23,11 +23,7 @@
 #include "LuaExtension.h"
 #include "PluginInterface.h"
 
-extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include "lua.hpp"
 
 class LuaConsole final : public ConsoleInterface
 {

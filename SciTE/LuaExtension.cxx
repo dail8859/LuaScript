@@ -1528,7 +1528,6 @@ bool LuaExtension::RemoveBuffer(int index) {
 /* mark in error messages for incomplete statements */
 #define EOFMARK         "<eof>"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
-#define LUA_OK          0
 bool LuaExtension::RunString(const char *s) {
 	if (luaState || InitGlobalScope(false)) {
 		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
@@ -1587,8 +1586,7 @@ bool LuaExtension::OnExecute(const char *s) {
 				else if (status == LUA_ERRSYNTAX) {
 					size_t lmsg;
 					const char *msg = lua_tolstring(luaState, -1, &lmsg);
-					const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
-					if (strstr(msg, LUA_QL("<eof>")) == tp) {
+					if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
 						lua_pop(luaState, 1);
 						isFirstLine = false;
 						chunk = s;
@@ -1609,8 +1607,7 @@ bool LuaExtension::OnExecute(const char *s) {
 			else if (status == LUA_ERRSYNTAX) {
 				size_t lmsg;
 				const char *msg = lua_tolstring(luaState, -1, &lmsg);
-				const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
-				if (strstr(msg, LUA_QL("<eof>")) == tp) {
+				if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
 					lua_pop(luaState, 1);
 					//host->Trace("wait on even more...\r\n");
 					return false;
