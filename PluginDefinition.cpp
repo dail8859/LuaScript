@@ -145,10 +145,21 @@ void showAbout() {
 
 // --- Notification callbacks ---
 void handleNotification(SCNotification *notifyCode) {
+	static TCHAR static_fname[MAX_PATH];
+	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
 	switch(nh.code)
 	{
+	case SCN_CHARADDED:
+		LuaExtension::Instance().OnChar(notifyCode->ch);
+		break;
+	case SCN_SAVEPOINTREACHED:
+		LuaExtension::Instance().OnSavePointReached();
+		break;
+	case SCN_SAVEPOINTLEFT:
+		LuaExtension::Instance().OnSavePointLeft();
+		break;
 	case NPPN_READY:
 		// Run the startup script
 		wchar_t buff[MAX_PATH];
@@ -157,6 +168,34 @@ void handleNotification(SCNotification *notifyCode) {
 		wcscat_s(buff, MAX_PATH, TEXT("startup"));
 		wcscat_s(buff, MAX_PATH, TEXT(".lua"));
 		LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get());
+		break;
+	case NPPN_FILEBEFOREOPEN:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnBeforeOpen(WcharMbcsConverter::wchar2char(fname).get());
+		break;
+	case NPPN_FILEOPENED:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnOpen(WcharMbcsConverter::wchar2char(fname).get());
+		break;
+	case NPPN_BUFFERACTIVATED:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnSwitchFile(WcharMbcsConverter::wchar2char(fname).get());
+		break;
+	case NPPN_FILEBEFORESAVE:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnBeforeSave(WcharMbcsConverter::wchar2char(fname).get());
+		break;
+	case NPPN_FILESAVED:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnSave(WcharMbcsConverter::wchar2char(fname).get());
+		break;
+	case NPPN_FILEBEFORECLOSE:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
+		LuaExtension::Instance().OnBeforeClose(WcharMbcsConverter::wchar2char(static_fname).get());
+		break;
+	case NPPN_FILECLOSED:
+		// NOTE: cannot use idFrom to get the path since it is no longer valid
+		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get());
 		break;
 	case NPPN_SHUTDOWN:
 		LuaExtension::Instance().Finalise();

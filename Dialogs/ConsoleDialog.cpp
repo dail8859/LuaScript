@@ -496,7 +496,7 @@ void ConsoleDialog::doDialog()
 		//create(m_data);
 		StaticDialog::create(_dlgID);
 
-		m_data.hClient			= _hSelf;
+		m_data.hClient = _hSelf;
 		m_data.uMask = DWS_DF_CONT_BOTTOM;
 		m_data.pszName = TEXT("LuaScript");
 		m_data.pszAddInfo = NULL;

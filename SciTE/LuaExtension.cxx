@@ -35,6 +35,27 @@ extern "C" {
 
 #endif
 
+const char *callbacks[] = {
+	"OnBeforeOpen", // Npp specific
+	"OnOpen",
+	"OnSwitchFile",
+	"OnBeforeSave",
+	"OnSave",
+	"OnChar",
+	"OnSavePointReached",
+	"OnSavePointLeft",
+	//"OnStyle",
+	//"OnDoubleClick",
+	//"OnUpdateUI",
+	//"OnMarginClick",
+	//"OnUserListSelection",
+	//"OnKey",
+	//"OnDwellStart",
+	"OnBeforeClose", // Npp specific
+	"OnClose",
+	//"OnUserStrip",
+};
+
 
 // Helper function from SciTE
 static int Substitute(std::string &s, const std::string &sFind, const std::string &sReplace) {
@@ -295,6 +316,89 @@ static int cf_scite_menu_command(lua_State *L) {
 		host->DoMenuCommand(cmdID);
 	}
 	return 0;
+}
+
+void stackdump(lua_State* l)
+{
+	int i;
+	int top = lua_gettop(l);
+
+	for (i = 1; i <= top; i++)
+	{  /* repeat for each level */
+		int t = lua_type(l, i);
+		host->Trace(lua_typename(l, t));
+		host->Trace("  ");  /* put a separator */
+	}
+	host->Trace("\r\n");  /* end the listing */
+}
+
+static int cf_scite_add_callback(lua_State *L) {
+	const char *callback = lua_tostring(L, lua_upvalueindex(1));
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+
+	lua_pushliteral(L, "Npp_Callbacks");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, -1, callback);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1); // the nil value
+		lua_newtable(L);
+		lua_setfield(L, -2, callback);
+		lua_getfield(L, -1, callback); // get the table back on top of the stack
+	}
+
+	// Get the length of the table
+	size_t len = lua_rawlen(L, -1);
+
+	lua_pushvalue(L, -3); // copy the callback function to the top of the stack
+	lua_seti(L, -2, len + 1);
+
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
+static int cf_scite_remove_callback(lua_State *L) {
+	const char *callback = lua_tostring(L, lua_upvalueindex(1));
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+	int idx = -1;
+
+	lua_pushliteral(L, "Npp_Callbacks");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, -1, callback);
+	if (lua_isnil(L, -1)) {
+		// There haven't been any callbacks registered yet
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+
+	// Iterate the callback table to see if the function is registered
+	lua_pushnil(L);
+	while (lua_next(luaState, -2) != 0) {
+		lua_pushvalue(L, 1); // copy the function to the top of the stack
+		if (lua_rawequal(L, -1, -2) == 1) {
+			idx = (int)lua_tointeger(L, -3);
+			// remove the key, value, and copied function
+			lua_pop(L, 3);
+			break;
+		}
+		// remove the value and copied function; keep 'key' for next iteration
+		lua_pop(L, 2);
+	}
+
+	if (idx != -1) {
+		lua_getglobal(L, "table");
+		lua_getfield(L, -1, "remove");
+		lua_remove(L, -2);
+		lua_pushvalue(L, -2); // the callback table
+		lua_pushinteger(L, idx);
+		lua_call(L, 2, 0); // call "table.remove(callback, idx)" and ignore return
+
+		lua_pushboolean(L, 1); // Yay it was removed
+	}
+	else {
+		lua_pushboolean(L, 0); // Not found, oh well
+	}
+
+	return 1;
 }
 
 static int cf_scite_update_status_bar(lua_State *L) {
@@ -766,7 +870,7 @@ static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValu
 			lua_remove(L, traceback);
 		}
 
-		if (0 == result) {
+		if (result == LUA_OK) {
 			if (ignoreFunctionReturnValue) {
 				handled = true;
 			} else {
@@ -780,11 +884,11 @@ static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValu
 		} else {
 			lua_pop(L, 1);
 			if (result == LUA_ERRMEM) {
-				host->Trace("> Lua: memory allocation error\r\n");
+				host->Trace("Lua: memory allocation error\r\n");
 			} else if (result == LUA_ERRERR) {
-				host->Trace("> Lua: an error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
+				host->Trace("Lua: an error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
 			} else {
-				host->Trace("> Lua: unexpected error\r\n");
+				host->Trace("Lua: unexpected error\r\n");
 			}
 		}
 	}
@@ -804,12 +908,17 @@ static bool HasNamedFunction(const char *name) {
 static bool CallNamedFunction(const char *name) {
 	bool handled = false;
 	if (luaState) {
-		lua_getglobal(luaState, name);
-		if (lua_isfunction(luaState, -1)) {
-			handled = call_function(luaState, 0);
-		} else {
-			lua_pop(luaState, 1);
+		lua_pushstring(luaState, "Npp_Callbacks");
+		lua_gettable(luaState, LUA_REGISTRYINDEX);
+		lua_getfield(luaState, -1, name);
+		if (lua_istable(luaState, -1)) {
+			lua_pushnil(luaState); /* first key */
+			while (lua_next(luaState, -2) != 0) {
+				handled = call_function(luaState, 0);
+				// call_function removes the function for us, the key stays on the stack
+			}
 		}
+		lua_pop(luaState, 2); // the Npp_Callbacks table and the callback table
 	}
 	return handled;
 }
@@ -817,18 +926,25 @@ static bool CallNamedFunction(const char *name) {
 static bool CallNamedFunction(const char *name, const char *arg) {
 	bool handled = false;
 	if (luaState) {
-		lua_getglobal(luaState, name);
-		if (lua_isfunction(luaState, -1)) {
-			lua_pushstring(luaState, arg);
-			handled = call_function(luaState, 1);
-		} else {
-			lua_pop(luaState, 1);
+		lua_pushstring(luaState, "Npp_Callbacks");
+		lua_gettable(luaState, LUA_REGISTRYINDEX);
+		lua_getfield(luaState, -1, name);
+		if (lua_istable(luaState, -1)) {
+			lua_pushnil(luaState); /* first key */
+			while (lua_next(luaState, -2) != 0) {
+				lua_pushstring(luaState, arg);
+				handled = call_function(luaState, 1);
+				// call_function removes the function for us, the key stays on the stack
+			}
 		}
+		lua_pop(luaState, 2); // the Npp_Callbacks table and the callback table
 	}
 	return handled;
 }
 
 static bool CallNamedFunction(const char *name, int numberArg, const char *stringArg) {
+	// Temporarily disable this function
+	return false;
 	bool handled = false;
 	if (luaState) {
 		lua_getglobal(luaState, name);
@@ -844,6 +960,8 @@ static bool CallNamedFunction(const char *name, int numberArg, const char *strin
 }
 
 static bool CallNamedFunction(const char *name, int numberArg, int numberArg2) {
+	// Temporarily disable this function
+	return false;
 	bool handled = false;
 	if (luaState) {
 		lua_getglobal(luaState, name);
@@ -1280,7 +1398,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		luaState = luaL_newstate();
 		if (!luaState) {
 			luaDisabled = true;
-			host->Trace("> Lua: scripting engine failed to initialise\r\n");
+			host->Trace("Lua: scripting engine failed to initialise\r\n");
 			return false;
 		}
 		lua_atpanic(luaState, LuaPanicFunction);
@@ -1360,6 +1478,24 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_setfield(luaState, -2, "StripValue");
 	*/
 
+	// Register the callbacks
+	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
+		char add[32] = "Add";
+		char remove[32] = "Remove";
+
+		lua_pushstring(luaState, callbacks[i]);
+		lua_pushcclosure(luaState, cf_scite_add_callback, 1);
+		strcat(add, callbacks[i]);
+		lua_setfield(luaState, -2, add);
+
+		lua_pushstring(luaState, callbacks[i]);
+		lua_pushcclosure(luaState, cf_scite_remove_callback, 1);
+		strcat(remove, callbacks[i]);
+		lua_setfield(luaState, -2, remove);
+	}
+	lua_newtable(luaState);
+	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_Callbacks");
+
 	// Keep "scite" for backwards compatibility but also allow "npp"
 	lua_setglobal(luaState, "scite");
 	lua_getglobal(luaState, "scite");
@@ -1434,7 +1570,7 @@ bool LuaExtension::Load(const char *filename) {
 				extensionScript = filename;
 				luaL_loadfile(luaState, filename);
 				if (!call_function(luaState, 0, true)) {
-					host->Trace("> Lua: error occurred while loading extension script\r\n");
+					host->Trace("Lua: error occurred while loading extension script\r\n");
 				}
 				loaded = true;
 			}
@@ -1523,8 +1659,6 @@ bool LuaExtension::RemoveBuffer(int index) {
 	return false;
 }
 
-
-
 /* mark in error messages for incomplete statements */
 #define EOFMARK         "<eof>"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
@@ -1550,16 +1684,18 @@ bool LuaExtension::RunString(const char *s) {
 
 	return true;
 }
+
 bool LuaExtension::RunFile(const char *filename) {
 	if (Exists(filename) && (luaState || InitGlobalScope(false))) {
 		luaL_loadfile(luaState, filename);
 		if (!call_function(luaState, 0, true)) {
-			host->Trace("> Lua: error occurred while loading startup script\r\n");
+			host->Trace("Lua: error occurred while loading startup script\r\n");
 		}
 	}
 
 	return true;
 }
+
 bool LuaExtension::OnExecute(const char *s) {
 	static bool isFirstLine = true;
 	static std::string chunk;
@@ -1636,6 +1772,10 @@ bool LuaExtension::OnExecute(const char *s) {
 		lua_settop(luaState, 0); /* clear stack */
 	}
 	return true;
+}
+
+bool LuaExtension::OnBeforeOpen(const char *filename) {
+	return CallNamedFunction("OnBeforeOpen", filename);
 }
 
 bool LuaExtension::OnOpen(const char *filename) {
@@ -2080,6 +2220,10 @@ bool LuaExtension::OnKey(int keyval, int modifiers) {
 
 bool LuaExtension::OnDwellStart(int pos, const char *word) {
 	return CallNamedFunction("OnDwellStart", pos, word);
+}
+
+bool LuaExtension::OnBeforeClose(const char *filename) {
+	return CallNamedFunction("OnBeforeClose", filename);
 }
 
 bool LuaExtension::OnClose(const char *filename) {

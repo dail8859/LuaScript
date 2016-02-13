@@ -16,7 +16,7 @@ private:
 public:
 	static LuaExtension &Instance();
 
-	virtual ~LuaExtension();
+	~LuaExtension();
 
 	bool Initialise(NppExtensionAPI *host_);
 	bool Finalise();
@@ -30,6 +30,7 @@ public:
 	bool RunString(const char *s);
 	bool RunFile(const char *filename);
 
+	bool OnBeforeOpen(const char *filename);
 	bool OnOpen(const char *filename);
 	bool OnSwitchFile(const char *filename);
 	bool OnBeforeSave(const char *filename);
@@ -45,6 +46,7 @@ public:
 	bool OnUserListSelection(int listType, const char *selection);
 	bool OnKey(int keyval, int modifiers);
 	bool OnDwellStart(int pos, const char *word);
+	bool OnBeforeClose(const char *filename);
 	bool OnClose(const char *filename);
 	bool OnUserStrip(int control, int change);
 	bool NeedsOnClose();
