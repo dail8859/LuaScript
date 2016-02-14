@@ -23,7 +23,6 @@ ConsoleDialog::ConsoleDialog() :
 	m_currentHistory(0),
 	m_runButtonIsRun(true)
 {
-	m_historyIter = m_history.end();
 }
 
 ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
@@ -33,16 +32,14 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_prompt(other.m_prompt),
 	m_hTabIcon(NULL),
 	m_history(other.m_history),
-	m_historyIter(other.m_historyIter),
-	m_changes(other.m_changes),
 	m_currentHistory(other.m_currentHistory),
 	m_runButtonIsRun(other.m_runButtonIsRun)
 {
 }
 
+
 ConsoleDialog::~ConsoleDialog()
 {
-
 	if (m_sciOutput.GetID())
 	{
 		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_sciOutput.GetID()));
@@ -62,7 +59,6 @@ ConsoleDialog::~ConsoleDialog()
 	}
 
 	m_console = NULL;
-
 }
 
 void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterface* console)
@@ -168,111 +164,52 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 	return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
 }
 
-
-void ConsoleDialog::historyPrevious()
-{
-	if (m_currentHistory > 0)
-	{
-		
-		const char *text = (const char *)m_sciInput.Send(SCI_GETCHARACTERPOINTER);
-		auto wtext = WcharMbcsConverter::char2tchar(text);
-
-		// Not an empty string and different from orig
-		if (wtext.get()[0] && (m_historyIter == m_history.end() || *m_historyIter != wtext.get()))
-		{
-			if (m_changes.find(m_currentHistory) == m_changes.end())
-			{
-				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(wtext.get())));
-			}
-			else
-			{
-				m_changes[m_currentHistory] = tstring(wtext.get());
-			}
+void ConsoleDialog::historyPrevious() {
+	if (m_currentHistory > 0) {
+		if (m_currentHistory == m_history.size()) { // Yes, this is mean to be "=="
+			m_curLine = WcharMbcsConverter::char2tchar((const char *)m_sciInput.Send(SCI_GETCHARACTERPOINTER)).get();
 		}
-		//delete[] buffer;
-
 		--m_currentHistory;
-		--m_historyIter;
 
-		// If there's no changes to the line, just copy the original
-		if (m_changes.find(m_currentHistory) == m_changes.end())
-		{
-			m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_historyIter->c_str()).get());
-			m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-		}
-		else
-		{
-			// Set it as the changed string
-			m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_changes[m_currentHistory].c_str()).get());
-			m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-		}
-
+		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
+		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
+		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
 }
 
-void ConsoleDialog::historyNext()
-{
-	if (static_cast<size_t>(m_currentHistory) < m_history.size())
-	{
-		const char *text = (const char *)m_sciInput.Send(SCI_GETCHARACTERPOINTER);
-		auto wtext = WcharMbcsConverter::char2tchar(text);
+void ConsoleDialog::historyNext() {
+	if (m_history.empty()) return;
 
-		// Not an empty string and different from orig
-		if (wtext.get()[0] && *m_historyIter != wtext.get())
-		{
-			if (m_changes.find(m_currentHistory) == m_changes.end())
-			{
-				m_changes.insert(std::pair<int, tstring>(m_currentHistory, tstring(wtext.get())));
-			}
-			else
-			{
-				m_changes[m_currentHistory] = tstring(wtext.get());
-			}
-		}
-		//delete[] buffer;
-
+	if (m_currentHistory < m_history.size() - 1) {
 		++m_currentHistory;
-		++m_historyIter;
 
-		// If there's no changes to the line, just copy the original
-		if (m_changes.find(m_currentHistory) == m_changes.end()) {
-			if (m_historyIter != m_history.end())
-			{
-				m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_historyIter->c_str()).get());
-				m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-			}
-			else
-			{
-				m_sciInput.Send(SCI_CLEARALL);
-			}
-		}
-		else
-		{
-			// Set it as the changed string
-			m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_changes[m_currentHistory].c_str()).get());
-			m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-		}
+		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
+		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
+		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
+	}
+	else if (m_currentHistory == m_history.size() - 1) {
+		++m_currentHistory;
+
+		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_curLine.c_str()).get());
+		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
+		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
 }
-
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
 {
 	if (line && line[0] && (m_history.empty() || line != m_history.back()))
-	{
-		m_history.push_back(tstring(line));
-		m_currentHistory = m_history.size();
-	}
-
-	m_historyIter = m_history.end();
-	m_changes.clear();
+		m_history.emplace_back(line);
+	m_currentHistory = m_history.size();
+	m_curLine.clear();
 }
 
 void ConsoleDialog::historyEnd()
 {
 	m_currentHistory = m_history.size();
-	m_historyIter = m_history.end();
+	m_curLine.clear();
 	m_sciInput.Send(SCI_CLEARALL);
+	m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 }
 
 LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -326,6 +263,7 @@ void ConsoleDialog::runStatement()
 		historyAdd(WcharMbcsConverter::char2tchar(text).get());
 		m_console->runStatement(text);
 		m_sciInput.Send(SCI_CLEARALL);
+		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
 }
 
@@ -354,6 +292,7 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 	SetWindowLong(sci, GWL_STYLE, currentStyle | WS_TABSTOP);
 
 	m_sciOutput.SetID(sci);
+	m_sciOutput.Send(SCI_SETUNDOCOLLECTION, 0);
 	m_sciOutput.Send(SCI_SETREADONLY, 1);
 	m_sciOutput.Send(SCI_USEPOPUP, 0);
 	m_sciOutput.Send(SCI_SETLEXER, SCLEX_NULL);
@@ -432,7 +371,7 @@ LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wP
 void ConsoleDialog::writeText(size_t length, const char *text)
 {
 	m_sciOutput.Send(SCI_SETREADONLY, 0);
-	for (idx_t i = 0; i < length; ++i)
+	for (size_t i = 0; i < length; ++i)
 	{
 		if (text[i] == '\r')
 		{
@@ -459,7 +398,7 @@ void ConsoleDialog::writeError(size_t length, const char *text)
 	size_t docLength = m_sciOutput.Send(SCI_GETLENGTH);
 	size_t realLength = length;
 	m_sciOutput.Send(SCI_SETREADONLY, 0);
-	for (idx_t i = 0; i < length; ++i)
+	for (size_t i = 0; i < length; ++i)
 	{
 		if (text[i] == '\r')
 		{
@@ -543,13 +482,13 @@ void ConsoleDialog::clearText()
 
 void ConsoleDialog::onStyleNeeded(SCNotification* notification)
 {
-	idx_t startPos = m_sciOutput.Send(SCI_GETENDSTYLED);
-	idx_t startLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, startPos);
-	idx_t endPos = (idx_t)notification->position;
-	idx_t endLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, endPos);
+	size_t startPos = m_sciOutput.Send(SCI_GETENDSTYLED);
+	size_t startLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, startPos);
+	size_t endPos = (size_t)notification->position;
+	size_t endLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, endPos);
 
 	LineDetails lineDetails;
-	for(idx_t lineNumber = startLine; lineNumber <= endLine; ++lineNumber)
+	for (size_t lineNumber = startLine; lineNumber <= endLine; ++lineNumber)
 	{
 		lineDetails.lineLength = m_sciOutput.Send(SCI_GETLINE, lineNumber);
 
@@ -625,7 +564,7 @@ void ConsoleDialog::onHotspotClick(SCNotification* notification)
 	assert(m_console != NULL);
 	if (m_console)
 	{
-		idx_t lineNumber = m_sciOutput.Send(SCI_LINEFROMPOSITION, static_cast<WPARAM>(notification->position));
+		size_t lineNumber = m_sciOutput.Send(SCI_LINEFROMPOSITION, static_cast<WPARAM>(notification->position));
 		LineDetails lineDetails;
 		lineDetails.lineLength = m_sciOutput.Send(SCI_GETLINE, lineNumber);
 

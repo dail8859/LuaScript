@@ -6,13 +6,12 @@
 #include "Scintilla.h"
 #include "GUI.h"
 
-#include <list>
-#include <map>
+#include <vector>
 
 struct SCNotification;
 struct NppData;
-
 struct LineDetails;
+typedef std::basic_string<TCHAR> tstring;
 
 class ConsoleDialog : public DockingDlgInterface
 {
@@ -69,10 +68,9 @@ private:
 	std::string m_prompt;
 	HICON m_hTabIcon;
 
-	std::list<tstring> m_history;
-	std::list<tstring>::iterator m_historyIter;
-	std::map<idx_t, tstring> m_changes;
-	idx_t m_currentHistory;
+	std::vector<tstring> m_history;
+	tstring m_curLine;
+	size_t m_currentHistory;
 	bool m_runButtonIsRun;
 };
 
@@ -89,9 +87,9 @@ struct LineDetails
 public:
 	char *line;
 	size_t lineLength;
-	idx_t errorLineNo;
-	idx_t filenameStart;
-	idx_t filenameEnd;
+	size_t errorLineNo;
+	size_t filenameStart;
+	size_t filenameEnd;
 	ErrorLevel errorLevel;
 };
 

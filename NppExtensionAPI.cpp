@@ -79,6 +79,17 @@ void NppExtensionAPI::Trace(const char *s) {
 	cd->writeText(strlen(s), s);
 }
 
+void NppExtensionAPI::Tracef(const char *fmt, ...) {
+	char buffer[512];
+	va_list arg;
+
+	va_start(arg, fmt);
+	vsnprintf(buffer, 512, fmt, arg);
+	va_end(arg);
+
+	cd->writeText(strlen(buffer), buffer);
+}
+
 std::string NppExtensionAPI::Property(const char *key) {
 	if (strcmp(key, "ext.lua.debug.traceback") == 0) return std::string("1");
 	if (strcmp(key, "ext.lua.startup.script") == 0) {

@@ -37,8 +37,6 @@
 #include "StaticDialog.h"
 
 typedef std::basic_string<TCHAR> generic_string;
-typedef std::basic_string<TCHAR> tstring;
-typedef size_t idx_t;
 
 class DockingDlgInterface : public StaticDialog
 {
