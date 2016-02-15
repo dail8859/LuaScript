@@ -401,6 +401,21 @@ static int cf_scite_remove_callback(lua_State *L) {
 	return 1;
 }
 
+static int cf_scite_removeall_callbacks(lua_State *L) {
+	const char *callback = lua_tostring(L, lua_upvalueindex(1));
+
+	lua_pushliteral(L, "Npp_Callbacks");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, -1, callback);
+	if (lua_istable(L, -1)) {
+		lua_pushstring(L, callback);
+		lua_pushnil(L);
+		lua_settable(L, 1);
+	}
+
+	return 0;
+}
+
 static int cf_scite_update_status_bar(lua_State *L) {
 	bool bUpdateSlowData = (lua_gettop(L) > 0 ? lua_toboolean(L, 1) : false) != 0;
 	host->UpdateStatusBar(bUpdateSlowData);
@@ -1482,6 +1497,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
 		char add[32] = "Add";
 		char remove[32] = "Remove";
+		char removeall[32] = "RemoveAll";
 
 		lua_pushstring(luaState, callbacks[i]);
 		lua_pushcclosure(luaState, cf_scite_add_callback, 1);
@@ -1492,6 +1508,11 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		lua_pushcclosure(luaState, cf_scite_remove_callback, 1);
 		strcat(remove, callbacks[i]);
 		lua_setfield(luaState, -2, remove);
+
+		lua_pushstring(luaState, callbacks[i]);
+		lua_pushcclosure(luaState, cf_scite_removeall_callbacks, 1);
+		strcat(removeall, callbacks[i]);
+		lua_setfield(luaState, -2, removeall);
 	}
 	lua_newtable(luaState);
 	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_Callbacks");
