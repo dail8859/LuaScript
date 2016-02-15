@@ -1,4 +1,9 @@
-## Text retrieval and modification
+# Editor Object
+- `editor` - Refers to the current editor view. Since Notepad++ has 2 views, this controls the one currently selected.
+  - `editor1` - Refers to the "first" view.
+  - `editor2` - Refers to the "second" view.
+
+### Text Retrieval and Modification
 
 **string editor:[GetText](http://www.scintilla.org/ScintillaDoc.html#SCI_GETTEXT)()** -- _Retrieve all the text in the document. Returns number of characters retrieved. Result is NUL-terminated._
 
@@ -42,7 +47,7 @@
 
 **editor:[SetLengthForEncode](http://www.scintilla.org/ScintillaDoc.html#SCI_SETLENGTHFORENCODE)(int bytes)** -- _Set the length of the utf8 argument for calling EncodedFromUTF8. Set to -1 and the string will be measured to the first nul._
 
-## Searching
+### Searching
 
 **position editor.[TargetStart](http://www.scintilla.org/ScintillaDoc.html#SCI_SETTARGETSTART)** -- _Sets the position that starts the target which is used for updating the document without affecting the scroll position._
 
@@ -72,11 +77,11 @@
 
 **int editor:[SearchPrev](http://www.scintilla.org/ScintillaDoc.html#SCI_SEARCHPREV)(int flags, string text)** -- _Find some text starting at the search anchor and moving backwards. Does not ensure the selection is visible._
 
-## Overtype
+### Overtype
 
 **bool editor.[Overtype](http://www.scintilla.org/ScintillaDoc.html#SCI_SETOVERTYPE)** -- _Set to overtype (true) or insert mode._
 
-## Cut, copy and paste
+### Cut, Copy and Paste
 
 **editor:[Cut](http://www.scintilla.org/ScintillaDoc.html#SCI_CUT)()** -- _Cut the selection to the clipboard._
 
@@ -96,11 +101,11 @@
 
 **bool editor.[PasteConvertEndings](http://www.scintilla.org/ScintillaDoc.html#SCI_SETPASTECONVERTENDINGS)** -- _Enable/Disable convert-on-paste for line endings_
 
-## Error handling
+### Error Handling
 
 **int editor.[Status](http://www.scintilla.org/ScintillaDoc.html#SCI_SETSTATUS)** -- _Change error status - 0 = OK._
 
-## Undo and Redo
+### Undo and Redo
 
 **editor:[Undo](http://www.scintilla.org/ScintillaDoc.html#SCI_UNDO)()** -- _Undo one action in the undo history._
 
@@ -120,7 +125,7 @@
 
 **editor:[AddUndoAction](http://www.scintilla.org/ScintillaDoc.html#SCI_ADDUNDOACTION)(int token, int flags)** -- _Add a container action to the undo stack_
 
-## Selection and information
+### Selection and Information
 
 **int editor.[TextLength](http://www.scintilla.org/ScintillaDoc.html#SCI_GETTEXTLENGTH)** read-only
 
@@ -218,7 +223,7 @@
 
 **bool editor.[MouseSelectionRectangularSwitch](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSESELECTIONRECTANGULARSWITCH)** -- _Set whether switching to rectangular mode while selecting with the mouse is allowed._
 
-## Multiple Selection and Virtual Space
+### Multiple Selection and Virtual Space
 
 **bool editor.[MultipleSelection](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMULTIPLESELECTION)** -- _Set whether multiple selections can be made_
 
@@ -284,7 +289,7 @@
 
 **editor:[MultipleSelectAddEach](http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIPLESELECTADDEACH)()** -- _Add each occurrence of the main selection in the target to the set of selections. If the current selection is empty then select word around caret._
 
-## Scrolling and automatic scrolling
+### Scrolling and Automatic Scrolling
 
 **editor:[LineScroll](http://www.scintilla.org/ScintillaDoc.html#SCI_LINESCROLL)(int columns, int lines)** -- _Scroll horizontally and vertically._
 
@@ -310,7 +315,7 @@
 
 **bool editor.[EndAtLastLine](http://www.scintilla.org/ScintillaDoc.html#SCI_SETENDATLASTLINE)** -- _Sets the scroll range so that maximum scroll position has the last line at the bottom of the view (default). Setting this to false allows scrolling one page below the last line._
 
-## White space
+### Whitespace
 
 **int editor.[ViewWS](http://www.scintilla.org/ScintillaDoc.html#SCI_SETVIEWWS)** -- _Make white space characters invisible, always visible or visible outside indentation._
 
@@ -324,15 +329,15 @@
 
 **int editor.[ExtraDescent](http://www.scintilla.org/ScintillaDoc.html#SCI_SETEXTRADESCENT)** -- _Set extra descent for each line_
 
-## Cursor
+### Cursor
 
 **int editor.[Cursor](http://www.scintilla.org/ScintillaDoc.html#SCI_SETCURSOR)** -- _Sets the cursor to one of the SC_CURSOR* values._
 
-## Mouse capture
+### Mouse Capture
 
 **bool editor.[MouseDownCaptures](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSEDOWNCAPTURES)** -- _Set whether the mouse is captured when its button is pressed._
 
-## Line endings
+### Line endings
 
 **int editor.[EOLMode](http://www.scintilla.org/ScintillaDoc.html#SCI_SETEOLMODE)** -- _Set the current end of line mode._
 
@@ -346,7 +351,7 @@
 
 **int editor.[LineEndTypesActive](http://www.scintilla.org/ScintillaDoc.html#SCI_GETLINEENDTYPESACTIVE)** read-only
 
-## Styling
+### Styling
 
 **position editor.[EndStyled](http://www.scintilla.org/ScintillaDoc.html#SCI_GETENDSTYLED)** read-only
 
@@ -362,7 +367,7 @@
 
 **int editor.[MaxLineState](http://www.scintilla.org/ScintillaDoc.html#SCI_GETMAXLINESTATE)** read-only
 
-## Style definition
+### Style Definition
 
 **editor:[StyleResetDefault](http://www.scintilla.org/ScintillaDoc.html#SCI_STYLERESETDEFAULT)()** -- _Reset the default style to its state at startup_
 
@@ -398,7 +403,7 @@
 
 **bool editor.[StyleHotSpot](http://www.scintilla.org/ScintillaDoc.html#SCI_STYLESETHOTSPOT)[int style]** -- _Set a style to be a hotspot or not._
 
-## Caret, selection, and hotspot styles
+### Caret, Selection, and Hotspot Styles
 
 **editor:[SetSelFore](http://www.scintilla.org/ScintillaDoc.html#SCI_SETSELFORE)(bool useSetting, colour fore)** -- _Set the foreground colour of the main and additional selections and whether to use this setting._
 
@@ -440,7 +445,7 @@
 
 **editor:[ToggleCaretSticky](http://www.scintilla.org/ScintillaDoc.html#SCI_TOGGLECARETSTICKY)()** -- _Switch between sticky and non-sticky: meant to be bound to a key._
 
-## Character representations
+### Character Representations
 
 **string editor.[Representation](http://www.scintilla.org/ScintillaDoc.html#SCI_SETREPRESENTATION)[string encodedCharacter]** -- _Set the way a character is drawn._
 
@@ -448,7 +453,7 @@
 
 **int editor.[ControlCharSymbol](http://www.scintilla.org/ScintillaDoc.html#SCI_SETCONTROLCHARSYMBOL)** -- _Change the way control characters are displayed: If symbol is &lt; 32, keep the drawn way, else, use the given character._
 
-## Margins
+### Margins
 
 **int editor.[MarginTypeN](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMARGINTYPEN)[int margin]** -- _Set a margin to be either numeric or symbolic._
 
@@ -480,7 +485,7 @@
 
 **int editor.[MarginOptions](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMARGINOPTIONS)** -- _Set the margin options._
 
-## Annotations
+### Annotations
 
 **string editor.[AnnotationText](http://www.scintilla.org/ScintillaDoc.html#SCI_ANNOTATIONSETTEXT)[int line]** -- _Set the annotation text for a line_
 
@@ -496,7 +501,7 @@
 
 **int editor.[AnnotationStyleOffset](http://www.scintilla.org/ScintillaDoc.html#SCI_ANNOTATIONSETSTYLEOFFSET)** -- _Get the start of the range of style numbers used for annotations_
 
-## Other settings
+### Other Settings
 
 **bool editor.[BufferedDraw](http://www.scintilla.org/ScintillaDoc.html#SCI_SETBUFFEREDDRAW)** -- _If drawing is buffered then each line of text is drawn into a bitmap buffer before drawing it to the screen to avoid flicker._
 
@@ -524,7 +529,7 @@
 
 **bool editor.[Focus](http://www.scintilla.org/ScintillaDoc.html#SCI_SETFOCUS)** -- _Change internal focus flag._
 
-## Brace highlighting
+### Brace Highlighting
 
 **editor:[BraceHighlight](http://www.scintilla.org/ScintillaDoc.html#SCI_BRACEHIGHLIGHT)(position pos1, position pos2)** -- _Highlight the characters at two positions._
 
@@ -536,7 +541,7 @@
 
 **position editor:[BraceMatch](http://www.scintilla.org/ScintillaDoc.html#SCI_BRACEMATCH)(position pos)** -- _Find the position of a matching brace or INVALID_POSITION if no match._
 
-## Tabs and Indentation Guides
+### Tabs and Indentation Guides
 
 **int editor.[TabWidth](http://www.scintilla.org/ScintillaDoc.html#SCI_SETTABWIDTH)** -- _Change the visible size of a tab to be a multiple of the width of a space character._
 
@@ -562,7 +567,7 @@
 
 **int editor.[HighlightGuide](http://www.scintilla.org/ScintillaDoc.html#SCI_SETHIGHLIGHTGUIDE)** -- _Set the highlighted indentation guide column. 0 = no highlighted guide._
 
-## Markers
+### Markers
 
 **editor:[MarkerDefine](http://www.scintilla.org/ScintillaDoc.html#SCI_MARKERDEFINE)(int markerNumber, int markerSymbol)** -- _Set the symbol used for a particular marker number._
 
@@ -606,7 +611,7 @@
 
 **editor:[MarkerDeleteHandle](http://www.scintilla.org/ScintillaDoc.html#SCI_MARKERDELETEHANDLE)(int handle)** -- _Delete a marker._
 
-## Indicators
+### Indicators
 
 **int editor.[IndicStyle](http://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETSTYLE)[int indic]** -- _Set an indicator to plain, squiggle or TT._
 
@@ -646,7 +651,7 @@
 
 **editor:[FindIndicatorHide](http://www.scintilla.org/ScintillaDoc.html#SCI_FINDINDICATORHIDE)()** -- _On OS X, hide the find indicator._
 
-## Autocompletion
+### Autocompletion
 
 **editor:[AutoCShow](http://www.scintilla.org/ScintillaDoc.html#SCI_AUTOCSHOW)(int lenEntered, string itemList)** -- _Display a auto-completion list. The lenEntered parameter indicates how many characters before the caret should be used to provide context._
 
@@ -698,11 +703,11 @@
 
 **int editor.[AutoCMaxWidth](http://www.scintilla.org/ScintillaDoc.html#SCI_AUTOCSETMAXWIDTH)** -- _Set the maximum width, in characters, of auto-completion and user lists. Set to 0 to autosize to fit longest item, which is the default._
 
-## User lists
+### User Lists
 
 **editor:[UserListShow](http://www.scintilla.org/ScintillaDoc.html#SCI_USERLISTSHOW)(int listType, string itemList)** -- _Display a list of strings and send notification when user chooses one._
 
-## Call tips
+### Call Tips
 
 **editor:[CallTipShow](http://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSHOW)(position pos, string definition)** -- _Show a call tip containing a definition near position pos._
 
@@ -726,7 +731,7 @@
 
 **bool editor.[CallTipPosition](http://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETPOSITION) write-only** -- _Set position of calltip, above or below text._
 
-## Key bindings
+### Key Bindings
 
 **editor:[AssignCmdKey](http://www.scintilla.org/ScintillaDoc.html#SCI_ASSIGNCMDKEY)(keymod km, int msg)** -- _When key+modifier combination km is pressed perform msg._
 
@@ -736,17 +741,17 @@
 
 **editor:[Null](http://www.scintilla.org/ScintillaDoc.html#SCI_NULL)()** -- _Null operation._
 
-## Popup edit menu
+### Popup Edit Menu
 
 **editor:[UsePopUp](http://www.scintilla.org/ScintillaDoc.html#SCI_USEPOPUP)(bool allowPopUp)** -- _Set whether a pop up menu is displayed automatically when the user presses the wrong mouse button._
 
-## Macro recording
+### Macro Recording
 
 **editor:[StartRecord](http://www.scintilla.org/ScintillaDoc.html#SCI_STARTRECORD)()** -- _Start notifying the container of all key presses and commands._
 
 **editor:[StopRecord](http://www.scintilla.org/ScintillaDoc.html#SCI_STOPRECORD)()** -- _Stop notifying the container of all key presses and commands._
 
-## Printing
+### Printing
 
 **int editor.[PrintMagnification](http://www.scintilla.org/ScintillaDoc.html#SCI_SETPRINTMAGNIFICATION)** -- _Sets the print magnification added to the point size of each style for printing._
 
@@ -754,7 +759,7 @@
 
 **int editor.[PrintWrapMode](http://www.scintilla.org/ScintillaDoc.html#SCI_SETPRINTWRAPMODE)** -- _Set printing to line wrapped (SC_WRAP_WORD) or not line wrapped (SC_WRAP_NONE)._
 
-## Direct access
+### Direct Access
 
 **int editor.[DirectFunction](http://www.scintilla.org/ScintillaDoc.html#SCI_GETDIRECTFUNCTION)** read-only
 
@@ -766,7 +771,7 @@
 
 **position editor.[GapPosition](http://www.scintilla.org/ScintillaDoc.html#SCI_GETGAPPOSITION)** read-only
 
-## Multiple views
+### Multiple Views
 
 **int editor.[DocPointer](http://www.scintilla.org/ScintillaDoc.html#SCI_SETDOCPOINTER)** -- _Change the document object used._
 
@@ -776,11 +781,11 @@
 
 **editor:[ReleaseDocument](http://www.scintilla.org/ScintillaDoc.html#SCI_RELEASEDOCUMENT)(int doc)** -- _Release a reference to the document, deleting document if it fades to black._
 
-## Background loading and saving
+### Background Loading and Saving
 
 **int editor:[CreateLoader](http://www.scintilla.org/ScintillaDoc.html#SCI_CREATELOADER)(int bytes)** -- _Create an ILoader*._
 
-## Folding
+### Folding
 
 **int editor:[VisibleFromDocLine](http://www.scintilla.org/ScintillaDoc.html#SCI_VISIBLEFROMDOCLINE)(int line)** -- _Find the display line of a document line taking hidden lines into account._
 
@@ -822,7 +827,7 @@
 
 **editor:[EnsureVisibleEnforcePolicy](http://www.scintilla.org/ScintillaDoc.html#SCI_ENSUREVISIBLEENFORCEPOLICY)(int line)** -- _Ensure a particular line is visible by expanding any header line hiding it. Use the currently set visibility policy to determine which range to display._
 
-## Line wrapping
+### Line Wrapping
 
 **int editor.[WrapMode](http://www.scintilla.org/ScintillaDoc.html#SCI_SETWRAPMODE)** -- _Sets whether text is word wrapped._
 
@@ -844,7 +849,7 @@
 
 **int editor:[WrapCount](http://www.scintilla.org/ScintillaDoc.html#SCI_WRAPCOUNT)(int line)** -- _The number of display lines needed to wrap a document line_
 
-## Zooming
+### Zooming
 
 **editor:[ZoomIn](http://www.scintilla.org/ScintillaDoc.html#SCI_ZOOMIN)()** -- _Magnify the displayed text by increasing the sizes by 1 point._
 
@@ -852,7 +857,7 @@
 
 **int editor.[Zoom](http://www.scintilla.org/ScintillaDoc.html#SCI_SETZOOM)** -- _Set the zoom level. This number of points is added to the size of all fonts. It may be positive to magnify or negative to reduce._
 
-## Long lines
+### Long Lines
 
 **int editor.[EdgeMode](http://www.scintilla.org/ScintillaDoc.html#SCI_SETEDGEMODE)** -- _The edge may be displayed by a line (EDGE_LINE) or by highlighting text that goes beyond it (EDGE_BACKGROUND) or not displayed at all (EDGE_NONE)._
 
@@ -860,7 +865,7 @@
 
 **colour editor.[EdgeColour](http://www.scintilla.org/ScintillaDoc.html#SCI_SETEDGECOLOUR)** -- _Change the colour used in edge indication._
 
-## Lexer
+### Lexer
 
 **int editor.[Lexer](http://www.scintilla.org/ScintillaDoc.html#SCI_SETLEXER)** -- _Set the lexing language of the document._
 
@@ -906,7 +911,7 @@
 
 **string editor.[Identifiers](http://www.scintilla.org/ScintillaDoc.html#SCI_SETIDENTIFIERS)[int style] write-only** -- _Set the identifiers that are shown in a particular style_
 
-## Notifications
+### Notifications
 
 **int editor.[Identifier](http://www.scintilla.org/ScintillaDoc.html#SCI_SETIDENTIFIER)** -- _Set the identifier reported as idFrom in notification messages._
 
@@ -914,6 +919,6 @@
 
 **int editor.[MouseDwellTime](http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSEDWELLTIME)** -- _Sets the time the mouse must sit still to generate a mouse dwell event._
 
-## Deprecated messages and notifications
+### Deprecated Messages and Notifications
 
 **int editor.[StyleBitsNeeded](http://www.scintilla.org/ScintillaDoc.html#SCI_GETSTYLEBITSNEEDED)** read-only
