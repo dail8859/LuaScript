@@ -20,8 +20,7 @@ ConsoleDialog::ConsoleDialog() :
 	m_console(NULL),
 	m_prompt("> "),
 	m_hTabIcon(NULL),
-	m_currentHistory(0),
-	m_runButtonIsRun(true)
+	m_currentHistory(0)
 {
 }
 
@@ -32,11 +31,9 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_prompt(other.m_prompt),
 	m_hTabIcon(NULL),
 	m_history(other.m_history),
-	m_currentHistory(other.m_currentHistory),
-	m_runButtonIsRun(other.m_runButtonIsRun)
+	m_currentHistory(other.m_currentHistory)
 {
 }
-
 
 ConsoleDialog::~ConsoleDialog()
 {
@@ -64,7 +61,7 @@ ConsoleDialog::~ConsoleDialog()
 void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterface* console)
 {
 	DockingDlgInterface::init(hInst, nppData._nppHandle);
-	
+
 	Window::init(hInst, nppData._nppHandle);
 	createOutputWindow(nppData._nppHandle);
 	createInputWindow(nppData._nppHandle);
@@ -79,73 +76,31 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 	switch(message)
 	{
 		case WM_INITDIALOG:
-			{
 				SetParent((HWND)m_sciOutput.GetID(), _hSelf);
 				ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
 				SetParent((HWND)m_sciInput.GetID(), _hSelf);
 				ShowWindow((HWND)m_sciInput.GetID(), SW_SHOW);
-				HFONT hCourier = CreateFont(14,0,0,0,FW_DONTCARE,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, FIXED_PITCH, _T("Courier New"));
-				if (hCourier != NULL)
-				{
-					SendMessage(::GetDlgItem(_hSelf, IDC_PROMPT), WM_SETFONT, reinterpret_cast<WPARAM>(hCourier), TRUE); 
-				}
 
 				// Subclass some stuff
 				SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 				SetWindowSubclass((HWND)m_sciOutput.GetID(), ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 				return FALSE;
-			}
 		case WM_SIZE:
 			MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, LOWORD(lParam), HIWORD(lParam) - 30, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_PROMPT), 0, HIWORD(lParam)-25, 30, 25, TRUE);
 			MoveWindow((HWND)m_sciInput.GetID(), 30, HIWORD(lParam) - 30, LOWORD(lParam) - 85, 25, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), LOWORD(lParam) - 50, HIWORD(lParam) - 30, 50, 25, TRUE);  
 			return FALSE;
-
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDC_RUN)
 			{
-				if (m_runButtonIsRun)
-				{
-					runStatement();
-					giveInputFocus();
-				}
-				else
-				{
-					assert(m_console != NULL);
-					if (m_console)
-					{
-						m_console->stopStatement();
-					}
-				}
+				runStatement();
+				giveInputFocus();
 				return FALSE;
 			}
 			break;
-
-		case WM_NOTIFY:
-			{
-				LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
-				if (m_sciOutput.GetID() == nmhdr->hwndFrom)
-				{
-					switch(nmhdr->code)
-					{
-						case SCN_STYLENEEDED:
-							onStyleNeeded(reinterpret_cast<SCNotification*>(lParam));
-							return FALSE;
-
-						case SCN_HOTSPOTCLICK:
-							onHotspotClick(reinterpret_cast<SCNotification*>(lParam));
-							return FALSE;
-						
-						default:
-							break;
-					}
-				}
-				break;
-			}
 		default:
 			break;
-
 	}
 
 	return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
@@ -159,7 +114,7 @@ void ConsoleDialog::historyPrevious() {
 		--m_currentHistory;
 
 		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
-		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
+		m_sciInput.Send(SCI_DOCUMENTEND);
 		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
 }
@@ -169,18 +124,14 @@ void ConsoleDialog::historyNext() {
 
 	if (m_currentHistory < m_history.size() - 1) {
 		++m_currentHistory;
-
 		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
-		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
 	else if (m_currentHistory == m_history.size() - 1) {
 		++m_currentHistory;
-
 		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_curLine.c_str()).get());
-		m_sciInput.Send(SCI_GOTOPOS, m_sciInput.Send(SCI_GETLENGTH));
-		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 	}
+	m_sciInput.Send(SCI_DOCUMENTEND);
+	m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
 }
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
@@ -254,21 +205,10 @@ void ConsoleDialog::runStatement()
 	}
 }
 
-
-void ConsoleDialog::stopStatement()
-{
-	assert(m_console != NULL);
-	if (m_console)
-	{
-		m_console->stopStatement();
-	}
-}
-
-
 void ConsoleDialog::setPrompt(const char *prompt)
 {
-	// NOTE: This doesn't seem to work at all
 	m_prompt = prompt;
+	// NOTE: This doesn't seem to work at all
 	::SetWindowTextA(::GetDlgItem(_hSelf, IDC_PROMPT), prompt);
 }
 
@@ -358,62 +298,20 @@ LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wP
 void ConsoleDialog::writeText(size_t length, const char *text)
 {
 	m_sciOutput.Send(SCI_SETREADONLY, 0);
-	for (size_t i = 0; i < length; ++i)
-	{
-		if (text[i] == '\r')
-		{
-			m_sciOutput.Send(SCI_APPENDTEXT, i, (LPARAM)text);
-			text += i + 1;
-			length -= i + 1;
-			i = 0;
-		}
-	}
-	
-	if (length > 0)
-	{
-		m_sciOutput.Send(SCI_APPENDTEXT, length, (LPARAM)text);
-	}
-
+	m_sciOutput.Send(SCI_APPENDTEXT, length, (LPARAM)text);
 	m_sciOutput.Send(SCI_SETREADONLY, 1);
-
-	m_sciOutput.Send(SCI_GOTOPOS, m_sciOutput.Send(SCI_GETLENGTH));
+	m_sciOutput.Send(SCI_DOCUMENTEND);
 }
-
 
 void ConsoleDialog::writeError(size_t length, const char *text)
 {
-	size_t docLength = m_sciOutput.Send(SCI_GETLENGTH);
-	size_t realLength = length;
-	m_sciOutput.Send(SCI_SETREADONLY, 0);
-	for (size_t i = 0; i < length; ++i)
-	{
-		if (text[i] == '\r')
-		{
-			if (i)
-			{
-				m_sciOutput.Send(SCI_APPENDTEXT, i, (LPARAM)text);
-			}
-			text += i + 1;
-			length -= i + 1;
-			realLength--;
-			i = 0;
-		}
-	}
-	
-	if (length > 0)
-	{
-		m_sciOutput.Send(SCI_APPENDTEXT, length, (LPARAM)text);
+	// TODO: possibly style the error message differently
+	// SCI_STARTSTYLING, docLength, 0x01
+	// SCI_SETSTYLING, realLength, 1
+	// SCI_COLOURISE, docLength, -1
 
-	}
-
-	m_sciOutput.Send(SCI_SETREADONLY, 1);
-	//callScintilla(SCI_STARTSTYLING, docLength, 0x01);
-	//callScintilla(SCI_SETSTYLING, realLength, 1);
-
-	//callScintilla(SCI_COLOURISE, docLength, -1);
-	m_sciOutput.Send(SCI_GOTOPOS, docLength + realLength);
+	writeText(length, text);
 }
-
 
 void ConsoleDialog::doDialog()
 {
@@ -432,12 +330,7 @@ void ConsoleDialog::doDialog()
 		m_data.dlgID = 0; // The index of the menu command to run
 		m_data.iPrevCont = -1;
 
-		//SetWindowPos(_hSelf, 0, 0, 0, 200, 400, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-
 		::SendMessage(_hParent, NPPM_DMMREGASDCKDLG, 0, (LPARAM)&m_data);
-
-		// Parse the whole doc, in case we've had errors that haven't been parsed yet
-		//m_sciOutput.Send(SCI_COLOURISE, 0, -1);
 	}
 
 	display(true);
@@ -448,125 +341,9 @@ void ConsoleDialog::hide()
 	display(false);
 }
 
-void ConsoleDialog::runEnabled(bool enabled)
-{
-	//EnableWindow(GetDlgItem(_hSelf, IDC_RUN), enabled);
-	::SetWindowText(GetDlgItem(_hSelf, IDC_RUN), enabled ? _T("Run") : _T("Stop"));
-	m_runButtonIsRun = enabled;
-
-	if (enabled)
-	{
-		::SetForegroundWindow(_hSelf);
-		//::SetActiveWindow(_hSelf);
-		::SetFocus((HWND)m_sciInput.GetID());
-	}
-}
-
 void ConsoleDialog::clearText()
 {
 	m_sciOutput.Send(SCI_SETREADONLY, 0);
 	m_sciOutput.Send(SCI_CLEARALL);
 	m_sciOutput.Send(SCI_SETREADONLY, 1);
-}
-
-void ConsoleDialog::onStyleNeeded(SCNotification* notification)
-{
-	size_t startPos = m_sciOutput.Send(SCI_GETENDSTYLED);
-	size_t startLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, startPos);
-	size_t endPos = (size_t)notification->position;
-	size_t endLine = m_sciOutput.Send(SCI_LINEFROMPOSITION, endPos);
-
-	LineDetails lineDetails;
-	for (size_t lineNumber = startLine; lineNumber <= endLine; ++lineNumber)
-	{
-		lineDetails.lineLength = m_sciOutput.Send(SCI_GETLINE, lineNumber);
-
-		if (lineDetails.lineLength > 0)
-		{
-			lineDetails.line = new char[lineDetails.lineLength + 1];
-			m_sciOutput.Send(SCI_GETLINE, lineNumber, reinterpret_cast<LPARAM>(lineDetails.line));
-			lineDetails.line[lineDetails.lineLength] = '\0';
-			lineDetails.errorLevel = EL_UNSET;
-			
-			
-			if (parseLine(&lineDetails))
-			{
-				startPos = m_sciOutput.Send(SCI_POSITIONFROMLINE, lineNumber);
-
-				// Check that it's not just a file called '<console>'
-				if (strncmp(lineDetails.line + lineDetails.filenameStart, "<console>", lineDetails.filenameEnd - lineDetails.filenameStart))
-				{
-					int mask, style;
-					switch(lineDetails.errorLevel)
-					{
-						case EL_WARNING:
-							mask = 0x04;
-							style = 0x04;
-							break;
-
-						case EL_ERROR:
-							mask = 0x01;
-							style = 0x01;
-							break;
-
-						case EL_UNSET:
-						case EL_INFO:
-						default:
-							mask = 0x00;
-							style = 0x00;
-							break;
-					}
-
-					if (lineDetails.filenameStart > 0)
-					{
-						m_sciOutput.Send(SCI_STARTSTYLING, startPos, mask);
-						m_sciOutput.Send(SCI_SETSTYLING, lineDetails.filenameStart, style);
-					}
-
-
-					m_sciOutput.Send(SCI_STARTSTYLING, startPos + lineDetails.filenameStart, mask | 0x02);
-					m_sciOutput.Send(SCI_SETSTYLING, lineDetails.filenameEnd - lineDetails.filenameStart, style | 0x02);
-					
-					if (lineDetails.lineLength > lineDetails.filenameEnd)
-					{
-						m_sciOutput.Send(SCI_STARTSTYLING, startPos + lineDetails.filenameEnd, mask);
-						m_sciOutput.Send(SCI_SETSTYLING, lineDetails.lineLength - lineDetails.filenameEnd, style);
-					}
-				}
-			}
-
-			delete[] lineDetails.line;
-		}
-	}
-
-	// ensure that everything is set as styled (just move the endStyled variable on to the requested position)
-	m_sciOutput.Send(SCI_STARTSTYLING, static_cast<WPARAM>(notification->position), 0x0);
-}
-
-bool ConsoleDialog::parseLine(LineDetails *lineDetails)
-{
-	return false;
-}
-
-void ConsoleDialog::onHotspotClick(SCNotification* notification)
-{
-	assert(m_console != NULL);
-	if (m_console)
-	{
-		size_t lineNumber = m_sciOutput.Send(SCI_LINEFROMPOSITION, static_cast<WPARAM>(notification->position));
-		LineDetails lineDetails;
-		lineDetails.lineLength = m_sciOutput.Send(SCI_GETLINE, lineNumber);
-
-		if (lineDetails.lineLength != SIZE_MAX)
-		{
-			lineDetails.line = new char[lineDetails.lineLength + 1];
-			m_sciOutput.SendPointer(SCI_GETLINE, lineNumber, lineDetails.line);
-			lineDetails.line[lineDetails.lineLength] = '\0';
-			if (parseLine(&lineDetails))
-			{
-				lineDetails.line[lineDetails.filenameEnd] = '\0';
-				m_console->openFile(lineDetails.line + lineDetails.filenameStart, lineDetails.errorLineNo);
-			}
-		}
-	}
 }

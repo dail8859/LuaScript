@@ -33,8 +33,6 @@ public:
 
 	void giveInputFocus() { SetFocus((HWND)m_sciInput.GetID()); }
 
-	void runEnabled(bool enabled);
-
 protected:
 	BOOL CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
 
@@ -45,7 +43,6 @@ private:
 	void createInputWindow(HWND hParentWindow);
 	void setStyles(HWND sci);
 	void runStatement();
-	void stopStatement();
 
 	static LRESULT CALLBACK inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 	static LRESULT CALLBACK scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
@@ -54,11 +51,6 @@ private:
 	void historyPrevious();
 	void historyAdd(const TCHAR *line);
 	void historyEnd();
-
-	/* Styler functions */
-	void onStyleNeeded(SCNotification* notification);
-	void onHotspotClick(SCNotification* notification);
-	bool parseLine(LineDetails *lineDetails);
 
 	tTbData m_data;
 	GUI::ScintillaWindow  m_sciOutput;
@@ -71,7 +63,6 @@ private:
 	std::vector<tstring> m_history;
 	tstring m_curLine;
 	size_t m_currentHistory;
-	bool m_runButtonIsRun;
 };
 
 enum ErrorLevel

@@ -29,8 +29,6 @@
 #include <windows.h>
 #include "StaticDialog.h"
 
-
-
 StaticDialog::~StaticDialog()
 {
 	if (isCreated())
@@ -41,13 +39,11 @@ StaticDialog::~StaticDialog()
 	}
 }
 
-
 void StaticDialog::destroy()
 {
 	::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE, (WPARAM)_hSelf);
 	::DestroyWindow(_hSelf);
 }
-
 
 POINT StaticDialog::getTopPoint(HWND hwnd, bool isLeft) const
 {
@@ -65,7 +61,6 @@ POINT StaticDialog::getTopPoint(HWND hwnd, bool isLeft) const
 	return p;
 }
 
-
 void StaticDialog::goToCenter()
 {
 	RECT rc;
@@ -80,7 +75,6 @@ void StaticDialog::goToCenter()
 
 	::SetWindowPos(_hSelf, HWND_TOP, x, y, _rc.right - _rc.left, _rc.bottom - _rc.top, SWP_SHOWWINDOW);
 }
-
 
 void StaticDialog::display(bool toShow) const
 {
@@ -112,7 +106,6 @@ void StaticDialog::display(bool toShow) const
 
 	Window::display(toShow);
 }
-
 
 HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate)
 {

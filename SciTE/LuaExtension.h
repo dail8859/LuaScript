@@ -23,10 +23,6 @@ public:
 	bool Clear();
 	bool Load(const char *filename);
 
-	bool InitBuffer(int);
-	bool ActivateBuffer(int);
-	bool RemoveBuffer(int);
-
 	bool RunString(const char *s);
 	bool RunFile(const char *filename);
 
@@ -48,6 +44,5 @@ public:
 	bool OnDwellStart(int pos, const char *word);
 	bool OnBeforeClose(const char *filename);
 	bool OnClose(const char *filename);
-	bool OnUserStrip(int control, int change);
 	bool NeedsOnClose();
 };

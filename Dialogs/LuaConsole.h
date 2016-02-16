@@ -50,8 +50,7 @@ public:
 	}
 
 	void showDialog() { mp_consoleDlg->doDialog(); }
-	void runStatement(const char *statement);
-	void stopStatement() {};
+	void runStatement(const char *statement) { LuaExtension::Instance().OnExecute(statement); }
 	void openFile(const char *filename, size_t lineNumber) {};
 
 	ConsoleDialog *mp_consoleDlg;

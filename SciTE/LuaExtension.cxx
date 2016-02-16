@@ -21,19 +21,12 @@
 
 #include "IFaceTable.h"
 
-extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include "lua.hpp"
 
-#if defined(_WIN32) && defined(_MSC_VER)
+// From lua.c
+#define EOFMARK         "<eof>"
+#define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 
-// MSVC looks deeper into the code than other compilers, sees that
-// lua_error calls longjmp, and complains about unreachable code.
-#pragma warning(disable: 4702)
-
-#endif
 
 const char *callbacks[] = {
 	"OnBeforeOpen", // Npp specific
@@ -102,13 +95,8 @@ static bool Exists(const char *fileName) {
 static NppExtensionAPI *host = 0;
 static lua_State *luaState = 0;
 static bool luaDisabled = false;
-
 static std::string extensionScript;
-
 static bool tracebackEnabled = true;
-
-static int maxBufferIndex = -1;
-static int curBufferIndex = 0; // HACK: set to 0 for now
 
 static int GetPropertyInt(const char *propName) {
 	int propVal = 0;
@@ -119,15 +107,6 @@ static int GetPropertyInt(const char *propName) {
 		}
 	}
 	return propVal;
-}
-
-LuaExtension::LuaExtension() {}
-
-LuaExtension::~LuaExtension() {}
-
-LuaExtension &LuaExtension::Instance() {
-	static LuaExtension singleton;
-	return singleton;
 }
 
 // Forward declarations
@@ -237,9 +216,9 @@ static void *checkudata(lua_State *L, int ud, const char *tname) {
 	return NULL;
 }
 
-static int cf_scite_send(lua_State *L) {
+static int cf_npp_send(lua_State *L) {
 	// This is reinstated as a replacement for the old <pane>:send, which was removed
-	// due to safety concerns.  Is now exposed as scite.SendEditor / scite.SendOutput.
+	// due to safety concerns.  Is now exposed as npp.SendEditor / npp.SendOutput.
 	// It is rewritten to be typesafe, checking the arguments against the metadata in
 	// IFaceTable in the same way that the object interface does.
 
@@ -283,7 +262,7 @@ static int cf_scite_send(lua_State *L) {
 	}
 }
 
-static int cf_scite_constname(lua_State *L) {
+static int cf_npp_constname(lua_State *L) {
 	char constName[100] = "";
 	const char *hint = nullptr;
 	int message = (int)luaL_checkinteger(L, 1);
@@ -294,23 +273,12 @@ static int cf_scite_constname(lua_State *L) {
 		lua_pushstring(L, constName);
 		return 1;
 	} else {
-		raise_error(L, "Argument does not match any Scintilla / SciTE constant");
+		raise_error(L, "Argument does not match any Scintilla / Notepad++ constant");
 		return 0;
 	}
 }
 
-static int cf_scite_open(lua_State *L) {
-	const char *s = luaL_checkstring(L, 1);
-	if (s) {
-		std::string cmd = "open:";
-		cmd += s;
-		Substitute(cmd, "\\", "\\\\");
-		host->Perform(cmd.c_str());
-	}
-	return 0;
-}
-
-static int cf_scite_menu_command(lua_State *L) {
+static int cf_npp_menu_command(lua_State *L) {
 	int cmdID = (int)luaL_checkinteger(L, 1);
 	if (cmdID) {
 		host->DoMenuCommand(cmdID);
@@ -332,7 +300,7 @@ void stackdump(lua_State* l)
 	host->Trace("\r\n");  /* end the listing */
 }
 
-static int cf_scite_add_callback(lua_State *L) {
+static int cf_npp_add_callback(lua_State *L) {
 	const char *callback = lua_tostring(L, lua_upvalueindex(1));
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
@@ -356,7 +324,7 @@ static int cf_scite_add_callback(lua_State *L) {
 	return 1;
 }
 
-static int cf_scite_remove_callback(lua_State *L) {
+static int cf_npp_remove_callback(lua_State *L) {
 	const char *callback = lua_tostring(L, lua_upvalueindex(1));
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 	int idx = -1;
@@ -401,7 +369,7 @@ static int cf_scite_remove_callback(lua_State *L) {
 	return 1;
 }
 
-static int cf_scite_removeall_callbacks(lua_State *L) {
+static int cf_npp_removeall_callbacks(lua_State *L) {
 	const char *callback = lua_tostring(L, lua_upvalueindex(1));
 
 	lua_pushliteral(L, "Npp_Callbacks");
@@ -416,66 +384,24 @@ static int cf_scite_removeall_callbacks(lua_State *L) {
 	return 0;
 }
 
-static int cf_scite_update_status_bar(lua_State *L) {
+static int cf_npp_update_status_bar(lua_State *L) {
 	bool bUpdateSlowData = (lua_gettop(L) > 0 ? lua_toboolean(L, 1) : false) != 0;
 	host->UpdateStatusBar(bUpdateSlowData);
 	return 0;
 }
 
-static int cf_scite_strip_show(lua_State *L) {
-	const char *s = luaL_checkstring(L, 1);
-	if (s) {
-		host->UserStripShow(s);
-	}
-	return 0;
-}
-
-static int cf_scite_strip_set(lua_State *L) {
-	int control = (int)luaL_checkinteger(L, 1);
-	const char *value = luaL_checkstring(L, 2);
-	if (value) {
-		host->UserStripSet(control, value);
-	}
-	return 0;
-}
-
-static int cf_scite_strip_set_list(lua_State *L) {
-	int control = (int)luaL_checkinteger(L, 1);
-	const char *value = luaL_checkstring(L, 2);
-	if (value) {
-		host->UserStripSetList(control, value);
-	}
-	return 0;
-}
-
-static int cf_scite_strip_value(lua_State *L) {
-	int control = (int)luaL_checkinteger(L, 1);
-	const char *value = host->UserStripValue(control);
-	if (value) {
-		lua_pushstring(L, value);
-		delete []value;
-		return 1;
-	} else {
-		lua_pushstring(L, "");
-	}
-	return 0;
-}
-
 static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
-	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "SciTE_MT_Pane"));
+	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Pane"));
 
 	if ((!pPane) && lua_istable(L, index)) {
 		// so that nested objects have a convenient way to do a back reference
 		int absIndex = absolute_index(L, index);
 		lua_pushliteral(L, "pane");
 		lua_gettable(L, absIndex);
-		pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, -1, "SciTE_MT_Pane"));
+		pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, -1, "Npp_MT_Pane"));
 	}
 
 	if (pPane) {
-		if ((*pPane == NppExtensionAPI::paneEditor) && (curBufferIndex < 0))
-			raise_error(L, "Editor pane is not accessible at this time.");
-
 		return *pPane;
 	}
 
@@ -602,7 +528,7 @@ struct PaneMatchObject {
 };
 
 static int cf_match_replace(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "SciTE_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Self argument for match:replace() should be a pane match object.");
 		return 0;
@@ -627,7 +553,7 @@ static int cf_match_replace(lua_State *L) {
 }
 
 static int cf_match_metatable_index(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "SciTE_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Internal error: pane match object is missing.");
 		return 0;
@@ -673,7 +599,7 @@ static int cf_match_metatable_index(lua_State *L) {
 }
 
 static int cf_match_metatable_tostring(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "SciTE_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Internal error: pane match object is missing.");
 		return 0;
@@ -721,7 +647,7 @@ static int cf_pane_match(lua_State *L) {
 				}
 			}
 		}
-		if (luaL_newmetatable(L, "SciTE_MT_PaneMatchObject")) {
+		if (luaL_newmetatable(L, "Npp_MT_PaneMatchObject")) {
 			lua_pushliteral(L, "__index");
 			lua_pushcfunction(L, cf_match_replace);
 			lua_pushcclosure(L, cf_match_metatable_index, 1);
@@ -742,7 +668,7 @@ static int cf_pane_match(lua_State *L) {
 
 static int cf_pane_match_generator(lua_State *L) {
 	const char *text = lua_tostring(L, 1);
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 2, "SciTE_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 2, "Npp_MT_PaneMatchObject"));
 
 	if (!(text)) {
 		raise_error(L, "Internal error: invalid state for <pane>:match generator.");
@@ -818,20 +744,6 @@ static int cf_props_metatable_newindex(lua_State *L) {
 	}
 	return 0;
 }
-
-/*
-static int cf_os_execute(lua_State *L) {
-	// The SciTE version of os.execute would pipe its stdout and stderr
-	// to the output pane.  This can be implemented in terms of popen
-	// on GTK and in terms of CreateProcess on Windows.  Either way,
-	// stdin should be null, and the Lua script should wait for the
-	// subprocess to finish before continuing.  (What if it takes
-	// a very long time?  Timeout?)
-
-	raise_error(L, "Not implemented.");
-	return 0;
-}
-*/
 
 static int cf_global_print(lua_State *L) {
 	int nargs = lua_gettop(L);
@@ -1084,7 +996,7 @@ struct IFacePropertyBinding {
 static int cf_ifaceprop_metatable_index(lua_State *L) {
 	// if there is a getter, __index calls it
 	// otherwise, __index raises "property 'name' is write-only".
-	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "SciTE_MT_IFacePropertyBinding"));
+	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "Npp_MT_IFacePropertyBinding"));
 	if (!(ipb && IFacePropertyIsScriptable(*(ipb->prop)))) {
 		raise_error(L, "Internal error: property binding is improperly set up");
 		return 0;
@@ -1103,7 +1015,7 @@ static int cf_ifaceprop_metatable_index(lua_State *L) {
 }
 
 static int cf_ifaceprop_metatable_newindex(lua_State *L) {
-	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "SciTE_MT_IFacePropertyBinding"));
+	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "Npp_MT_IFacePropertyBinding"));
 	if (!(ipb && IFacePropertyIsScriptable(*(ipb->prop)))) {
 		raise_error(L, "Internal error: property binding is improperly set up");
 		return 0;
@@ -1193,7 +1105,7 @@ static int push_iface_propval(lua_State *L, const char *name) {
 			if (ipb) {
 				ipb->pane = check_pane_object(L, 1);
 				ipb->prop = &prop;
-				if (luaL_newmetatable(L, "SciTE_MT_IFacePropertyBinding")) {
+				if (luaL_newmetatable(L, "Npp_MT_IFacePropertyBinding")) {
 					lua_pushliteral(L, "__index");
 					lua_pushcfunction(L, cf_ifaceprop_metatable_index);
 					lua_settable(L, -3);
@@ -1279,7 +1191,7 @@ static int cf_pane_metatable_newindex(lua_State *L) {
 
 void push_pane_object(lua_State *L, NppExtensionAPI::Pane p) {
 	*static_cast<NppExtensionAPI::Pane *>(lua_newuserdata(L, sizeof(p))) = p;
-	if (luaL_newmetatable(L, "SciTE_MT_Pane")) {
+	if (luaL_newmetatable(L, "Npp_MT_Pane")) {
 		lua_pushcfunction(L, cf_pane_metatable_index);
 		lua_setfield(L, -2, "__index");
 		lua_pushcfunction(L, cf_pane_metatable_newindex);
@@ -1366,7 +1278,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		// copy of the initialized global environment, and uses that to re-init the scope.
 
 		if (!reload) {
-			lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialState");
+			lua_getfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
 			if (lua_istable(luaState, -1)) {
 				lua_pushglobaltable(luaState);
 				clear_table(luaState, -1, true);
@@ -1374,7 +1286,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 				lua_pop(luaState, 2);
 
 				// restore initial package.loaded state
-				lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialPackageState");
+				lua_getfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialPackageState");
 				lua_getfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
 				clear_table(luaState, -1, false);
 				merge_table(luaState, -1, -2, false);
@@ -1390,12 +1302,12 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		// either way, we're going to need a "new" initial state.
 
 		lua_pushnil(luaState);
-		lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialState");
+		lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
 
 		// Also reset buffer data, since scripts might depend on this to know
 		// whether they need to re-initialize something.
 		lua_pushnil(luaState);
-		lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_BufferData_Array");
+		lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_BufferData_Array");
 
 		// Don't replace global scope using new_table, because then startup script is
 		// bound to a different copy of the globals than the extension script.
@@ -1430,7 +1342,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 	// props object - provides access to Property and SetProperty
 	lua_newuserdata(luaState, 1); // the value doesn't matter.
-	if (luaL_newmetatable(luaState, "SciTE_MT_Props")) {
+	if (luaL_newmetatable(luaState, "Npp_MT_Props")) {
 		lua_pushcfunction(luaState, cf_props_metatable_index);
 		lua_setfield(luaState, -2, "__index");
 		lua_pushcfunction(luaState, cf_props_metatable_newindex);
@@ -1459,39 +1371,14 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_newtable(luaState);
 
 	lua_getglobal(luaState, "editor");
-	lua_pushcclosure(luaState, cf_scite_send, 1);
+	lua_pushcclosure(luaState, cf_npp_send, 1);
 	lua_setfield(luaState, -2, "SendEditor");
 
-	//lua_getglobal(luaState, "output");
-	//lua_pushcclosure(luaState, cf_scite_send, 1);
-	//lua_setfield(luaState, -2, "SendOutput");
-
-	lua_pushcfunction(luaState, cf_scite_constname);
+	lua_pushcfunction(luaState, cf_npp_constname);
 	lua_setfield(luaState, -2, "ConstantName");
 
-	lua_pushcfunction(luaState, cf_scite_open);
-	lua_setfield(luaState, -2, "Open");
-
-	lua_pushcfunction(luaState, cf_scite_menu_command);
+	lua_pushcfunction(luaState, cf_npp_menu_command);
 	lua_setfield(luaState, -2, "MenuCommand");
-
-	// Remove SciTE specific functionality for now
-	/*
-	lua_pushcfunction(luaState, cf_scite_update_status_bar);
-	lua_setfield(luaState, -2, "UpdateStatusBar");
-
-	lua_pushcfunction(luaState, cf_scite_strip_show);
-	lua_setfield(luaState, -2, "StripShow");
-
-	lua_pushcfunction(luaState, cf_scite_strip_set);
-	lua_setfield(luaState, -2, "StripSet");
-
-	lua_pushcfunction(luaState, cf_scite_strip_set_list);
-	lua_setfield(luaState, -2, "StripSetList");
-
-	lua_pushcfunction(luaState, cf_scite_strip_value);
-	lua_setfield(luaState, -2, "StripValue");
-	*/
 
 	// Register the callbacks
 	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
@@ -1500,17 +1387,17 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		char removeall[32] = "RemoveAll";
 
 		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_scite_add_callback, 1);
+		lua_pushcclosure(luaState, cf_npp_add_callback, 1);
 		strcat(add, callbacks[i]);
 		lua_setfield(luaState, -2, add);
 
 		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_scite_remove_callback, 1);
+		lua_pushcclosure(luaState, cf_npp_remove_callback, 1);
 		strcat(remove, callbacks[i]);
 		lua_setfield(luaState, -2, remove);
 
 		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_scite_removeall_callbacks, 1);
+		lua_pushcclosure(luaState, cf_npp_removeall_callbacks, 1);
 		strcat(removeall, callbacks[i]);
 		lua_setfield(luaState, -2, removeall);
 	}
@@ -1525,7 +1412,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	// get global environment table from registry
 	lua_pushglobaltable(luaState);
 	// Metatable for global namespace, to publish iface constants
-	if (luaL_newmetatable(luaState, "SciTE_MT_GlobalScope")) {
+	if (luaL_newmetatable(luaState, "Npp_MT_GlobalScope")) {
 		lua_pushcfunction(luaState, cf_global_metatable_index);
 		lua_setfield(luaState, -2, "__index");
 	}
@@ -1540,15 +1427,24 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_pushglobaltable(luaState);
 	clone_table(luaState, -1, true);
 	lua_remove(luaState, -2); // remove the global table under the newly cloned table
-	lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialState");
+	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
 
 	// Clone loaded packages (package.loaded) state in the registry so that it can be restored.
 	lua_getfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
 	clone_table(luaState, -1);
-	lua_setfield(luaState, LUA_REGISTRYINDEX, "SciTE_InitialPackageState");
+	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialPackageState");
 	lua_pop(luaState, 1);
 
 	return true;
+}
+
+
+LuaExtension::LuaExtension() {}
+LuaExtension::~LuaExtension() {}
+
+LuaExtension &LuaExtension::Instance() {
+	static LuaExtension singleton;
+	return singleton;
 }
 
 bool LuaExtension::Initialise(NppExtensionAPI *host_) {
@@ -1600,89 +1496,6 @@ bool LuaExtension::Load(const char *filename) {
 	return loaded;
 }
 
-
-bool LuaExtension::InitBuffer(int index) {
-	//char msg[100];
-	//sprintf(msg, "InitBuffer(%d)\n", index);
-	//host->Trace(msg);
-
-	if (index > maxBufferIndex)
-		maxBufferIndex = index;
-
-	if (luaState) {
-		// This buffer might be recycled.  Clear the data associated
-		// with the old file.
-
-		lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_BufferData_Array");
-		if (lua_istable(luaState, -1)) {
-			lua_pushnil(luaState);
-			lua_rawseti(luaState, -2, index);
-		}
-		lua_pop(luaState, 1);
-		// We also need to handle cases where Lua initialization is
-		// delayed (e.g. no startup script).  For that we'll just
-		// explicitly call InitBuffer(curBufferIndex)
-	}
-
-	curBufferIndex = index;
-
-	return false;
-}
-
-bool LuaExtension::ActivateBuffer(int index) {
-	//char msg[100];
-	//sprintf(msg, "ActivateBuffer(%d)\n", index);
-	//host->Trace(msg);
-
-	// Probably don't need to do anything with Lua here.  Setting
-	// curBufferIndex is important so that InitGlobalScope knows
-	// which buffer is active, in order to populate the 'buffer'
-	// global with the right data.
-
-	curBufferIndex = index;
-
-	return false;
-}
-
-bool LuaExtension::RemoveBuffer(int index) {
-	//char msg[100];
-	//sprintf(msg, "RemoveBuffer(%d)\n", index);
-	//host->Trace(msg);
-
-	if (luaState) {
-		// Remove the bufferdata element at index, and move
-		// the other elements down.  The element at the
-		// current maxBufferIndex can be discarded after
-		// it gets copied to maxBufferIndex-1.
-
-		lua_getfield(luaState, LUA_REGISTRYINDEX, "SciTE_BufferData_Array");
-		if (lua_istable(luaState, -1)) {
-			for (int i = index; i < maxBufferIndex; ++i) {
-				lua_rawgeti(luaState, -1, i+1);
-				lua_rawseti(luaState, -2, i);
-			}
-
-			lua_pushnil(luaState);
-			lua_rawseti(luaState, -2, maxBufferIndex);
-
-			lua_pop(luaState, 1); // the bufferdata table
-		} else {
-			lua_pop(luaState, 1);
-		}
-	}
-
-	if (maxBufferIndex > 0)
-		maxBufferIndex--;
-
-	// Invalidate current buffer index; Activate or Init will follow.
-	curBufferIndex = -1;
-
-	return false;
-}
-
-/* mark in error messages for incomplete statements */
-#define EOFMARK         "<eof>"
-#define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 bool LuaExtension::RunString(const char *s) {
 	if (luaState || InitGlobalScope(false)) {
 		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
@@ -1832,7 +1645,6 @@ bool LuaExtension::OnSave(const char *filename) {
 	}
 #endif // 0
 
-
 	return result;
 }
 
@@ -1871,8 +1683,7 @@ struct StylingContext {
 	int lenNext;
 
 	static StylingContext *Context(lua_State *L) {
-		return static_cast<StylingContext *>(
-		        lua_touserdata(L, lua_upvalueindex(1)));
+		return static_cast<StylingContext *>(lua_touserdata(L, lua_upvalueindex(1)));
 	}
 
 	void Colourize() {
@@ -2249,10 +2060,6 @@ bool LuaExtension::OnBeforeClose(const char *filename) {
 
 bool LuaExtension::OnClose(const char *filename) {
 	return CallNamedFunction("OnClose", filename);
-}
-
-bool LuaExtension::OnUserStrip(int control, int change) {
-	return CallNamedFunction("OnStrip", control, change);
 }
 
 bool LuaExtension::NeedsOnClose() {

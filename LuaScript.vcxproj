@@ -118,7 +118,6 @@
     <ClCompile Include="Dialogs\AboutDialog.cpp" />
     <ClCompile Include="Dialogs\ConsoleDialog.cpp" />
     <ClCompile Include="Dialogs\Hyperlinks.cpp" />
-    <ClCompile Include="Dialogs\LuaConsole.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />

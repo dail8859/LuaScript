@@ -7,7 +7,6 @@ public:
 	ConsoleInterface() {};
 	virtual ~ConsoleInterface() {};
 	virtual void runStatement(const char *) = 0;
-	virtual void stopStatement() = 0;
 	virtual void openFile(const char *filename, size_t lineNumber) = 0;
 };
 

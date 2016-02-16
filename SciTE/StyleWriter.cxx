@@ -49,8 +49,7 @@ bool TextReader::Match(int pos, const char *s) {
 }
 
 int TextReader::StyleAt(int position) {
-	return static_cast<unsigned char>(sw.Call(
-		SCI_GETSTYLEAT, position, 0));
+	return static_cast<unsigned char>(sw.Call(SCI_GETSTYLEAT, position, 0));
 }
 
 int TextReader::GetLine(int position) {

@@ -37,7 +37,6 @@ static bool isReady = false;
 static void showConsole();
 static void editStartupScript();
 static void runCurrentFile();
-static void showSettings();
 static void showAbout();
 
 // --- Global variables ---
@@ -49,7 +48,6 @@ FuncItem funcItem[nbFunc] = {
 	{TEXT(""),                    NULL,              0, false, NULL}, // separator
 	{TEXT("About..."),            showAbout,         0, false, NULL}
 };
-
 
 inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam) {
 	return pSciMsg(pSciWndData, Msg, wParam, lParam);
@@ -75,18 +73,12 @@ bool updateScintilla() {
 	return true;
 }
 
-std::shared_ptr<char> getStartupScritFilePath(wchar_t *buff, size_t size) {
+std::shared_ptr<char> getStartupScriptFilePath(wchar_t *buff, size_t size) {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM)buff);
 	wcscat_s(buff, size, TEXT("\\"));
 	wcscat_s(buff, size, TEXT("startup"));
 	wcscat_s(buff, size, TEXT(".lua"));
 	return WcharMbcsConverter::wchar2char(buff);
-}
-
-void configSave() {
-}
-
-void configLoad() {
 }
 
 void pluginInit(HANDLE hModule) {
@@ -98,7 +90,6 @@ void pluginCleanUp() {
 
 void setNppInfo(NppData notepadPlusData) {
 	nppData = notepadPlusData;
-
 	g_console = new LuaConsole(nppData._nppHandle);
 	g_console->init((HINSTANCE)_hModule, nppData);
 	LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
@@ -138,15 +129,10 @@ static void runCurrentFile() {
 	}
 }
 
-void showSettings() {
-}
-
 void showAbout() {
 	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }
 
-
-// --- Notification callbacks ---
 void handleNotification(SCNotification *notifyCode) {
 	static TCHAR static_fname[MAX_PATH];
 	TCHAR fname[MAX_PATH];
