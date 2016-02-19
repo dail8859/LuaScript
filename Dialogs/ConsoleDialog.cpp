@@ -435,8 +435,10 @@ void ConsoleDialog::doDialog()
 		//create(m_data);
 		StaticDialog::create(_dlgID);
 
+		m_hTabIcon = (HICON)::LoadImage(_hInst, MAKEINTRESOURCE(IDI_LUA), IMAGE_ICON, 16, 16, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
+		m_data.hIconTab = m_hTabIcon;
 		m_data.hClient = _hSelf;
-		m_data.uMask = DWS_DF_CONT_BOTTOM;
+		m_data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
 		m_data.pszName = TEXT("LuaScript");
 		m_data.pszAddInfo = NULL;
 		m_data.pszModuleName = TEXT("LuaScript.dll");

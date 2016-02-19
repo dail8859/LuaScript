@@ -22,6 +22,7 @@
 #define IDC_BTN_ADD                     1012
 #define IDC_CHB_ALIGN                   1013
 #define IDC_RAD_FILE                    1014
+#define IDI_LUA                         1015
 
 // From PythonScript for the Console
 #define IDD_DIALOG1                     201

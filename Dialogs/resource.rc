@@ -7,6 +7,7 @@
 #include <richedit.h>
 #include "resource.h"
 
+IDI_LUA ICON "lua.ico"
 
 
 
