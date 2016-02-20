@@ -206,8 +206,7 @@ Rectangle Window::GetPosition() {
 }
 
 void Window::SetPosition(Rectangle rc) {
-	::SetWindowPos(static_cast<HWND>(wid),
-		0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOACTIVATE);
+	::SetWindowPos(static_cast<HWND>(wid), 0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOACTIVATE);
 }
 
 Rectangle Window::GetClientPosition() {
@@ -244,9 +243,7 @@ void Menu::Destroy() {
 }
 
 void Menu::Show(Point pt, Window &w) {
-	::TrackPopupMenu(static_cast<HMENU>(mid),
-		TPM_RIGHTBUTTON, pt.x - 4, pt.y, 0,
-		static_cast<HWND>(w.GetID()), NULL);
+	::TrackPopupMenu(static_cast<HMENU>(mid), TPM_RIGHTBUTTON, pt.x - 4, pt.y, 0, static_cast<HWND>(w.GetID()), NULL);
 	Destroy();
 }
 

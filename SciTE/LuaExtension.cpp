@@ -384,12 +384,6 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 	return 0;
 }
 
-static int cf_npp_update_status_bar(lua_State *L) {
-	bool bUpdateSlowData = (lua_gettop(L) > 0 ? lua_toboolean(L, 1) : false) != 0;
-	host->UpdateStatusBar(bUpdateSlowData);
-	return 0;
-}
-
 static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Pane"));
 
@@ -811,11 +805,11 @@ static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValu
 		} else {
 			lua_pop(L, 1);
 			if (result == LUA_ERRMEM) {
-				host->Trace("Lua: memory allocation error\r\n");
+				host->Trace("Memory allocation error\r\n");
 			} else if (result == LUA_ERRERR) {
-				host->Trace("Lua: an error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
+				host->Trace("An error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
 			} else {
-				host->Trace("Lua: unexpected error\r\n");
+				host->Trace("Unexpected error\r\n");
 			}
 		}
 	}
@@ -1256,7 +1250,7 @@ static int LuaPanicFunction(lua_State *L) {
 		luaState = NULL;
 		luaDisabled = true;
 	}
-	host->Trace("\r\n> Lua: error occurred in unprotected call.  This is very bad.\r\n");
+	host->Trace("\r\nError occurred in unprotected call.  This is very bad.\r\n");
 	return 1;
 }
 
@@ -1325,7 +1319,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		luaState = luaL_newstate();
 		if (!luaState) {
 			luaDisabled = true;
-			host->Trace("Lua: scripting engine failed to initialise\r\n");
+			host->Trace("Scripting engine failed to initialise\r\n");
 			return false;
 		}
 		lua_atpanic(luaState, LuaPanicFunction);
@@ -1487,7 +1481,7 @@ bool LuaExtension::Load(const char *filename) {
 				extensionScript = filename;
 				luaL_loadfile(luaState, filename);
 				if (!call_function(luaState, 0, true)) {
-					host->Trace("Lua: error occurred while loading extension script\r\n");
+					host->Trace("Error occurred while loading extension script\r\n");
 				}
 				loaded = true;
 			}
@@ -1523,7 +1517,8 @@ bool LuaExtension::RunFile(const char *filename) {
 	if (Exists(filename) && (luaState || InitGlobalScope(false))) {
 		luaL_loadfile(luaState, filename);
 		if (!call_function(luaState, 0, true)) {
-			host->Trace("Lua: error occurred while loading startup script\r\n");
+			host->Trace("Error occurred while loading startup script\r\n");
+			return false;
 		}
 	}
 
@@ -1560,7 +1555,6 @@ bool LuaExtension::OnExecute(const char *s) {
 						lua_pop(luaState, 1);
 						isFirstLine = false;
 						chunk = s;
-						//host->Trace("wait on more...\r\n");
 						return false;
 					}
 				}
@@ -1579,7 +1573,6 @@ bool LuaExtension::OnExecute(const char *s) {
 				const char *msg = lua_tolstring(luaState, -1, &lmsg);
 				if (lmsg >= marklen && strcmp(msg + lmsg - marklen, EOFMARK) == 0) {
 					lua_pop(luaState, 1);
-					//host->Trace("wait on even more...\r\n");
 					return false;
 				}
 			}
@@ -1600,8 +1593,7 @@ bool LuaExtension::OnExecute(const char *s) {
 		}
 		else {
 			// Print an error message
-			host->Trace(lua_tostring(luaState, -1));
-			host->Trace("\r\n");
+			host->Tracef("%s\r\n", lua_tostring(luaState, -1));
 		}
 		lua_settop(luaState, 0); /* clear stack */
 	}

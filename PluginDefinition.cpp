@@ -125,7 +125,6 @@ static void runCurrentFile() {
 	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
 	if (LuaExtension::Instance().RunString(doc) == false) {
 		g_console->showDialog();
-		SendScintilla(SCI_GRABFOCUS);
 	}
 }
 
@@ -157,7 +156,8 @@ void handleNotification(SCNotification *notifyCode) {
 		wcscat_s(buff, MAX_PATH, TEXT("\\"));
 		wcscat_s(buff, MAX_PATH, TEXT("startup"));
 		wcscat_s(buff, MAX_PATH, TEXT(".lua"));
-		LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get());
+		if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == false)
+			g_console->showDialog();
 		break;
 	case NPPN_FILEBEFOREOPEN:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);

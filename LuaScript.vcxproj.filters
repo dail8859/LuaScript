@@ -36,19 +36,19 @@
     <ClCompile Include="Utilities\WcharMbcsConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SciTE\IFaceTable.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SciTE\LuaExtension.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SciTE\StyleWriter.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SciTE\GUIWin.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NppExtensionAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\IFaceTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\LuaExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\StyleWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciTE\GUIWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

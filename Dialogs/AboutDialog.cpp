@@ -16,7 +16,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include <WindowsX.h>
+#include <Windows.h>
+#include <Shellapi.h>
 #include "PluginDefinition.h"
 #include "AboutDialog.h"
 #include "resource.h"
@@ -25,12 +26,13 @@
 
 INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	DECLARE_HANDLE(HDROP);
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
 		ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
 		ConvertStaticToHyperlink(hwndDlg, IDC_README);
-		Edit_SetText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
+		SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
 		return true;
 	case WM_COMMAND:
 		switch(LOWORD(wParam))

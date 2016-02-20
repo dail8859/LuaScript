@@ -97,18 +97,16 @@ std::string NppExtensionAPI::Property(const char *key) {
 		return std::string(getStartupScriptFilePath(buff, MAX_PATH).get());
 	}
 
-	this->Trace("TODO: NppExtensionAPI::Property(");
-	this->Trace(key);
-	this->Trace(")\r\n");
+	this->Tracef("TODO: NppExtensionAPI::Property(%s)\r\n", key);
 	return std::string("NppExtensionAPI::Property");
 }
 
 void NppExtensionAPI::SetProperty(const char *key, const char *val) {
-	this->Trace("TODO: NppExtensionAPI::SetProperty()\r\n");
+	this->Tracef("TODO: NppExtensionAPI::SetProperty(%s, %s)\r\n", key, val);
 }
 
 void NppExtensionAPI::UnsetProperty(const char *key) {
-	this->Trace("TODO: NppExtensionAPI::UnsetProperty()\r\n");
+	this->Tracef("TODO: NppExtensionAPI::UnsetProperty(%s)\r\n", key);
 }
 
 uptr_t NppExtensionAPI::GetInstance() {
@@ -120,33 +118,6 @@ void NppExtensionAPI::ShutDown() {
 	this->Trace("TODO: NppExtensionAPI::ShutDown()\r\n");
 }
 
-void NppExtensionAPI::Perform(const char *actions) {
-	this->Trace("TODO: NppExtensionAPI::Perform(");
-	this->Trace(actions);
-	this->Trace(")\r\n");
-}
-
 void NppExtensionAPI::DoMenuCommand(int cmdID) {
 	SendMessage(m_nppData->_nppHandle, NPPM_MENUCOMMAND, 0, (LPARAM)cmdID);
-}
-
-void NppExtensionAPI::UpdateStatusBar(bool bUpdateSlowData) {
-	this->Trace("TODO: NppExtensionAPI::UpdateStatusBar()\r\n");
-}
-
-void NppExtensionAPI::UserStripShow(const char *description) {
-	this->Trace("TODO: NppExtensionAPI::UserStripShow()\r\n");
-}
-
-void NppExtensionAPI::UserStripSet(int control, const char *value) {
-	this->Trace("TODO: NppExtensionAPI::UserStripSet()\r\n");
-}
-
-void NppExtensionAPI::UserStripSetList(int control, const char *value) {
-	this->Trace("TODO: NppExtensionAPI::UserStripSetList()\r\n");
-}
-
-const char *NppExtensionAPI::UserStripValue(int control) {
-	this->Trace("TODO: NppExtensionAPI::UserStripValue()\r\n");
-	return "NppExtensionAPI::UserStripValue";
 }

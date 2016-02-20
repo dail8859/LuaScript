@@ -56,11 +56,6 @@ public:
 	void ShutDown();
 	void Perform(const char *actions);
 	void DoMenuCommand(int cmdID);
-	void UpdateStatusBar(bool bUpdateSlowData);
-	void UserStripShow(const char *description);
-	void UserStripSet(int control, const char *value);
-	void UserStripSetList(int control, const char *value);
-	const char *UserStripValue(int control);
 
 private:
 	ConsoleDialog *cd;
