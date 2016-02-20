@@ -93,7 +93,6 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 				// Subclass some stuff
 				SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 				SetWindowSubclass((HWND)m_sciOutput.GetID(), ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
-				giveInputFocus();
 				return FALSE;
 			}
 		case WM_SIZE:
@@ -109,6 +108,7 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 				if (m_runButtonIsRun)
 				{
 					runStatement();
+					giveInputFocus();
 				}
 				else
 				{
@@ -120,19 +120,6 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 				}
 				return FALSE;
 			}
-			break;
-
-		case WM_ACTIVATE:
-			if (wParam == WA_ACTIVE)
-			{
-				OutputDebugString(_T("ConsoleDialog WM_ACTIVATE WA_ACTIVE\r\n"));
-				giveInputFocus();
-			}
-			break;
-
-		case WM_CHILDACTIVATE:
-			OutputDebugString(_T("ConsoleDialog WM_CHILDACTIVATE\r\n"));
-			giveInputFocus();
 			break;
 
 		case WM_NOTIFY:

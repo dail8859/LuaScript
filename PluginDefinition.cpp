@@ -31,6 +31,7 @@ static SciFnDirect pSciMsg;			// For direct scintilla call
 static sptr_t pSciWndData;			// For direct scintilla call
 static HANDLE _hModule;				// For dialog initialization
 static LuaConsole *g_console;
+static bool isReady = false;
 
 // --- Menu callbacks ---
 static void showConsole();
@@ -107,6 +108,8 @@ void setNppInfo(NppData notepadPlusData) {
 
 void showConsole() {
 	g_console->showDialog();
+	// If the console is shown automatically at startup, don't give it focus
+	if (isReady) g_console->mp_consoleDlg->giveInputFocus();
 }
 
 void editStartupScript() {
@@ -161,6 +164,7 @@ void handleNotification(SCNotification *notifyCode) {
 		LuaExtension::Instance().OnSavePointLeft();
 		break;
 	case NPPN_READY:
+		isReady = true;
 		// Run the startup script
 		wchar_t buff[MAX_PATH];
 		SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
