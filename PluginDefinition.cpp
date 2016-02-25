@@ -16,6 +16,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <vector>
 #include "PluginDefinition.h"
 #include "Version.h"
 #include "AboutDialog.h"
@@ -32,6 +33,8 @@ static sptr_t pSciWndData;			// For direct scintilla call
 static HANDLE _hModule;				// For dialog initialization
 static LuaConsole *g_console;
 static bool isReady = false;
+
+std::vector<FuncItem> funcItems;
 
 // --- Menu callbacks ---
 static void showConsole();
@@ -81,63 +84,65 @@ std::shared_ptr<char> getStartupScriptFilePath(wchar_t *buff, size_t size) {
 	return WcharMbcsConverter::wchar2char(buff);
 }
 
-void pluginInit(HANDLE hModule) {
-	_hModule = hModule;
+
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
+{
+	switch (reasonForCall)
+	{
+	case DLL_PROCESS_ATTACH:
+		_hModule = hModule;
+		break;
+	case DLL_PROCESS_DETACH:
+		break;
+	case DLL_THREAD_ATTACH:
+		break;
+	case DLL_THREAD_DETACH:
+		break;
+	}
+	return TRUE;
 }
 
-void pluginCleanUp() {
-}
-
-void setNppInfo(NppData notepadPlusData) {
+extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	nppData = notepadPlusData;
+
+	// Initialize the dialogs
 	g_console = new LuaConsole(nppData._nppHandle);
 	g_console->init((HINSTANCE)_hModule, nppData);
 	LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
-}
 
-// --- Menu call backs ---
+	// Set up the short cuts that we know of
+	funcItems.reserve(5); // we know we need at least 5
+	funcItems.emplace_back(FuncItem{ TEXT("Show Console"), showConsole, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("Run Current File"), runCurrentFile, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("About..."), showAbout, 0, false, NULL });
 
-void showConsole() {
-	g_console->showDialog();
-	// If the console is shown automatically at startup, don't give it focus
-	if (isReady) g_console->mp_consoleDlg->giveInputFocus();
-}
-
-void editStartupScript() {
+	// Run the startup script
 	wchar_t buff[MAX_PATH];
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
 	wcscat_s(buff, MAX_PATH, TEXT("\\"));
 	wcscat_s(buff, MAX_PATH, TEXT("startup"));
 	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
-	if (PathFileExists(buff) == 0) {
-		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
-		DWORD dwBytesWritten;
-		HANDLE h = CreateFile(buff, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-		WriteFile(h, s, strlen(s), &dwBytesWritten, NULL);
-		CloseHandle(h);
-	}
-	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);
-}
-
-
-static void runCurrentFile() {
-	updateScintilla();
-	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
-	if (LuaExtension::Instance().RunString(doc) == false) {
+	if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == false)
 		g_console->showDialog();
-	}
 }
 
-void showAbout() {
-	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
+extern "C" __declspec(dllexport) const wchar_t * getName() {
+	return NPP_PLUGIN_NAME;
 }
 
-void handleNotification(SCNotification *notifyCode) {
+extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
+	*nbF = nbFunc;
+	return funcItem;
+}
+
+extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	static TCHAR static_fname[MAX_PATH];
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
-	switch(nh.code)
+	switch (nh.code)
 	{
 	case SCN_CHARADDED:
 		LuaExtension::Instance().OnChar(notifyCode->ch);
@@ -150,14 +155,6 @@ void handleNotification(SCNotification *notifyCode) {
 		break;
 	case NPPN_READY:
 		isReady = true;
-		// Run the startup script
-		wchar_t buff[MAX_PATH];
-		SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
-		wcscat_s(buff, MAX_PATH, TEXT("\\"));
-		wcscat_s(buff, MAX_PATH, TEXT("startup"));
-		wcscat_s(buff, MAX_PATH, TEXT(".lua"));
-		if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == false)
-			g_console->showDialog();
 		break;
 	case NPPN_FILEBEFOREOPEN:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
@@ -192,4 +189,48 @@ void handleNotification(SCNotification *notifyCode) {
 		break;
 	}
 	return;
+}
+
+extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam) {
+	return TRUE;
+}
+
+extern "C" __declspec(dllexport) BOOL isUnicode() {
+	return TRUE;
+}
+
+// --- Menu call backs ---
+
+void showConsole() {
+	g_console->showDialog();
+	// If the console is shown automatically at startup, don't give it focus
+	if (isReady) g_console->mp_consoleDlg->giveInputFocus();
+}
+
+void editStartupScript() {
+	wchar_t buff[MAX_PATH];
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
+	wcscat_s(buff, MAX_PATH, TEXT("\\"));
+	wcscat_s(buff, MAX_PATH, TEXT("startup"));
+	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
+	if (PathFileExists(buff) == 0) {
+		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
+		DWORD dwBytesWritten;
+		HANDLE h = CreateFile(buff, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		WriteFile(h, s, strlen(s), &dwBytesWritten, NULL);
+		CloseHandle(h);
+	}
+	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);
+}
+
+static void runCurrentFile() {
+	updateScintilla();
+	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
+	if (LuaExtension::Instance().RunString(doc) == false) {
+		g_console->showDialog();
+	}
+}
+
+void showAbout() {
+	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }

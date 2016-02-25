@@ -119,7 +119,6 @@
     <ClCompile Include="Dialogs\ConsoleDialog.cpp" />
     <ClCompile Include="Dialogs\Hyperlinks.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
-    <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
     <ClCompile Include="SciTE\GUIWin.cpp" />

@@ -27,9 +27,6 @@
     <ClCompile Include="Dialogs\StaticDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LuaScript.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Dialogs\ConsoleDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
