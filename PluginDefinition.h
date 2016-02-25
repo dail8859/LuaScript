@@ -22,18 +22,6 @@
 #include "PluginInterface.h"
 
 #define SCI_UNUSED 0
-
 const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
-const int nbFunc = 5;
-
-// --- Helper functions ---
-LRESULT SendScintilla(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
-LRESULT SendNpp(UINT Msg, WPARAM wParam=SCI_UNUSED, LPARAM lParam=SCI_UNUSED);
-
-// Calls from LuaScript.cpp
-void pluginInit(HANDLE hModule);						// Called from DllMain, DLL_PROCESS_ATTACH
-void pluginCleanUp();									// Called from DllMain, DLL_PROCESS_DETACH
-void setNppInfo(NppData notepadPlusData);				// Called from setInfo()
-void handleNotification(SCNotification *notifyCode);	// Called from beNotified()
 
 #endif //PLUGINDEFINITION_H

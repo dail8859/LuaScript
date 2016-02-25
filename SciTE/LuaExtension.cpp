@@ -13,13 +13,12 @@
 #include <vector>
 
 #include "Scintilla.h"
-
 #include "GUI.h"
 #include "StyleWriter.h"
 #include "NppExtensionAPI.h"
 #include "LuaExtension.h"
-
 #include "IFaceTable.h"
+#include "WcharMbcsConverter.h"
 
 #include "lua.hpp"
 
@@ -27,6 +26,7 @@
 #define EOFMARK         "<eof>"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 
+std::vector<LuaFuncItem> luaShortcuts;
 
 const char *callbacks[] = {
 	"OnBeforeOpen", // Npp specific
@@ -380,6 +380,76 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 		lua_pushnil(L);
 		lua_settable(L, 1);
 	}
+
+	return 0;
+}
+
+static int cf_npp_add_shortcut(lua_State *L) {
+	ShortcutKey *sk = NULL;
+	const char *name = luaL_checkstring(L, 1);
+	const char *shortcut = luaL_checkstring(L, 2);
+	luaL_checktype(L, 3, LUA_TFUNCTION);
+
+	// Try to parse the string into a shortcut structure
+	if (shortcut[0] != '\0') {
+		const char *cur = shortcut;
+		sk = new ShortcutKey({ false, false, false, 0 });
+		do {
+			if (strncmp(cur, "Ctrl+", 5) == 0) {
+				if (sk->_isCtrl) raise_error(L, "Invalid shortcut key");
+				cur += 5;
+				sk->_isCtrl = true;
+			}
+			else if (strncmp(cur, "Alt+", 4) == 0) {
+				if (sk->_isAlt) raise_error(L, "Invalid shortcut key");
+				cur += 4;
+				sk->_isAlt = true;
+			}
+			else if (strncmp(cur, "Shift+", 6) == 0) {
+				if (sk->_isShift) raise_error(L, "Invalid shortcut key");
+				cur += 6;
+				sk->_isShift = true;
+			}
+			else {
+				// Only allow A-Z, 0-9, F1-F12
+				if (strlen(cur) == 1) {
+					if (isalnum(toupper(cur[0]))) sk->_key = toupper(*cur++);
+					else raise_error(L, "Cannot parse shortcut key");
+				}
+				else if (strlen(cur) <= 3 && toupper(cur[0]) == 'F') {
+					cur++;
+					// Make sure the rest of the string is a valid number
+					if (isdigit(cur[0]) && cur[0] != '0' && (cur[1] == NULL || isdigit(cur[1]))) {
+						sk->_key = 0x6F + atoi(cur);
+						break;
+					}
+					else
+						raise_error(L, "Cannot parse shortcut key");
+				}
+				else raise_error(L, "Cannot parse shortcut key");
+			}
+		} while (*cur != NULL);
+		// Do a quick sanity check?
+	}
+
+
+	lua_pushliteral(L, "Npp_Shortcuts");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1); // the nil value
+		lua_newtable(L);
+		lua_setfield(L, LUA_REGISTRYINDEX, "Npp_Shortcuts");
+		lua_getfield(L, LUA_REGISTRYINDEX, "Npp_Shortcuts"); // get the table back on top of the stack
+	}
+
+	// Get the length of the table
+	size_t len = lua_rawlen(L, -1);
+	lua_pushvalue(L, 3); // the function
+	lua_seti(L, -2, len + 1);
+
+	luaShortcuts.emplace_back();
+	strncpy(luaShortcuts.back()._itemName, name, nbChar);
+	luaShortcuts.back()._pShKey = sk;
 
 	return 0;
 }
@@ -1374,6 +1444,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_pushcfunction(luaState, cf_npp_menu_command);
 	lua_setfield(luaState, -2, "MenuCommand");
 
+	lua_pushcfunction(luaState, cf_npp_add_shortcut);
+	lua_setfield(luaState, -2, "AddShortcut");
+
 	// Register the callbacks
 	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
 		char add[32] = "Add";
@@ -2056,4 +2129,18 @@ bool LuaExtension::OnClose(const char *filename) {
 
 bool LuaExtension::NeedsOnClose() {
 	return HasNamedFunction("OnClose");
+}
+
+void LuaExtension::CallShortcut(int id) {
+	lua_pushliteral(luaState, "Npp_Shortcuts");
+	lua_gettable(luaState, LUA_REGISTRYINDEX);
+	if (lua_isnil(luaState, -1)) {
+		raise_error(luaState, "Attempting to call unregistered shortcut");
+	}
+
+	lua_geti(luaState, -1, id);
+	call_function(luaState, 0, true);
+	lua_settop(luaState, 0); // Make sure it is cleared
+
+	return;
 }

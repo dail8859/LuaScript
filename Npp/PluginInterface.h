@@ -46,7 +46,6 @@ typedef void (__cdecl * PFUNCPLUGINCMD)();
 typedef void (__cdecl * PBENOTIFIED)(SCNotification *);
 typedef LRESULT (__cdecl * PMESSAGEPROC)(UINT Message, WPARAM wParam, LPARAM lParam);
 
-
 struct ShortcutKey
 {
 	bool _isCtrl;
@@ -72,6 +71,4 @@ extern "C" __declspec(dllexport) const TCHAR * getName();
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *);
 extern "C" __declspec(dllexport) void beNotified(SCNotification *);
 extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam);
-
-// This API return always true now, since Notepad++ isn't compiled in ANSI mode anymore
 extern "C" __declspec(dllexport) BOOL isUnicode();

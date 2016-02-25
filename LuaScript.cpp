@@ -18,13 +18,28 @@
 
 #include <vector>
 #include "PluginDefinition.h"
-#include "Version.h"
 #include "AboutDialog.h"
 
 #include "LuaConsole.h"
 #include "LuaExtension.h"
 #include "NppExtensionAPI.h"
 #include "WcharMbcsConverter.h"
+
+// --- Menu callbacks ---
+static void showConsole();
+static void editStartupScript();
+static void runCurrentFile();
+void runLuaShortcut_1();
+void runLuaShortcut_2();
+void runLuaShortcut_3();
+void runLuaShortcut_4();
+void runLuaShortcut_5();
+void runLuaShortcut_6();
+void runLuaShortcut_7();
+void runLuaShortcut_8();
+void runLuaShortcut_9();
+void runLuaShortcut_10();
+static void showAbout();
 
 // --- Local variables ---
 static NppData nppData;
@@ -33,34 +48,29 @@ static sptr_t pSciWndData;			// For direct scintilla call
 static HANDLE _hModule;				// For dialog initialization
 static LuaConsole *g_console;
 static bool isReady = false;
-
-std::vector<FuncItem> funcItems;
-
-// --- Menu callbacks ---
-static void showConsole();
-static void editStartupScript();
-static void runCurrentFile();
-static void showAbout();
-
-// --- Global variables ---
-ShortcutKey sk = {true, false, false, '`'};
-FuncItem funcItem[nbFunc] = {
-	{TEXT("Show Console"),        showConsole,       0, false, NULL},
-	{TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL},
-	{TEXT("Run Current File"),    runCurrentFile,    0, false, NULL},
-	{TEXT(""),                    NULL,              0, false, NULL}, // separator
-	{TEXT("About..."),            showAbout,         0, false, NULL}
+static std::vector<FuncItem> funcItems;
+static PFUNCPLUGINCMD LuaShortcutWrappers[] = {
+	runLuaShortcut_1,
+	runLuaShortcut_2,
+	runLuaShortcut_3,
+	runLuaShortcut_4,
+	runLuaShortcut_5,
+	runLuaShortcut_6,
+	runLuaShortcut_7,
+	runLuaShortcut_8,
+	runLuaShortcut_9,
+	runLuaShortcut_10
 };
 
-inline LRESULT SendScintilla(UINT Msg, WPARAM wParam, LPARAM lParam) {
+static inline LRESULT SendScintilla(UINT Msg, WPARAM wParam = SCI_UNUSED, LPARAM lParam = SCI_UNUSED) {
 	return pSciMsg(pSciWndData, Msg, wParam, lParam);
 }
 
-inline LRESULT SendNpp(UINT Msg, WPARAM wParam, LPARAM lParam) {
+static inline LRESULT SendNpp(UINT Msg, WPARAM wParam = SCI_UNUSED, LPARAM lParam = SCI_UNUSED) {
 	return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
 
-bool updateScintilla() {
+static bool updateScintilla() {
 	HWND curScintilla;
 
 	// Get the current scintilla
@@ -83,7 +93,6 @@ std::shared_ptr<char> getStartupScriptFilePath(wchar_t *buff, size_t size) {
 	wcscat_s(buff, size, TEXT(".lua"));
 	return WcharMbcsConverter::wchar2char(buff);
 }
-
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
 {
@@ -115,8 +124,6 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	funcItems.emplace_back(FuncItem{ TEXT("Show Console"), showConsole, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("Run Current File"), runCurrentFile, 0, false, NULL });
-	funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
-	funcItems.emplace_back(FuncItem{ TEXT("About..."), showAbout, 0, false, NULL });
 
 	// Run the startup script
 	wchar_t buff[MAX_PATH];
@@ -124,8 +131,27 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	wcscat_s(buff, MAX_PATH, TEXT("\\"));
 	wcscat_s(buff, MAX_PATH, TEXT("startup"));
 	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
-	if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == false)
+	if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == true) {
+		if (luaShortcuts.size() > 0) funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
+		for (size_t i = 0; i < luaShortcuts.size(); ++i) {
+			funcItems.emplace_back();
+			_tcscpy_s(funcItems.back()._itemName, 64, WcharMbcsConverter::char2wchar(luaShortcuts[i]._itemName).get());
+			funcItems.back()._pFunc = LuaShortcutWrappers[i];
+			funcItems.back()._cmdID = 0;
+			funcItems.back()._init2Check = false;
+			funcItems.back()._pShKey = luaShortcuts[i]._pShKey;
+		}
+
+		if (luaShortcuts.size() > sizeof(LuaShortcutWrappers) / sizeof(LuaShortcutWrappers[0])) MessageBox(NULL, NPP_PLUGIN_NAME, TEXT("Too many Lua shortcuts have been registered."), MB_OK | MB_ICONERROR);
+
+		luaShortcuts.clear(); // No longer need anything from it
+	}
+	else {
 		g_console->showDialog();
+	}
+
+	funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("About..."), showAbout, 0, false, NULL });
 }
 
 extern "C" __declspec(dllexport) const wchar_t * getName() {
@@ -133,8 +159,8 @@ extern "C" __declspec(dllexport) const wchar_t * getName() {
 }
 
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
-	*nbF = nbFunc;
-	return funcItem;
+	*nbF = funcItems.size();
+	return funcItems.data();
 }
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
@@ -230,6 +256,18 @@ static void runCurrentFile() {
 		g_console->showDialog();
 	}
 }
+
+// Allow up to 10 shortcuts to be registered
+void runLuaShortcut_1()  { LuaExtension::Instance().CallShortcut( 1); }
+void runLuaShortcut_2()  { LuaExtension::Instance().CallShortcut( 2); }
+void runLuaShortcut_3()  { LuaExtension::Instance().CallShortcut( 3); }
+void runLuaShortcut_4()  { LuaExtension::Instance().CallShortcut( 4); }
+void runLuaShortcut_5()  { LuaExtension::Instance().CallShortcut( 5); }
+void runLuaShortcut_6()  { LuaExtension::Instance().CallShortcut( 6); }
+void runLuaShortcut_7()  { LuaExtension::Instance().CallShortcut( 7); }
+void runLuaShortcut_8()  { LuaExtension::Instance().CallShortcut( 8); }
+void runLuaShortcut_9()  { LuaExtension::Instance().CallShortcut( 9); }
+void runLuaShortcut_10() { LuaExtension::Instance().CallShortcut(10); }
 
 void showAbout() {
 	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);

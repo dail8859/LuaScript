@@ -120,7 +120,7 @@
     <ClCompile Include="Dialogs\Hyperlinks.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
-    <ClCompile Include="PluginDefinition.cpp" />
+    <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="SciTE\GUIWin.cpp" />
     <ClCompile Include="SciTE\IFaceTable.cpp" />
     <ClCompile Include="SciTE\LuaExtension.cpp" />

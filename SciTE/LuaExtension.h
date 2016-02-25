@@ -7,6 +7,15 @@
 
 #include "NppExtensionAPI.h"
 
+#include <vector>
+
+struct LuaFuncItem
+{
+	char _itemName[nbChar];
+	ShortcutKey *_pShKey;
+};
+extern std::vector<LuaFuncItem> luaShortcuts;
+
 class LuaExtension final {
 private:
 	LuaExtension(); // Singleton
@@ -45,4 +54,6 @@ public:
 	bool OnBeforeClose(const char *filename);
 	bool OnClose(const char *filename);
 	bool NeedsOnClose();
+
+	void CallShortcut(int id);
 };
