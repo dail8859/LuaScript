@@ -29,16 +29,6 @@
 static void showConsole();
 static void editStartupScript();
 static void runCurrentFile();
-void runLuaShortcut_1();
-void runLuaShortcut_2();
-void runLuaShortcut_3();
-void runLuaShortcut_4();
-void runLuaShortcut_5();
-void runLuaShortcut_6();
-void runLuaShortcut_7();
-void runLuaShortcut_8();
-void runLuaShortcut_9();
-void runLuaShortcut_10();
 static void showAbout();
 
 // --- Local variables ---
@@ -50,16 +40,16 @@ static LuaConsole *g_console;
 static bool isReady = false;
 static std::vector<FuncItem> funcItems;
 static PFUNCPLUGINCMD LuaShortcutWrappers[] = {
-	runLuaShortcut_1,
-	runLuaShortcut_2,
-	runLuaShortcut_3,
-	runLuaShortcut_4,
-	runLuaShortcut_5,
-	runLuaShortcut_6,
-	runLuaShortcut_7,
-	runLuaShortcut_8,
-	runLuaShortcut_9,
-	runLuaShortcut_10
+	[](){ LuaExtension::Instance().CallShortcut(1); },
+	[](){ LuaExtension::Instance().CallShortcut(2); },
+	[](){ LuaExtension::Instance().CallShortcut(3); },
+	[](){ LuaExtension::Instance().CallShortcut(4); },
+	[](){ LuaExtension::Instance().CallShortcut(5); },
+	[](){ LuaExtension::Instance().CallShortcut(6); },
+	[](){ LuaExtension::Instance().CallShortcut(7); },
+	[](){ LuaExtension::Instance().CallShortcut(8); },
+	[](){ LuaExtension::Instance().CallShortcut(9); },
+	[](){ LuaExtension::Instance().CallShortcut(10);},
 };
 
 static inline LRESULT SendScintilla(UINT Msg, WPARAM wParam = SCI_UNUSED, LPARAM lParam = SCI_UNUSED) {
@@ -120,7 +110,6 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	LuaExtension::Instance().Initialise(new NppExtensionAPI(g_console->mp_consoleDlg, &nppData));
 
 	// Set up the short cuts that we know of
-	funcItems.reserve(5); // we know we need at least 5
 	funcItems.emplace_back(FuncItem{ TEXT("Show Console"), showConsole, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("Run Current File"), runCurrentFile, 0, false, NULL });
@@ -133,6 +122,13 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
 	if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == true) {
 		if (luaShortcuts.size() > 0) funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
+
+		const int max_shortcuts = sizeof(LuaShortcutWrappers) / sizeof(LuaShortcutWrappers[0]);
+		if (luaShortcuts.size() > max_shortcuts) {
+			luaShortcuts.resize(max_shortcuts);
+			MessageBox(NULL, TEXT("Too many Lua shortcuts have been registered.\r\nThis is an arbitrary limit and can be increased if you ask nicely on Github."), NPP_PLUGIN_NAME, MB_OK | MB_ICONERROR);
+		}
+
 		for (size_t i = 0; i < luaShortcuts.size(); ++i) {
 			funcItems.emplace_back();
 			_tcscpy_s(funcItems.back()._itemName, 64, WcharMbcsConverter::char2wchar(luaShortcuts[i]._itemName).get());
@@ -142,11 +138,10 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 			funcItems.back()._pShKey = luaShortcuts[i]._pShKey;
 		}
 
-		if (luaShortcuts.size() > sizeof(LuaShortcutWrappers) / sizeof(LuaShortcutWrappers[0])) MessageBox(NULL, NPP_PLUGIN_NAME, TEXT("Too many Lua shortcuts have been registered."), MB_OK | MB_ICONERROR);
-
 		luaShortcuts.clear(); // No longer need anything from it
 	}
 	else {
+		// Something went wrong :(
 		g_console->showDialog();
 	}
 
@@ -154,11 +149,11 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	funcItems.emplace_back(FuncItem{ TEXT("About..."), showAbout, 0, false, NULL });
 }
 
-extern "C" __declspec(dllexport) const wchar_t * getName() {
+extern "C" __declspec(dllexport) const wchar_t *getName() {
 	return NPP_PLUGIN_NAME;
 }
 
-extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF) {
+extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) {
 	*nbF = funcItems.size();
 	return funcItems.data();
 }
@@ -256,18 +251,6 @@ static void runCurrentFile() {
 		g_console->showDialog();
 	}
 }
-
-// Allow up to 10 shortcuts to be registered
-void runLuaShortcut_1()  { LuaExtension::Instance().CallShortcut( 1); }
-void runLuaShortcut_2()  { LuaExtension::Instance().CallShortcut( 2); }
-void runLuaShortcut_3()  { LuaExtension::Instance().CallShortcut( 3); }
-void runLuaShortcut_4()  { LuaExtension::Instance().CallShortcut( 4); }
-void runLuaShortcut_5()  { LuaExtension::Instance().CallShortcut( 5); }
-void runLuaShortcut_6()  { LuaExtension::Instance().CallShortcut( 6); }
-void runLuaShortcut_7()  { LuaExtension::Instance().CallShortcut( 7); }
-void runLuaShortcut_8()  { LuaExtension::Instance().CallShortcut( 8); }
-void runLuaShortcut_9()  { LuaExtension::Instance().CallShortcut( 9); }
-void runLuaShortcut_10() { LuaExtension::Instance().CallShortcut(10); }
 
 void showAbout() {
 	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
