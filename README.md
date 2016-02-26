@@ -56,7 +56,7 @@ The full documentation can be found [here](/doc/editor.md). The `editor` also ha
 - `npp.Remove<Event>(function)`
   - removes a previously added function handler for a specific event
 - `npp.AddShortcut(name, shortcut, function)`
-  - adds a shortcut under the plugin menu. *This can only be called from the startup script.*
+  - adds a shortcut under the plugin menu. *This can only be called during start-up.*
   - `name` the human readable text that will be shown in the menu
   - `shortcut` a string that specifies the modifiers and key for the shortcut e.g. `"Alt+Shift+F5"` or an empty string `""`
     - The modifiers (`Ctrl`, `Alt`, and `Shift`) can appear in any order
