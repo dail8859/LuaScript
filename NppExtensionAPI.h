@@ -48,6 +48,7 @@ public:
 	void Remove(Pane p, int start, int end);
 	void Insert(Pane p, int pos, const char *s);
 	void Trace(const char *s);
+	void TraceError(const char *s);
 	void Tracef(const char *fmt, ...);
 	std::string Property(const char *key);
 	void SetProperty(const char *key, const char *val);

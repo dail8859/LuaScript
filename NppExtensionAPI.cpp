@@ -79,6 +79,10 @@ void NppExtensionAPI::Trace(const char *s) {
 	cd->writeText(strlen(s), s);
 }
 
+void NppExtensionAPI::TraceError(const char *s) {
+	cd->writeError(strlen(s), s);
+}
+
 void NppExtensionAPI::Tracef(const char *fmt, ...) {
 	char buffer[512];
 	va_list arg;

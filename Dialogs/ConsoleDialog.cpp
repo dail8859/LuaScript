@@ -226,6 +226,9 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 
 	// Set up the styles
 	setStyles((HWND)m_sciOutput.GetID());
+
+	// Also add any additional styles
+	m_sciOutput.Send(SCI_STYLESETFORE, 39, 0x0000FF);
 }
 
 void ConsoleDialog::createInputWindow(HWND hParentWindow) {
@@ -305,12 +308,25 @@ void ConsoleDialog::writeText(size_t length, const char *text)
 
 void ConsoleDialog::writeError(size_t length, const char *text)
 {
-	// TODO: possibly style the error message differently
-	// SCI_STARTSTYLING, docLength, 0x01
-	// SCI_SETSTYLING, realLength, 1
-	// SCI_COLOURISE, docLength, -1
+	typedef struct {
+		unsigned char c;
+		unsigned char style;
+	} cell;
 
-	writeText(length, text);
+	std::vector<cell> cells(length + 1);
+
+	for (size_t i = 0; i < length; ++i) {
+		cells[i].c = text[i];
+		cells[i].style = 39;
+	}
+	cells[length].c = 0;
+	cells[length].style = 0;
+
+	m_sciOutput.Send(SCI_SETREADONLY, 0);
+	m_sciOutput.Send(SCI_DOCUMENTEND); // make sure it's at the end
+	m_sciOutput.Send(SCI_ADDSTYLEDTEXT, length * 2, (LPARAM)cells.data());
+	m_sciOutput.Send(SCI_SETREADONLY, 1);
+	m_sciOutput.Send(SCI_DOCUMENTEND);
 }
 
 void ConsoleDialog::doDialog()

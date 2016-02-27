@@ -90,6 +90,8 @@ The full documentation can be found [here](/doc/editor.md). The `editor` also ha
     - The modifiers (`Ctrl`, `Alt`, and `Shift`) can appear in any order
     - The key must be last. It can be `A-Z`, `0-9`, or `F1-F12`
   - `function` the function to be called. It takes no parameters and has no return value
+- `npp.WriteError(...)`
+  - acts like `print` but the text is styled in red
 
 ## Development
 The code has been developed using MSVC 2013. To compile the code:

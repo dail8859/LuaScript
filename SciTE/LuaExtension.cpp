@@ -454,6 +454,38 @@ static int cf_npp_add_shortcut(lua_State *L) {
 	return 0;
 }
 
+static int cf_npp_write_error(lua_State *L) {
+	int nargs = lua_gettop(L);
+
+	lua_getglobal(L, "tostring");
+
+	for (int i = 1; i <= nargs; ++i) {
+		if (i > 1)
+			host->TraceError("\t");
+
+		const char *argStr = lua_tostring(L, i);
+		if (argStr) {
+			host->TraceError(argStr);
+		}
+		else {
+			lua_pushvalue(L, -1); // tostring
+			lua_pushvalue(L, i);
+			lua_call(L, 1, 1);
+			argStr = lua_tostring(L, -1);
+			if (argStr) {
+				host->TraceError(argStr);
+			}
+			else {
+				raise_error(L, "tostring (called from print) returned a non-string");
+			}
+			lua_settop(L, nargs + 1);
+		}
+	}
+
+	host->TraceError("\r\n");
+	return 0;
+}
+
 static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Pane"));
 
@@ -875,11 +907,11 @@ static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValu
 		} else {
 			lua_pop(L, 1);
 			if (result == LUA_ERRMEM) {
-				host->Trace("Memory allocation error\r\n");
+				host->TraceError("Memory allocation error\r\n");
 			} else if (result == LUA_ERRERR) {
-				host->Trace("An error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
+				host->TraceError("An error occurred, but cannot be reported due to failure in _TRACEBACK\r\n");
 			} else {
-				host->Trace("Unexpected error\r\n");
+				host->TraceError("Unexpected error\r\n");
 			}
 		}
 	}
@@ -1320,7 +1352,7 @@ static int LuaPanicFunction(lua_State *L) {
 		luaState = NULL;
 		luaDisabled = true;
 	}
-	host->Trace("\r\nError occurred in unprotected call.  This is very bad.\r\n");
+	host->TraceError("\r\nError occurred in unprotected call.  This is very bad.\r\n");
 	return 1;
 }
 
@@ -1389,7 +1421,7 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		luaState = luaL_newstate();
 		if (!luaState) {
 			luaDisabled = true;
-			host->Trace("Scripting engine failed to initialise\r\n");
+			host->TraceError("Scripting engine failed to initialise\r\n");
 			return false;
 		}
 		lua_atpanic(luaState, LuaPanicFunction);
@@ -1428,9 +1460,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	push_pane_object(luaState, NppExtensionAPI::paneOutput);
 	lua_setglobal(luaState, "console");
 
-	//push_pane_object(luaState, NppExtensionAPI::paneOutput);
-	//lua_setglobal(luaState, "output");
-
 	// scite
 	lua_newtable(luaState);
 
@@ -1446,6 +1475,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 	lua_pushcfunction(luaState, cf_npp_add_shortcut);
 	lua_setfield(luaState, -2, "AddShortcut");
+
+	lua_pushcfunction(luaState, cf_npp_write_error);
+	lua_setfield(luaState, -2, "WriteError");
 
 	// Register the callbacks
 	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
@@ -1554,7 +1586,7 @@ bool LuaExtension::Load(const char *filename) {
 				extensionScript = filename;
 				luaL_loadfile(luaState, filename);
 				if (!call_function(luaState, 0, true)) {
-					host->Trace("Error occurred while loading extension script\r\n");
+					host->TraceError("Error occurred while loading extension script\r\n");
 				}
 				loaded = true;
 			}
@@ -1574,8 +1606,8 @@ bool LuaExtension::RunString(const char *s) {
 
 		if (status != LUA_OK) {
 			// Print an error message
-			host->Trace(lua_tostring(luaState, -1));
-			host->Trace("\r\n");
+			host->TraceError(lua_tostring(luaState, -1));
+			host->TraceError("\r\n");
 			lua_settop(luaState, 0); /* clear stack */
 			return false;
 		}
@@ -1590,7 +1622,7 @@ bool LuaExtension::RunFile(const char *filename) {
 	if (Exists(filename) && (luaState || InitGlobalScope(false))) {
 		luaL_loadfile(luaState, filename);
 		if (!call_function(luaState, 0, true)) {
-			host->Trace("Error occurred while loading startup script\r\n");
+			host->TraceError("Error occurred while loading startup script\r\n");
 			return false;
 		}
 	}
@@ -1660,13 +1692,14 @@ bool LuaExtension::OnExecute(const char *s) {
 				lua_getglobal(luaState, "print");
 				lua_insert(luaState, 1);
 				if (lua_pcall(luaState, lua_gettop(luaState) - 1, 0, 0) != 0)
-					host->Trace("error calling " LUA_QL("print"));
+					host->TraceError("error calling " LUA_QL("print"));
 			}
 			// else everything finished fine but had no return value
 		}
 		else {
 			// Print an error message
-			host->Tracef("%s\r\n", lua_tostring(luaState, -1));
+			host->TraceError(lua_tostring(luaState, -1));
+			host->TraceError("\r\n");
 		}
 		lua_settop(luaState, 0); /* clear stack */
 	}
