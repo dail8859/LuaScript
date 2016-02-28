@@ -50,6 +50,7 @@ public:
 	void Trace(const char *s);
 	void TraceError(const char *s);
 	void Tracef(const char *fmt, ...);
+	void ClearConsole();
 	std::string Property(const char *key);
 	void SetProperty(const char *key, const char *val);
 	void UnsetProperty(const char *key);

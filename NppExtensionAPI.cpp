@@ -94,6 +94,10 @@ void NppExtensionAPI::Tracef(const char *fmt, ...) {
 	cd->writeText(strlen(buffer), buffer);
 }
 
+void NppExtensionAPI::ClearConsole() {
+	cd->clearText();
+}
+
 std::string NppExtensionAPI::Property(const char *key) {
 	if (strcmp(key, "ext.lua.debug.traceback") == 0) return std::string("1");
 	if (strcmp(key, "ext.lua.startup.script") == 0) {

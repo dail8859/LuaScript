@@ -92,6 +92,8 @@ The full documentation can be found [here](/doc/editor.md). The `editor` also ha
   - `function` the function to be called. It takes no parameters and has no return value
 - `npp.WriteError(...)`
   - acts like `print` but the text is styled in red
+- `npp.ClearConsole()`
+  - clears the console
 
 ## Development
 The code has been developed using MSVC 2013. To compile the code:

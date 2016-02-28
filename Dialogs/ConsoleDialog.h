@@ -63,6 +63,8 @@ private:
 	std::vector<tstring> m_history;
 	tstring m_curLine;
 	size_t m_currentHistory;
+
+	HMENU m_hContext;
 };
 
 enum ErrorLevel

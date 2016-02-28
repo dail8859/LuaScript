@@ -486,6 +486,11 @@ static int cf_npp_write_error(lua_State *L) {
 	return 0;
 }
 
+static int cf_npp_clear_console(lua_State *L) {
+	host->ClearConsole();
+	return 0;
+}
+
 static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Pane"));
 
@@ -1478,6 +1483,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 	lua_pushcfunction(luaState, cf_npp_write_error);
 	lua_setfield(luaState, -2, "WriteError");
+
+	lua_pushcfunction(luaState, cf_npp_clear_console);
+	lua_setfield(luaState, -2, "ClearConsole");
 
 	// Register the callbacks
 	for (int i = 0; i < ELEMENTS(callbacks); ++i) {

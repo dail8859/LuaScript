@@ -20,7 +20,8 @@ ConsoleDialog::ConsoleDialog() :
 	m_console(NULL),
 	m_prompt("> "),
 	m_hTabIcon(NULL),
-	m_currentHistory(0)
+	m_currentHistory(0),
+	m_hContext(NULL)
 {
 }
 
@@ -31,7 +32,8 @@ ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
 	m_prompt(other.m_prompt),
 	m_hTabIcon(NULL),
 	m_history(other.m_history),
-	m_currentHistory(other.m_currentHistory)
+	m_currentHistory(other.m_currentHistory),
+	m_hContext(NULL)
 {
 }
 
@@ -55,6 +57,12 @@ ConsoleDialog::~ConsoleDialog()
 		m_hTabIcon = NULL;
 	}
 
+	if (m_hContext)
+	{
+		::DestroyMenu(m_hContext);
+		m_hContext = NULL;
+	}
+
 	m_console = NULL;
 }
 
@@ -69,6 +77,26 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterfa
 	m_console = console;
 
 	ZeroMemory(&m_data, sizeof(m_data));
+
+	// Set up the context menu
+	m_hContext = CreatePopupMenu();
+	MENUITEMINFO mi;
+	mi.cbSize = sizeof(mi);
+	mi.fMask = MIIM_ID | MIIM_STRING;
+	mi.fType = MFT_STRING;
+	mi.fState = MFS_ENABLED;
+
+	mi.wID = 1;
+	mi.dwTypeData = _T("Select all");
+	InsertMenuItem(m_hContext, 0, TRUE, &mi);
+
+	mi.wID = 2;
+	mi.dwTypeData = _T("Copy");
+	InsertMenuItem(m_hContext, 1, TRUE, &mi);
+
+	mi.wID = 3;
+	mi.dwTypeData = _T("Clear");
+	InsertMenuItem(m_hContext, 3, TRUE, &mi);
 }
 
 BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -76,21 +104,55 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 	switch(message)
 	{
 		case WM_INITDIALOG:
-				SetParent((HWND)m_sciOutput.GetID(), _hSelf);
-				ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
-				SetParent((HWND)m_sciInput.GetID(), _hSelf);
-				ShowWindow((HWND)m_sciInput.GetID(), SW_SHOW);
+			SetParent((HWND)m_sciOutput.GetID(), _hSelf);
+			ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
+			SetParent((HWND)m_sciInput.GetID(), _hSelf);
+			ShowWindow((HWND)m_sciInput.GetID(), SW_SHOW);
 
-				// Subclass some stuff
-				SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
-				SetWindowSubclass((HWND)m_sciOutput.GetID(), ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
-				return FALSE;
+			// Subclass some stuff
+			SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
+			SetWindowSubclass((HWND)m_sciOutput.GetID(), ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
+			return FALSE;
 		case WM_SIZE:
 			MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, LOWORD(lParam), HIWORD(lParam) - 30, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_PROMPT), 0, HIWORD(lParam)-25, 30, 25, TRUE);
 			MoveWindow((HWND)m_sciInput.GetID(), 30, HIWORD(lParam) - 30, LOWORD(lParam) - 85, 25, TRUE);
 			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), LOWORD(lParam) - 50, HIWORD(lParam) - 30, 50, 25, TRUE);  
 			return FALSE;
+		case WM_CONTEXTMENU:
+			{
+				MENUITEMINFO mi;
+				mi.cbSize = sizeof(mi);
+				mi.fMask = MIIM_STATE;
+
+				mi.fState = m_sciOutput.Send(SCI_GETSELECTIONEMPTY) ? MFS_DISABLED : MFS_ENABLED;
+
+				SetMenuItemInfo(m_hContext, 2, FALSE, &mi);
+
+				// Thanks MS for corrupting the value of BOOL. :-/
+				// From the documentation (http://msdn.microsoft.com/en-us/library/ms648002.aspx):
+				//
+				//    If you specify TPM_RETURNCMD in the uFlags parameter, the return value is the menu-item 
+				//    identifier of the item that the user selected. If the user cancels the menu without making 
+				//    a selection, or if an error occurs, then the return value is zero.
+				INT cmdID = (INT)TrackPopupMenu(m_hContext, TPM_RETURNCMD, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 0, _hSelf, NULL);
+
+				switch (cmdID)
+				{
+				case 1: // Select All
+					m_sciOutput.Send(SCI_SELECTALL);
+					break;
+				case 2: // Copy
+					m_sciOutput.Send(SCI_COPY);
+					break;
+				case 3: // Clear
+					clearText();
+					break;
+				default:
+					break;
+				}
+			}
+			break;
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDC_RUN)
 			{
