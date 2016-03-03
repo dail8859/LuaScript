@@ -101,8 +101,7 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterfa
 
 BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch(message)
-	{
+	switch(message) {
 		case WM_INITDIALOG:
 			SetParent((HWND)m_sciOutput.GetID(), _hSelf);
 			ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
@@ -161,11 +160,78 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 				return FALSE;
 			}
 			break;
+		case WM_NOTIFY: {
+			LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+			if (m_sciInput.GetID() == nmhdr->hwndFrom) {
+				switch (nmhdr->code) {
+					case SCN_CHARADDED: {
+						SCNotification* scn = reinterpret_cast<SCNotification*>(lParam);
+						if ((scn->ch == '.' || scn->ch == ':') && m_sciInput.Send(SCI_GETCURRENTPOS) > 1) {
+							showAutoCompletion();
+						}
+						break;
+					}
+				}
+			}
+			break;
+		}
 		default:
 			break;
 	}
 
 	return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
+}
+
+static std::string getRange(GUI::ScintillaWindow &sw, int start, int end) {
+	if (end <= start) return std::string();
+
+	std::vector<std::string::value_type> buffer(end - start + 1);
+	TextRange tr;
+	tr.chrg.cpMin = start;
+	tr.chrg.cpMax = end;
+	tr.lpstrText = buffer.data();
+
+	sw.Send(SCI_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr));
+
+	return std::string(buffer.begin(), buffer.end() - 1); // don't copy the null
+}
+
+static std::string getWordAt(GUI::ScintillaWindow &sw, int pos) {
+	int word_start = sw.Send(SCI_WORDSTARTPOSITION, pos, true);
+	int word_end = sw.Send(SCI_WORDENDPOSITION, pos, true);
+	return getRange(sw, word_start, word_end);
+}
+
+void ConsoleDialog::showAutoCompletion() {
+	std::string partialWord;
+	int curPos = m_sciInput.Send(SCI_GETCURRENTPOS);
+	int prevCh = m_sciInput.Send(SCI_GETCHARAT, curPos - 1);
+
+	// The cursor could be at the end of a partial word e.g. editor.Sty|
+	if (isalpha(prevCh)) {
+		partialWord = getWordAt(m_sciInput, curPos - 1);
+
+		// Back up past the partial word
+		prevCh = m_sciInput.Send(SCI_GETCHARAT, curPos - 1 - partialWord.size());
+		curPos = curPos - partialWord.size();
+	}
+
+	if (prevCh == '.' || prevCh == ':') {
+		std::string prev = getWordAt(m_sciInput, curPos - 1);
+
+		// TODO: all these are hard coded but they could either be pulled from the IFaceTable or some generated from Lua: for i, v in pairs(npp) do print(i, v) end
+		if (prev.compare("npp") == 0 && prevCh == '.') {
+			m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "AddOnBeforeClose AddOnBeforeOpen AddOnBeforeSave AddOnChar AddOnClose AddOnOpen AddOnSave AddOnSavePointLeft AddOnSavePointReached AddOnSwitchFile AddShortcut ConstantName MenuCommand RemoveAllOnBeforeClose RemoveAllOnBeforeOpen RemoveAllOnBeforeSave RemoveAllOnChar RemoveAllOnClose RemoveAllOnOpen RemoveAllOnSave RemoveAllOnSavePointLeft RemoveAllOnSavePointReached RemoveAllOnSwitchFile RemoveOnBeforeClose RemoveOnBeforeOpen RemoveOnBeforeSave RemoveOnChar RemoveOnClose RemoveOnOpen RemoveOnSave RemoveOnSavePointLeft RemoveOnSavePointReached RemoveOnSwitchFile SendEditor");
+		}
+		else if (prev.compare("editor") == 0 || prev.compare("editor1") == 0 || prev.compare("editor2") == 0) {
+			if (prevCh == '.') {
+				m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "AdditionalCaretFore AdditionalCaretsBlink AdditionalCaretsVisible AdditionalSelAlpha AdditionalSelBack AdditionalSelFore AdditionalSelectionTyping AllLinesVisible Anchor AnnotationLines AnnotationStyle AnnotationStyleOffset AnnotationStyles AnnotationText AnnotationVisible AutoCAutoHide AutoCCancelAtStart AutoCCaseInsensitiveBehaviour AutoCChooseSingle AutoCCurrent AutoCCurrentText AutoCDropRestOfWord AutoCFillUps AutoCIgnoreCase AutoCMaxHeight AutoCMaxWidth AutoCMulti AutoCOrder AutoCSeparator AutoCTypeSeparator AutomaticFold BackSpaceUnIndents BufferedDraw CallTipBack CallTipFore CallTipForeHlt CallTipPosStart CallTipPosition CallTipUseStyle CaretFore CaretLineBack CaretLineBackAlpha CaretLineVisible CaretLineVisibleAlways CaretPeriod CaretSticky CaretStyle CaretWidth CharAt CharacterPointer CodePage Column ControlCharSymbol CurrentPos Cursor DirectFunction DirectPointer DistanceToSecondaryStyles DocPointer EOLMode EdgeColour EdgeColumn EdgeMode EndAtLastLine EndStyled ExtraAscent ExtraDescent FirstVisibleLine Focus FoldExpanded FoldFlags FoldLevel FoldParent FontQuality GapPosition HScrollBar HighlightGuide HotspotActiveUnderline HotspotSingleLine IMEInteraction Identifier Identifiers IdleStyling Indent IndentationGuides IndicAlpha IndicFlags IndicFore IndicHoverFore IndicHoverStyle IndicOutlineAlpha IndicStyle IndicUnder IndicatorCurrent IndicatorValue KeyWords LayoutCache Length Lexer LexerLanguage LineCount LineEndPosition LineEndTypesActive LineEndTypesAllowed LineEndTypesSupported LineIndentPosition LineIndentation LineState LineVisible LinesOnScreen MainSelection MarginCursorN MarginLeft MarginMaskN MarginOptions MarginRight MarginSensitiveN MarginStyle MarginStyleOffset MarginStyles MarginText MarginTypeN MarginWidthN MarkerAlpha MarkerBack MarkerBackSelected MarkerFore MaxLineState ModEventMask Modify MouseDownCaptures MouseDwellTime MouseSelectionRectangularSwitch MultiPaste MultipleSelection Overtype PasteConvertEndings PhasesDraw PositionCache PrimaryStyleFromStyle PrintColourMode PrintMagnification PrintWrapMode Property PropertyExpanded PropertyInt PunctuationChars RGBAImageHeight RGBAImageScale RGBAImageWidth ReadOnly RectangularSelectionAnchor RectangularSelectionAnchorVirtualSpace RectangularSelectionCaret RectangularSelectionCaretVirtualSpace RectangularSelectionModifier Representation ScrollWidth ScrollWidthTracking SearchFlags SelAlpha SelEOLFilled SelectionEmpty SelectionEnd SelectionIsRectangle SelectionMode SelectionNAnchor SelectionNAnchorVirtualSpace SelectionNCaret SelectionNCaretVirtualSpace SelectionNEnd SelectionNStart SelectionStart Selections Status StyleAt StyleBack StyleBits StyleBitsNeeded StyleBold StyleCase StyleChangeable StyleCharacterSet StyleEOLFilled StyleFont StyleFore StyleFromSubStyle StyleHotSpot StyleItalic StyleSize StyleSizeFractional StyleUnderline StyleVisible StyleWeight SubStyleBases SubStylesLength SubStylesStart TabIndents TabWidth Tag TargetEnd TargetStart TargetText Technology TextLength TwoPhaseDraw UndoCollection UseTabs VScrollBar ViewEOL ViewWS VirtualSpaceOptions WhitespaceChars WhitespaceSize WordChars WrapIndentMode WrapMode WrapStartIndent WrapVisualFlags WrapVisualFlagsLocation XOffset Zoom");
+			}
+			else if (prevCh == ':') {
+				m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "AddRefDocument AddSelection AddStyledText AddTabStop AddText AddUndoAction Allocate AllocateExtendedStyles AllocateSubStyles AnnotationClearAll append AppendText AssignCmdKey AutoCActive AutoCCancel AutoCComplete AutoCPosStart AutoCSelect AutoCShow AutoCStops BackTab BeginUndoAction BraceBadLight BraceBadLightIndicator BraceHighlight BraceHighlightIndicator BraceMatch CallTipActive CallTipCancel CallTipPosStart CallTipSetHlt CallTipShow Cancel CanPaste CanRedo CanUndo ChangeInsertion ChangeLexerState CharLeft CharLeftExtend CharLeftRectExtend CharPositionFromPoint CharPositionFromPointClose CharRight CharRightExtend CharRightRectExtend ChooseCaretX Clear ClearAll ClearAllCmdKeys ClearCmdKey ClearDocumentStyle ClearRegisteredImages ClearRepresentation ClearSelections ClearTabStops Colourise ContractedFoldNext ConvertEOLs Copy CopyAllowLine CopyRange CopyText CountCharacters CreateDocument CreateLoader Cut DeleteBack DeleteBackNotLine DeleteRange DelLineLeft DelLineRight DelWordLeft DelWordRight DelWordRightEnd DescribeKeyWordSets DescribeProperty DocLineFromVisible DocumentEnd DocumentEndExtend DocumentStart DocumentStartExtend DropSelectionN EditToggleOvertype EmptyUndoBuffer EncodedFromUTF8 EndUndoAction EnsureVisible EnsureVisibleEnforcePolicy ExpandChildren FindColumn FindIndicatorFlash FindIndicatorHide FindIndicatorShow FindText findtext FoldAll FoldChildren FoldLine FormatRange FormFeed FreeSubStyles GetCurLine GetHotspotActiveBack GetHotspotActiveFore GetLastChild GetLine GetLineSelEndPosition GetLineSelStartPosition GetNextTabStop GetRangePointer GetSelText GetStyledText GetText GetTextRange GotoLine GotoPos GrabFocus HideLines HideSelection Home HomeDisplay HomeDisplayExtend HomeExtend HomeRectExtend HomeWrap HomeWrapExtend IndicatorAllOnFor IndicatorClearRange IndicatorEnd IndicatorFillRange IndicatorStart IndicatorValueAt insert InsertText IsRangeWord LineCopy LineCut LineDelete LineDown LineDownExtend LineDownRectExtend LineDuplicate LineEnd LineEndDisplay LineEndDisplayExtend LineEndExtend LineEndRectExtend LineEndWrap LineEndWrapExtend LineFromPosition LineLength LineScroll LineScrollDown LineScrollUp LinesJoin LinesSplit LineTranspose LineUp LineUpExtend LineUpRectExtend LoadLexerLibrary LowerCase MarginTextClearAll MarkerAdd MarkerAddSet MarkerDefine MarkerDefinePixmap MarkerDefineRGBAImage MarkerDelete MarkerDeleteAll MarkerDeleteHandle MarkerEnableHighlight MarkerGet MarkerLineFromHandle MarkerNext MarkerPrevious MarkerSymbolDefined match MoveCaretInsideView MoveSelectedLinesDown MoveSelectedLinesUp MultipleSelectAddEach MultipleSelectAddNext NewLine Null PageDown PageDownExtend PageDownRectExtend PageUp PageUpExtend PageUpRectExtend ParaDown ParaDownExtend ParaUp ParaUpExtend Paste PointXFromPosition PointYFromPosition PositionAfter PositionBefore PositionFromLine PositionFromPoint PositionFromPointClose PositionRelative PrivateLexerCall PropertyNames PropertyType Redo RegisterImage RegisterRGBAImage ReleaseAllExtendedStyles ReleaseDocument remove ReplaceSel ReplaceTarget ReplaceTargetRE RotateSelection ScrollCaret ScrollRange ScrollToEnd ScrollToStart SearchAnchor SearchInTarget SearchNext SearchPrev SelectAll SelectionDuplicate SetCharsDefault SetEmptySelection SetFoldMarginColour SetFoldMarginHiColour SetHotspotActiveBack SetHotspotActiveFore SetLengthForEncode SetSavePoint SetSel SetSelBack SetSelection SetSelFore SetStyling SetStylingEx SetTargetRange SetText SetVisiblePolicy SetWhitespaceBack SetWhitespaceFore SetXCaretPolicy SetYCaretPolicy ShowLines StartRecord StartStyling StopRecord StutteredPageDown StutteredPageDownExtend StutteredPageUp StutteredPageUpExtend StyleClearAll StyleResetDefault SwapMainAnchorCaret Tab TargetAsUTF8 TargetFromSelection TargetWholeDocument TextHeight textrange TextWidth ToggleCaretSticky ToggleFold Undo UpperCase UsePopUp UserListShow VCHome VCHomeDisplay VCHomeDisplayExtend VCHomeExtend VCHomeRectExtend VCHomeWrap VCHomeWrapExtend VerticalCentreCaret VisibleFromDocLine WordEndPosition WordLeft WordLeftEnd WordLeftEndExtend WordLeftExtend WordPartLeft WordPartLeftExtend WordPartRight WordPartRightExtend WordRight WordRightEnd WordRightEndExtend WordRightExtend WordStartPosition WrapCount ZoomIn ZoomOut");
+			}
+		}
+	}
 }
 
 void ConsoleDialog::historyPrevious() {
@@ -217,25 +283,37 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 	ConsoleDialog *cd = reinterpret_cast<ConsoleDialog *>(dwRefData);
 	switch (uMsg) {
 		case WM_GETDLGCODE:
-			return DLGC_WANTARROWS | DLGC_WANTCHARS;
+			return DLGC_WANTARROWS | DLGC_WANTCHARS | DLGC_WANTTAB;
 		case WM_KEYDOWN:
 			switch (wParam) {
 				case VK_UP:
+					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
 					cd->historyPrevious();
 					return FALSE;
 				case VK_DOWN:
+					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
 					cd->historyNext();
 					return FALSE;
 			}
+			break;
 		case WM_KEYUP:
 			switch (wParam) {
 				case VK_RETURN:
+					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
 					cd->runStatement();
 					return FALSE;
 				case VK_ESCAPE:
+					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
 					cd->historyEnd();
 					return FALSE;
 			}
+			break;
+		case WM_CHAR:
+			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & (1 << 15)) {
+				cd->showAutoCompletion();
+				return FALSE;
+			}
+			break;
 	}
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -307,6 +385,11 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	setStyles((HWND)m_sciInput.GetID());
 
 	m_sciInput.Send(SCI_SETHSCROLLBAR, 0);
+
+	// Set up some autocomplete junk
+	m_sciInput.Send(SCI_AUTOCSETIGNORECASE, true);
+	m_sciInput.Send(SCI_AUTOCSETMAXHEIGHT, 8);
+	m_sciInput.Send(SCI_AUTOCSETCANCELATSTART, false);
 }
 
 void ConsoleDialog::setStyles(HWND sci) {

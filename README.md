@@ -6,7 +6,7 @@ Major features include:
 - Assign Lua functions to shortcut keys
 - Register callbacks to specific events
 - Full Lua 5.3 functionality
-- Interactive console
+- Interactive console with auto-completion
 - Requires no special permissions
 
 ## Examples
