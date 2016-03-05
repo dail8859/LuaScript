@@ -1708,9 +1708,15 @@ bool LuaExtension::OnExecute(const char *s) {
 			// else everything finished fine but had no return value
 		}
 		else {
-			// Print an error message
-			host->TraceError(lua_tostring(luaState, -1));
-			host->TraceError("\r\n");
+			// Print an error message if possible
+			const char *errmsg = lua_tostring(luaState, -1);
+			if (errmsg) {
+				host->TraceError(errmsg);
+				host->TraceError("\r\n");
+			}
+			else {
+				host->TraceError("error\r\n");
+			}
 		}
 		lua_settop(luaState, 0); /* clear stack */
 	}
