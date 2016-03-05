@@ -1,4 +1,4 @@
-// This file is part of LuaScript.
+﻿// This file is part of LuaScript.
 // 
 // Copyright (C)2016 Justin Dailey <dail8859@yahoo.com>
 // 
@@ -76,12 +76,11 @@ static bool updateScintilla() {
 	return true;
 }
 
-std::shared_ptr<char> getStartupScriptFilePath(wchar_t *buff, size_t size) {
+void getStartupScriptFilePath(wchar_t *buff, size_t size) {
 	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM)buff);
 	wcscat_s(buff, size, TEXT("\\"));
 	wcscat_s(buff, size, TEXT("startup"));
 	wcscat_s(buff, size, TEXT(".lua"));
-	return WcharMbcsConverter::wchar2char(buff);
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
@@ -116,10 +115,8 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 
 	// Run the startup script
 	wchar_t buff[MAX_PATH];
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
-	wcscat_s(buff, MAX_PATH, TEXT("\\"));
-	wcscat_s(buff, MAX_PATH, TEXT("startup"));
-	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
+	getStartupScriptFilePath(buff, MAX_PATH);
+
 	if (LuaExtension::Instance().RunFile(buff) == true) {
 		if (luaShortcuts.size() > 0) funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
 

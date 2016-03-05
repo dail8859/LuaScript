@@ -20,8 +20,6 @@
 #include "NppExtensionAPI.h"
 #include "Window.h"
 
-std::shared_ptr<char> getStartupScriptFilePath(wchar_t *buff, size_t size);
-
 NppExtensionAPI::~NppExtensionAPI() {
 }
 
@@ -100,10 +98,6 @@ void NppExtensionAPI::ClearConsole() {
 
 std::string NppExtensionAPI::Property(const char *key) {
 	if (strcmp(key, "ext.lua.debug.traceback") == 0) return std::string("1");
-	if (strcmp(key, "ext.lua.startup.script") == 0) {
-		wchar_t buff[MAX_PATH];
-		return std::string(getStartupScriptFilePath(buff, MAX_PATH).get());
-	}
 
 	this->Tracef("TODO: NppExtensionAPI::Property(%s)\r\n", key);
 	return std::string("NppExtensionAPI::Property");
