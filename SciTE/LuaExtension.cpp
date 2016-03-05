@@ -1637,8 +1637,13 @@ bool LuaExtension::RunFile(const wchar_t *filename) {
 	filestream.seekg(0, std::ios::beg);
 
 	buff.assign(std::istreambuf_iterator<char>(filestream), std::istreambuf_iterator<char>());
+	filestream.close();
 
-	return RunString(buff.c_str());
+	// Skip the UTF-8-BOM
+	int idx = 0;
+	if (buff.compare(0, 3, "\xEF\xBB\xBF") == 0) idx = 3;
+
+	return RunString(&buff.c_str()[idx]);
 }
 
 bool LuaExtension::OnExecute(const char *s) {
