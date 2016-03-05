@@ -120,7 +120,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	wcscat_s(buff, MAX_PATH, TEXT("\\"));
 	wcscat_s(buff, MAX_PATH, TEXT("startup"));
 	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
-	if (LuaExtension::Instance().RunFile(WcharMbcsConverter::wchar2char(buff).get()) == true) {
+	if (LuaExtension::Instance().RunFile(buff) == true) {
 		if (luaShortcuts.size() > 0) funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
 
 		const int max_shortcuts = sizeof(LuaShortcutWrappers) / sizeof(LuaShortcutWrappers[0]);
@@ -142,7 +142,9 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	}
 	else {
 		// Something went wrong :(
+		const char *c = "Error occurred while loading startup script\r\n";
 		g_console->showDialog();
+		g_console->mp_consoleDlg->writeError(strlen(c), c);
 	}
 
 	funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });

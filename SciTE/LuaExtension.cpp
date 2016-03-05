@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "Scintilla.h"
 #include "GUI.h"
@@ -1606,7 +1607,6 @@ bool LuaExtension::Load(const char *filename) {
 bool LuaExtension::RunString(const char *s) {
 	if (luaState || InitGlobalScope(false)) {
 		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
-		//if (status != 0) lua_pop(luaState, 1);
 
 		if (status == LUA_OK) {
 			status = lua_pcall(luaState, 0, LUA_MULTRET, 0);
@@ -1626,16 +1626,19 @@ bool LuaExtension::RunString(const char *s) {
 	return true;
 }
 
-bool LuaExtension::RunFile(const char *filename) {
-	if (Exists(filename) && (luaState || InitGlobalScope(false))) {
-		luaL_loadfile(luaState, filename);
-		if (!call_function(luaState, 0, true)) {
-			host->TraceError("Error occurred while loading startup script\r\n");
-			return false;
-		}
-	}
+bool LuaExtension::RunFile(const wchar_t *filename) {
+	std::ifstream filestream(filename, std::ios::in | std::ios::binary);
+	std::string buff;
 
-	return true;
+	if (!filestream.is_open()) return true; // this is ok since nothing actually "failed"
+
+	filestream.seekg(0, std::ios::end);
+	buff.reserve((size_t)filestream.tellg());
+	filestream.seekg(0, std::ios::beg);
+
+	buff.assign(std::istreambuf_iterator<char>(filestream), std::istreambuf_iterator<char>());
+
+	return RunString(buff.c_str());
 }
 
 bool LuaExtension::OnExecute(const char *s) {

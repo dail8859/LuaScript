@@ -33,7 +33,7 @@ public:
 	bool Load(const char *filename);
 
 	bool RunString(const char *s);
-	bool RunFile(const char *filename);
+	bool RunFile(const wchar_t *filename);
 
 	bool OnBeforeOpen(const char *filename);
 	bool OnOpen(const char *filename);

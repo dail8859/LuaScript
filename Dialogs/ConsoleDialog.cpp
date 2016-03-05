@@ -244,6 +244,7 @@ void ConsoleDialog::historyPrevious() {
 		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
 		m_sciInput.Send(SCI_DOCUMENTEND);
 		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
+		m_sciInput.Send(SCI_SCROLLRANGE, 0, m_sciInput.Send(SCI_GETCURRENTPOS));
 	}
 }
 
@@ -260,6 +261,7 @@ void ConsoleDialog::historyNext() {
 	}
 	m_sciInput.Send(SCI_DOCUMENTEND);
 	m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
+	m_sciInput.Send(SCI_SCROLLRANGE, 0, m_sciInput.Send(SCI_GETCURRENTPOS));
 }
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
