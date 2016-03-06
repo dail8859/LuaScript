@@ -15,6 +15,8 @@
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
+#define CTRL_IS_PRESSED (GetKeyState(VK_CONTROL) & (1 << 15))
+
 ConsoleDialog::ConsoleDialog() :
 	DockingDlgInterface(IDD_CONSOLE),
 	m_console(NULL),
@@ -107,6 +109,7 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 			ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
 			SetParent((HWND)m_sciInput.GetID(), _hSelf);
 			ShowWindow((HWND)m_sciInput.GetID(), SW_SHOW);
+			SetWindowPos((HWND)m_sciInput.GetID(), (HWND)m_sciOutput.GetID(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 			// Subclass some stuff
 			SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
@@ -311,7 +314,7 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 			}
 			break;
 		case WM_CHAR:
-			if (wParam == VK_SPACE && GetKeyState(VK_CONTROL) & (1 << 15)) {
+			if (wParam == VK_SPACE && CTRL_IS_PRESSED) {
 				cd->showAutoCompletion();
 				return FALSE;
 			}
@@ -440,8 +443,14 @@ void ConsoleDialog::setStyles(HWND sci) {
 
 LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	// No idea what this does, but it seems to help a bit.
 	if (uMsg == WM_GETDLGCODE) return DLGC_WANTARROWS | DLGC_WANTCHARS;
+	else if (uMsg == WM_CHAR) {
+		ConsoleDialog *cd = reinterpret_cast<ConsoleDialog *>(dwRefData);
+		cd->giveInputFocus();
+		cd->m_sciInput.Send(SCI_DOCUMENTEND);
+		SendMessage((HWND)cd->m_sciInput.GetID(), uMsg, wParam, lParam); // Pass this along
+		return FALSE;
+	}
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
