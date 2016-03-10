@@ -41,7 +41,7 @@ private:
 
 	void createOutputWindow(HWND hParentWindow);
 	void createInputWindow(HWND hParentWindow);
-	void setStyles(HWND sci);
+	void setStyles(GUI::ScintillaWindow &sw);
 	void runStatement();
 
 	static LRESULT CALLBACK inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
