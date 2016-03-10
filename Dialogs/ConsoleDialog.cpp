@@ -330,19 +330,29 @@ void ConsoleDialog::runStatement()
 	assert(m_console != NULL);
 	if (m_console)
 	{
+		int prevLastLine = m_sciOutput.Send(SCI_GETLINECOUNT);
+		int newLastLine = 0;
+
 		Sci_TextRange tr;
 		tr.chrg.cpMin = 0;
 		tr.chrg.cpMax = m_sciInput.Send(SCI_GETLENGTH);
 		tr.lpstrText = new char[2 * (tr.chrg.cpMax - tr.chrg.cpMin) + 2]; // See documentation
 		m_sciInput.SendPointer(SCI_GETSTYLEDTEXT, 0, &tr);
 
-		writeText(m_prompt.size(), m_prompt.c_str());
+		m_sciOutput.Send(SCI_DOCUMENTEND);
 		m_sciOutput.Send(SCI_SETREADONLY, 0);
 		m_sciOutput.SendPointer(SCI_ADDSTYLEDTEXT, 2 * (tr.chrg.cpMax - tr.chrg.cpMin), tr.lpstrText);
-		m_sciOutput.Send(SCI_SETREADONLY, 1);
 		writeText(2, "\r\n");
+		m_sciOutput.Send(SCI_SETREADONLY, 1);
 
 		delete[] tr.lpstrText;
+
+		newLastLine = m_sciOutput.Send(SCI_GETLINECOUNT);
+
+		for (int i = prevLastLine; i < newLastLine; ++i) {
+			m_sciOutput.SendPointer(SCI_MARGINSETTEXT, i - 1, ">");
+			m_sciOutput.Send(SCI_MARGINSETSTYLE, i - 1, STYLE_LINENUMBER);
+		}
 
 		const char *text = (const char *)m_sciInput.Send(SCI_GETCHARACTERPOINTER);
 		historyAdd(WcharMbcsConverter::char2tchar(text).get());
@@ -376,6 +386,11 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow)
 
 	// Also add any additional styles
 	m_sciOutput.Send(SCI_STYLESETFORE, 39, 0x0000FF);
+
+	// Margin for the prompt
+	m_sciOutput.Send(SCI_SETMARGINWIDTHN, 1, m_sciOutput.SendPointer(SCI_TEXTWIDTH, STYLE_DEFAULT, ">") * 2);
+	m_sciOutput.Send(SCI_SETMARGINTYPEN, 1, SC_MARGIN_RTEXT);
+	m_sciOutput.Send(SCI_STYLESETBOLD, STYLE_LINENUMBER, true);
 }
 
 void ConsoleDialog::createInputWindow(HWND hParentWindow) {
