@@ -51,6 +51,12 @@
     <ClCompile Include="SciteIFaceTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NppIFaceTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IFaceTableMixer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PluginDefinition.h">
@@ -126,6 +132,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SciteIFaceTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NppIFaceTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IFaceTableMixer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

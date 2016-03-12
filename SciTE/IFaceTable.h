@@ -18,7 +18,7 @@ enum IFaceType {
 	iface_keymod,
 	iface_string,
 	iface_stringresult,
-	iface_cells,
+	iface_cells, // This and everything else below is not "scriptable"
 	iface_textrange,
 	iface_findtext,
 	iface_formatrange
@@ -70,11 +70,13 @@ struct IFaceProperty {
 
 class IFaceTableInterface {
 public:
-	virtual int FindConstant(const char *name) = 0;
-	virtual int FindFunction(const char *name) = 0;
-	virtual int FindFunctionByConstantName(const char *name) = 0;
-	virtual int FindProperty(const char *name) = 0;
+	virtual const IFaceConstant *FindConstant(const char *name) = 0;
+	virtual const IFaceFunction *FindFunction(const char *name) = 0;
+	virtual const IFaceFunction *FindFunctionByConstantName(const char *name) = 0;
+	virtual const IFaceProperty *FindProperty(const char *name) = 0;
 	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) = 0;
+	virtual const IFaceFunction *GetFunctionByMessage(int message) = 0;
+	virtual const IFaceFunction *GetPropertyFuncByMessage(int message) = 0;
 };
 
 class IFaceTable : public IFaceTableInterface {
@@ -101,12 +103,14 @@ public:
 	const int constantCount;
 	const int propertyCount;
 
-	int FindConstant(const char *name);
-	int FindFunction(const char *name);
-	int FindFunctionByConstantName(const char *name);
-	int FindProperty(const char *name);
-
+	// IFaceTableInterface
+	const IFaceConstant *FindConstant(const char *name);
+	const IFaceFunction *FindFunction(const char *name);
+	const IFaceFunction *FindFunctionByConstantName(const char *name);
+	const IFaceProperty *FindProperty(const char *name);
 	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
+	const IFaceFunction *GetFunctionByMessage(int message);
+	const IFaceFunction *GetPropertyFuncByMessage(int message);
 };
 
 #endif

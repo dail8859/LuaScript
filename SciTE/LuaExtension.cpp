@@ -18,10 +18,15 @@
 #include "StyleWriter.h"
 #include "NppExtensionAPI.h"
 #include "LuaExtension.h"
-#include "SciteIFaceTable.h"
 #include "WcharMbcsConverter.h"
 
+#include "IFaceTableMixer.h"
+#include "SciteIFaceTable.h"
+#include "NppIFaceTable.h"
+
 #include "lua.hpp"
+
+IFaceTableMixer ifacemixer;
 
 // From lua.c
 #define EOFMARK         "<eof>"
@@ -230,35 +235,22 @@ static int cf_npp_send(lua_State *L) {
 	lua_pushvalue(L, paneIndex);
 	lua_replace(L, 1);
 
-	IFaceFunction func = { "", 0, iface_void, {iface_void, iface_void} };
-	for (int funcIdx = 0; funcIdx < SciteIFaceTable.functionCount; ++funcIdx) {
-		if (SciteIFaceTable.functions[funcIdx].value == message) {
-			func = SciteIFaceTable.functions[funcIdx];
-			break;
-		}
+	const IFaceFunction *func;
+	func = ifacemixer.GetFunctionByMessage(message);
+
+	if (func == nullptr) {
+		func = ifacemixer.GetPropertyFuncByMessage(message);
 	}
 
-	if (func.value == 0) {
-		for (int propIdx = 0; propIdx < SciteIFaceTable.propertyCount; ++propIdx) {
-			if (SciteIFaceTable.properties[propIdx].getter == message) {
-				func = SciteIFaceTable.properties[propIdx].GetterFunction();
-				break;
-			} else if (SciteIFaceTable.properties[propIdx].setter == message) {
-				func = SciteIFaceTable.properties[propIdx].SetterFunction();
-				break;
-			}
-		}
-	}
-
-	if (func.value != 0) {
-		if (IFaceFunctionIsScriptable(func)) {
-			return iface_function_helper(L, func);
+	if (func != nullptr) {
+		if (IFaceFunctionIsScriptable(*func)) {
+			return iface_function_helper(L, *func);
 		} else {
 			raise_error(L, "Cannot call send for this function: not scriptable.");
 			return 0;
 		}
 	} else {
-		raise_error(L, "Message number does not match any published Scintilla function or property");
+		raise_error(L, "Message number does not match any published Scintilla / Notepad++ function or property");
 		return 0;
 	}
 }
@@ -270,7 +262,7 @@ static int cf_npp_constname(lua_State *L) {
 
 	hint = luaL_optstring(L, 2, nullptr);
 
-	if (SciteIFaceTable.GetConstantName(message, constName, 100, hint) > 0) {
+	if (ifacemixer.GetConstantName(message, constName, 100, hint) > 0) {
 		lua_pushstring(L, constName);
 		return 1;
 	} else {
@@ -1148,10 +1140,10 @@ static int cf_pane_iface_function(lua_State *L) {
 }
 
 static int push_iface_function(lua_State *L, const char *name) {
-	int i = SciteIFaceTable.FindFunction(name);
-	if (i >= 0) {
-		if (IFaceFunctionIsScriptable(SciteIFaceTable.functions[i])) {
-			lua_pushlightuserdata(L, const_cast<IFaceFunction *>(SciteIFaceTable.functions + i));
+	auto func= ifacemixer.FindFunction(name);
+	if (func != nullptr) {
+		if (IFaceFunctionIsScriptable(*func)) {
+			lua_pushlightuserdata(L, (void*)func);
 			lua_pushcclosure(L, cf_pane_iface_function, 1);
 
 			// Since Lua experts say it is inefficient to create closures / cfunctions
@@ -1168,32 +1160,31 @@ static int push_iface_function(lua_State *L, const char *name) {
 static int push_iface_propval(lua_State *L, const char *name) {
 	// this function doesn't raise errors, but returns 0 if the function is not handled.
 
-	int propidx = SciteIFaceTable.FindProperty(name);
-	if (propidx >= 0) {
-		const IFaceProperty &prop = SciteIFaceTable.properties[propidx];
-		if (!IFacePropertyIsScriptable(prop)) {
+	auto prop = ifacemixer.FindProperty(name);
+	if (prop != nullptr) {
+		if (!IFacePropertyIsScriptable(*prop)) {
 			raise_error(L, "Error: iface property is not scriptable.");
 			return -1;
 		}
 
-		if (prop.paramType == iface_void) {
-			if (prop.getter) {
+		if (prop->paramType == iface_void) {
+			if (prop->getter) {
 				lua_settop(L, 1);
-				return iface_function_helper(L, prop.GetterFunction());
+				return iface_function_helper(L, prop->GetterFunction());
 			}
-		} else if (prop.paramType == iface_bool) {
+		} else if (prop->paramType == iface_bool) {
 			// The bool getter is untested since there are none in the iface.
 			// However, the following is suggested as a reference protocol.
 			NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
-			if (prop.getter) {
-				if (host->Send(p, prop.getter, 1, 0)) {
+			if (prop->getter) {
+				if (host->Send(p, prop->getter, 1, 0)) {
 					lua_pushnil(L);
 					return 1;
 				} else {
 					lua_settop(L, 1);
 					lua_pushboolean(L, 0);
-					return iface_function_helper(L, prop.GetterFunction());
+					return iface_function_helper(L, prop->GetterFunction());
 				}
 			}
 		} else {
@@ -1206,7 +1197,7 @@ static int push_iface_propval(lua_State *L, const char *name) {
 			IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(lua_newuserdata(L, sizeof(IFacePropertyBinding)));
 			if (ipb) {
 				ipb->pane = check_pane_object(L, 1);
-				ipb->prop = &prop;
+				ipb->prop = prop;
 				if (luaL_newmetatable(L, "Npp_MT_IFacePropertyBinding")) {
 					lua_pushliteral(L, "__index");
 					lua_pushcfunction(L, cf_ifaceprop_metatable_index);
@@ -1255,18 +1246,15 @@ static int cf_pane_metatable_index(lua_State *L) {
 
 static int cf_pane_metatable_newindex(lua_State *L) {
 	if (lua_isstring(L, 2)) {
-		int propidx = SciteIFaceTable.FindProperty(lua_tostring(L, 2));
-		if (propidx >= 0) {
-			const IFaceProperty &prop = SciteIFaceTable.properties[propidx];
-			if (IFacePropertyIsScriptable(prop)) {
-				if (prop.setter) {
+		auto prop = ifacemixer.FindProperty(lua_tostring(L, 2));
+		if (prop != nullptr) {
+			if (IFacePropertyIsScriptable(*prop)) {
+				if (prop->setter) {
 					// stack needs to be rearranged to look like an iface function call
 					lua_remove(L, 2);
-
-					if (prop.paramType == iface_void) {
-						return iface_function_helper(L, prop.SetterFunction());
-
-					} else if ((prop.paramType == iface_bool)) {
+					if (prop->paramType == iface_void) {
+						return iface_function_helper(L, prop->SetterFunction());
+					} else if ((prop->paramType == iface_bool)) {
 						if (!lua_isnil(L, 3)) {
 							lua_pushboolean(L, 1);
 							lua_insert(L, 2);
@@ -1275,7 +1263,7 @@ static int cf_pane_metatable_newindex(lua_State *L) {
 							// just push an arbitrary numeric value that Scintilla will ignore
 							lua_pushinteger(L, 0);
 						}
-						return iface_function_helper(L, prop.SetterFunction());
+						return iface_function_helper(L, prop->SetterFunction());
 
 					} else {
 						raise_error(L, "Error - (pane object) cannot assign directly to indexed property");
@@ -1328,14 +1316,14 @@ static int cf_global_metatable_index(lua_State *L) {
 			return 0;
 		}
 
-		int i = SciteIFaceTable.FindConstant(name);
-		if (i >= 0) {
-			lua_pushinteger(L, SciteIFaceTable.constants[i].value);
+		auto con = ifacemixer.FindConstant(name);
+		if (con != nullptr) {
+			lua_pushinteger(L, con->value);
 			return 1;
 		} else {
-			i = SciteIFaceTable.FindFunctionByConstantName(name);
-			if (i >= 0) {
-				lua_pushinteger(L, SciteIFaceTable.functions[i].value);
+			auto func = ifacemixer.FindFunctionByConstantName(name);
+			if (func != nullptr) {
+				lua_pushinteger(L, func->value);
 
 				// FindFunctionByConstantName is slow, so cache the result into the
 				// global table.  My tests show this gives an order of magnitude
@@ -1435,6 +1423,9 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	} else {
 		return false;
 	}
+
+	ifacemixer.AddIFaceTable(&SciteIFaceTable);
+	//ifacemixer.AddIFaceTable(&NppIFaceTable);
 
 	// ...register standard libraries
 	luaL_openlibs(luaState);

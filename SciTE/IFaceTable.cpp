@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-int IFaceTable::FindConstant(const char *name) {
+const IFaceConstant *IFaceTable::FindConstant(const char *name) {
 	int lo = 0;
 	int hi = constantCount - 1;
 	do {
@@ -21,14 +21,14 @@ int IFaceTable::FindConstant(const char *name) {
 		} else if (cmp < 0) {
 			hi = idx - 1;
 		} else {
-			return idx;
+			return &constants[idx];
 		}
 	} while (lo <= hi);
 
-	return -1;
+	return nullptr;
 }
 
-int IFaceTable::FindFunction(const char *name) {
+const IFaceFunction *IFaceTable::FindFunction(const char *name) {
 	int lo = 0;
 	int hi = functionCount - 1;
 	do {
@@ -39,14 +39,14 @@ int IFaceTable::FindFunction(const char *name) {
 		} else if (cmp < 0) {
 			hi = idx - 1;
 		} else {
-			return idx;
+			return &functions[idx];
 		}
 	} while (lo <= hi);
 
-	return -1;
+	return nullptr;
 }
 
-int IFaceTable::FindFunctionByConstantName(const char *name) {
+const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) {
 	if (strncmp(name, prefix, strlen(prefix))==0) {
 		// This looks like a constant for an iface function.  This requires
 		// a sequential search.  Take special care since the function names
@@ -60,14 +60,14 @@ int IFaceTable::FindFunctionByConstantName(const char *name) {
 				++fn;
 			}
 			if (!*nm && !*fn) {
-				return idx;
+				return &functions[idx];
 			}
 		}
 	}
-	return -1;
+	return nullptr;
 }
 
-int IFaceTable::FindProperty(const char *name) {
+const IFaceProperty *IFaceTable::FindProperty(const char *name) {
 	int lo = 0;
 	int hi = propertyCount - 1;
 	do {
@@ -79,11 +79,11 @@ int IFaceTable::FindProperty(const char *name) {
 		} else if (cmp < 0) {
 			hi = idx - 1;
 		} else {
-			return idx;
+			return &properties[idx];
 		}
 	} while (lo <= hi);
 
-	return -1;
+	return nullptr;
 }
 
 int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) {
@@ -124,4 +124,25 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 	}
 
 	return 0;
+}
+
+const IFaceFunction *IFaceTable::GetFunctionByMessage(int message) {
+	for (int funcIdx = 0; funcIdx < functionCount; ++funcIdx) {
+		if (functions[funcIdx].value == message) {
+			return &functions[funcIdx];
+		}
+	}
+	return nullptr;
+}
+
+const IFaceFunction *IFaceTable::GetPropertyFuncByMessage(int message) {
+	for (int propIdx = 0; propIdx < propertyCount; ++propIdx) {
+		if (properties[propIdx].getter == message) {
+			return &properties[propIdx].GetterFunction();
+		}
+		else if (properties[propIdx].setter == message) {
+			return &properties[propIdx].SetterFunction();
+		}
+	}
+	return nullptr;
 }

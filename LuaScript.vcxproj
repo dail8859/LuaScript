@@ -119,8 +119,10 @@
     <ClCompile Include="Dialogs\ConsoleDialog.cpp" />
     <ClCompile Include="Dialogs\Hyperlinks.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
+    <ClCompile Include="IFaceTableMixer.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="LuaScript.cpp" />
+    <ClCompile Include="NppIFaceTable.cpp" />
     <ClCompile Include="SciteIFaceTable.cpp" />
     <ClCompile Include="SciTE\GUIWin.cpp" />
     <ClCompile Include="SciTE\IFaceTable.cpp" />
@@ -137,7 +139,9 @@
     <ClInclude Include="Dialogs\resource.h" />
     <ClInclude Include="Dialogs\StaticDialog.h" />
     <ClInclude Include="Dialogs\Window.h" />
+    <ClInclude Include="IFaceTableMixer.h" />
     <ClInclude Include="NppExtensionAPI.h" />
+    <ClInclude Include="NppIFaceTable.h" />
     <ClInclude Include="Npp\Docking.h" />
     <ClInclude Include="Npp\DockingDlgInterface.h" />
     <ClInclude Include="Npp\dockingResource.h" />

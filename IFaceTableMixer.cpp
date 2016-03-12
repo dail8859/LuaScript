@@ -1,0 +1,74 @@
+// This file is part of LuaScript.
+// 
+// Copyright (C)2016 Justin Dailey <dail8859@yahoo.com>
+// 
+// LuaScript is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+#include "IFaceTableMixer.h"
+
+const IFaceConstant *IFaceTableMixer::FindConstant(const char *name) {
+	for (auto const &iface : ifaces) {
+		const IFaceConstant *ret = iface->FindConstant(name);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+
+const IFaceFunction *IFaceTableMixer::FindFunction(const char *name) {
+	for (auto const &iface : ifaces) {
+		const IFaceFunction *ret = iface->FindFunction(name);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+
+const IFaceFunction *IFaceTableMixer::FindFunctionByConstantName(const char *name) {
+	for (auto const &iface : ifaces) {
+		const IFaceFunction *ret = iface->FindFunctionByConstantName(name);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+
+const IFaceProperty *IFaceTableMixer::FindProperty(const char *name) {
+	for (auto const &iface : ifaces) {
+		const IFaceProperty *ret = iface->FindProperty(name);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+
+int IFaceTableMixer::GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) {
+	for (auto const &iface : ifaces) {
+		int ret = iface->GetConstantName(value, nameOut, nameBufferLen, hint);
+		if (ret != 0) return ret;
+	}
+	return 0;
+}
+
+const IFaceFunction *IFaceTableMixer::GetFunctionByMessage(int message) {
+	for (auto const &iface : ifaces) {
+		const IFaceFunction *ret = iface->GetFunctionByMessage(message);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+const IFaceFunction *IFaceTableMixer::GetPropertyFuncByMessage(int message) {
+	for (auto const &iface : ifaces) {
+		const IFaceFunction *ret = iface->GetPropertyFuncByMessage(message);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
