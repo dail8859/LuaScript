@@ -121,6 +121,7 @@
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="LuaScript.cpp" />
+    <ClCompile Include="SciteIFaceTable.cpp" />
     <ClCompile Include="SciTE\GUIWin.cpp" />
     <ClCompile Include="SciTE\IFaceTable.cpp" />
     <ClCompile Include="SciTE\LuaExtension.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="Npp\SciLexer.h" />
     <ClInclude Include="Npp\Scintilla.h" />
     <ClInclude Include="PluginDefinition.h" />
+    <ClInclude Include="SciteIFaceTable.h" />
     <ClInclude Include="SciTE\GUI.h" />
     <ClInclude Include="SciTE\IFaceTable.h" />
     <ClInclude Include="SciTE\LuaExtension.h" />

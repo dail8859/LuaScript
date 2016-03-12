@@ -18,7 +18,7 @@
 #include "StyleWriter.h"
 #include "NppExtensionAPI.h"
 #include "LuaExtension.h"
-#include "IFaceTable.h"
+#include "SciteIFaceTable.h"
 #include "WcharMbcsConverter.h"
 
 #include "lua.hpp"
@@ -231,20 +231,20 @@ static int cf_npp_send(lua_State *L) {
 	lua_replace(L, 1);
 
 	IFaceFunction func = { "", 0, iface_void, {iface_void, iface_void} };
-	for (int funcIdx = 0; funcIdx < IFaceTable::functionCount; ++funcIdx) {
-		if (IFaceTable::functions[funcIdx].value == message) {
-			func = IFaceTable::functions[funcIdx];
+	for (int funcIdx = 0; funcIdx < SciteIFaceTable.functionCount; ++funcIdx) {
+		if (SciteIFaceTable.functions[funcIdx].value == message) {
+			func = SciteIFaceTable.functions[funcIdx];
 			break;
 		}
 	}
 
 	if (func.value == 0) {
-		for (int propIdx = 0; propIdx < IFaceTable::propertyCount; ++propIdx) {
-			if (IFaceTable::properties[propIdx].getter == message) {
-				func = IFaceTable::properties[propIdx].GetterFunction();
+		for (int propIdx = 0; propIdx < SciteIFaceTable.propertyCount; ++propIdx) {
+			if (SciteIFaceTable.properties[propIdx].getter == message) {
+				func = SciteIFaceTable.properties[propIdx].GetterFunction();
 				break;
-			} else if (IFaceTable::properties[propIdx].setter == message) {
-				func = IFaceTable::properties[propIdx].SetterFunction();
+			} else if (SciteIFaceTable.properties[propIdx].setter == message) {
+				func = SciteIFaceTable.properties[propIdx].SetterFunction();
 				break;
 			}
 		}
@@ -270,7 +270,7 @@ static int cf_npp_constname(lua_State *L) {
 
 	hint = luaL_optstring(L, 2, nullptr);
 
-	if (IFaceTable::GetConstantName(message, constName, 100, hint) > 0) {
+	if (SciteIFaceTable.GetConstantName(message, constName, 100, hint) > 0) {
 		lua_pushstring(L, constName);
 		return 1;
 	} else {
@@ -1148,10 +1148,10 @@ static int cf_pane_iface_function(lua_State *L) {
 }
 
 static int push_iface_function(lua_State *L, const char *name) {
-	int i = IFaceTable::FindFunction(name);
+	int i = SciteIFaceTable.FindFunction(name);
 	if (i >= 0) {
-		if (IFaceFunctionIsScriptable(IFaceTable::functions[i])) {
-			lua_pushlightuserdata(L, const_cast<IFaceFunction *>(IFaceTable::functions+i));
+		if (IFaceFunctionIsScriptable(SciteIFaceTable.functions[i])) {
+			lua_pushlightuserdata(L, const_cast<IFaceFunction *>(SciteIFaceTable.functions + i));
 			lua_pushcclosure(L, cf_pane_iface_function, 1);
 
 			// Since Lua experts say it is inefficient to create closures / cfunctions
@@ -1168,9 +1168,9 @@ static int push_iface_function(lua_State *L, const char *name) {
 static int push_iface_propval(lua_State *L, const char *name) {
 	// this function doesn't raise errors, but returns 0 if the function is not handled.
 
-	int propidx = IFaceTable::FindProperty(name);
+	int propidx = SciteIFaceTable.FindProperty(name);
 	if (propidx >= 0) {
-		const IFaceProperty &prop = IFaceTable::properties[propidx];
+		const IFaceProperty &prop = SciteIFaceTable.properties[propidx];
 		if (!IFacePropertyIsScriptable(prop)) {
 			raise_error(L, "Error: iface property is not scriptable.");
 			return -1;
@@ -1255,9 +1255,9 @@ static int cf_pane_metatable_index(lua_State *L) {
 
 static int cf_pane_metatable_newindex(lua_State *L) {
 	if (lua_isstring(L, 2)) {
-		int propidx = IFaceTable::FindProperty(lua_tostring(L, 2));
+		int propidx = SciteIFaceTable.FindProperty(lua_tostring(L, 2));
 		if (propidx >= 0) {
-			const IFaceProperty &prop = IFaceTable::properties[propidx];
+			const IFaceProperty &prop = SciteIFaceTable.properties[propidx];
 			if (IFacePropertyIsScriptable(prop)) {
 				if (prop.setter) {
 					// stack needs to be rearranged to look like an iface function call
@@ -1328,14 +1328,14 @@ static int cf_global_metatable_index(lua_State *L) {
 			return 0;
 		}
 
-		int i = IFaceTable::FindConstant(name);
+		int i = SciteIFaceTable.FindConstant(name);
 		if (i >= 0) {
-			lua_pushinteger(L, IFaceTable::constants[i].value);
+			lua_pushinteger(L, SciteIFaceTable.constants[i].value);
 			return 1;
 		} else {
-			i = IFaceTable::FindFunctionByConstantName(name);
+			i = SciteIFaceTable.FindFunctionByConstantName(name);
 			if (i >= 0) {
-				lua_pushinteger(L, IFaceTable::functions[i].value);
+				lua_pushinteger(L, SciteIFaceTable.functions[i].value);
 
 				// FindFunctionByConstantName is slow, so cache the result into the
 				// global table.  My tests show this gives an order of magnitude

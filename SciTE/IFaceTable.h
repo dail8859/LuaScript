@@ -68,28 +68,45 @@ struct IFaceProperty {
 	}
 };
 
-struct IFaceObject {
-	const char *name;
-	const char *prefix;
-	IFaceType indexType;
+class IFaceTableInterface {
+public:
+	virtual int FindConstant(const char *name) = 0;
+	virtual int FindFunction(const char *name) = 0;
+	virtual int FindFunctionByConstantName(const char *name) = 0;
+	virtual int FindProperty(const char *name) = 0;
+	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) = 0;
 };
 
-class IFaceTable {
+class IFaceTable : public IFaceTableInterface {
 public:
-	static const IFaceFunction * const functions;
-	static const IFaceConstant * const constants;
-	static const IFaceProperty * const properties;
 
-	static const int functionCount;
-	static const int constantCount;
-	static const int propertyCount;
+public:
+	IFaceTable(const char *_prefix,
+		const IFaceFunction *const _functions, int _functionCount,
+		const IFaceConstant *const _constants, int _constantCount,
+		const IFaceProperty *const _properties, int _propertyCount) :
+		prefix(_prefix),
+		functions(_functions), functionCount(_functionCount),
+		constants(_constants), constantCount(_constantCount),
+		properties(_properties), propertyCount(_propertyCount)
+	{}
 
-	static int FindConstant(const char *name);
-	static int FindFunction(const char *name);
-	static int FindFunctionByConstantName(const char *name);
-	static int FindProperty(const char *name);
+	const char *prefix;
 
-	static int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
+	const IFaceFunction *const functions;
+	const IFaceConstant *const constants;
+	const IFaceProperty *const properties;
+
+	const int functionCount;
+	const int constantCount;
+	const int propertyCount;
+
+	int FindConstant(const char *name);
+	int FindFunction(const char *name);
+	int FindFunctionByConstantName(const char *name);
+	int FindProperty(const char *name);
+
+	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
 };
 
 #endif
