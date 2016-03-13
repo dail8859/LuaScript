@@ -20,7 +20,7 @@
 // SciTE - Scintilla based Text Editor
 // Copyright 1998-2004 by Neil Hodgson <neilh@scintilla.org>
 
-#include "SciteIFaceTable.h"
+#include "SciIFaceTable.h"
 
 static IFaceConstant ifaceConstants[] = {
 	{ "ANNOTATION_BOXED", 2 },
@@ -3134,10 +3134,6 @@ static IFaceProperty ifaceProperties[] = {
 	{ "Zoom", 2374, 2373, iface_int, iface_void }
 };
 
-enum {
-	ifaceFunctionCount = 289,
-	ifaceConstantCount = 2593,
-	ifacePropertyCount = 221
-};
 
-IFaceTable SciteIFaceTable("SCI_", ifaceFunctions, ifaceFunctionCount, ifaceConstants, ifaceConstantCount, ifaceProperties, ifacePropertyCount);
+
+IFaceTable SciIFaceTable("SCI_", ifaceFunctions, ELEMENTS(ifaceFunctions), ifaceConstants, ELEMENTS(ifaceConstants), ifaceProperties, ELEMENTS(ifaceProperties));

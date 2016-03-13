@@ -8,6 +8,8 @@
 #ifndef IFACETABLE_H
 #define IFACETABLE_H
 
+#define ELEMENTS(a) (sizeof(a) / sizeof(a[0]))
+
 enum IFaceType {
 	iface_void,
 	iface_int,

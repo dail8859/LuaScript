@@ -21,7 +21,7 @@
 #include "WcharMbcsConverter.h"
 
 #include "IFaceTableMixer.h"
-#include "SciteIFaceTable.h"
+#include "SciIFaceTable.h"
 #include "NppIFaceTable.h"
 
 #include "lua.hpp"
@@ -222,6 +222,56 @@ static void *checkudata(lua_State *L, int ud, const char *tname) {
 	return NULL;
 }
 
+static int cf_npp_metatable_index(lua_State *L) {
+	if (lua_isstring(L, 2)) {
+		const char *name = lua_tostring(L, 2);
+
+		// TODO
+	}
+
+	raise_error(L, "Notepad++ function / readable property / indexed writable property name expected");
+	return 0;
+}
+
+static int cf_npp_metatable_newindex(lua_State *L) {
+	if (lua_isstring(L, 2)) {
+		auto prop = NppIFaceTable.FindProperty(lua_tostring(L, 2));
+		if (prop != nullptr) {
+			if (IFacePropertyIsScriptable(*prop)) {
+				if (prop->setter) {
+					// stack needs to be rearranged to look like an iface function call
+					lua_remove(L, 2);
+					if (prop->paramType == iface_void) {
+						return iface_function_helper(L, prop->SetterFunction());
+					}
+					else if ((prop->paramType == iface_bool)) {
+						if (!lua_isnil(L, 3)) {
+							lua_pushboolean(L, 1);
+							lua_insert(L, 2);
+						}
+						else {
+							// the nil will do as a false value.
+							// just push an arbitrary numeric value that Scintilla will ignore
+							lua_pushinteger(L, 0);
+						}
+						return iface_function_helper(L, prop->SetterFunction());
+
+					}
+					else {
+						raise_error(L, "Error - (Notepad++ object) cannot assign directly to indexed property");
+					}
+				}
+				else {
+					raise_error(L, "Error - (Notepad++ object) cannot assign to a read-only property");
+				}
+			}
+		}
+	}
+
+	raise_error(L, "Error - (Notepad++ object) expected the name of a writable property");
+	return 0;
+}
+
 static int cf_npp_send(lua_State *L) {
 	// This is reinstated as a replacement for the old <pane>:send, which was removed
 	// due to safety concerns.  Is now exposed as npp.SendEditor / npp.SendOutput.
@@ -236,10 +286,10 @@ static int cf_npp_send(lua_State *L) {
 	lua_replace(L, 1);
 
 	const IFaceFunction *func;
-	func = ifacemixer.GetFunctionByMessage(message);
+	func = NppIFaceTable.GetFunctionByMessage(message);
 
 	if (func == nullptr) {
-		func = ifacemixer.GetPropertyFuncByMessage(message);
+		func = NppIFaceTable.GetPropertyFuncByMessage(message);
 	}
 
 	if (func != nullptr) {
@@ -806,39 +856,6 @@ static int cf_pane_match_generator(lua_State *L) {
 	return 1;
 }
 
-static int cf_props_metatable_index(lua_State *L) {
-	int selfArg = lua_isuserdata(L, 1) ? 1 : 0;
-
-	if (lua_isstring(L, selfArg + 1)) {
-		std::string value = host->Property(lua_tostring(L, selfArg + 1));
-		lua_pushstring(L, value.c_str());
-		return 1;
-	} else {
-		raise_error(L, "String argument required for property access");
-	}
-	return 0;
-}
-
-static int cf_props_metatable_newindex(lua_State *L) {
-	int selfArg = lua_isuserdata(L, 1) ? 1 : 0;
-
-	const char *key = lua_isstring(L, selfArg + 1) ? lua_tostring(L, selfArg + 1) : 0;
-	const char *val = lua_tostring(L, selfArg + 2);
-
-	if (key && *key) {
-		if (val) {
-			host->SetProperty(key, val);
-		} else if (lua_isnil(L, selfArg + 2)) {
-			host->UnsetProperty(key);
-		} else {
-			raise_error(L, "Expected string or nil for property assignment.");
-		}
-	} else {
-		raise_error(L, "Property name must be a non-empty string.");
-	}
-	return 0;
-}
-
 static int cf_global_print(lua_State *L) {
 	int nargs = lua_gettop(L);
 
@@ -1006,7 +1023,6 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 
 	char *stringResult = 0;
 	bool needStringResult = false;
-	//editor.MarginLeft = 12
 	int loopParamCount = 2;
 
 	if (func.paramType[0] == iface_length && func.paramType[1] == iface_string) {
@@ -1160,7 +1176,7 @@ static int push_iface_function(lua_State *L, const char *name) {
 static int push_iface_propval(lua_State *L, const char *name) {
 	// this function doesn't raise errors, but returns 0 if the function is not handled.
 
-	auto prop = ifacemixer.FindProperty(name);
+	auto prop = SciIFaceTable.FindProperty(name);
 	if (prop != nullptr) {
 		if (!IFacePropertyIsScriptable(*prop)) {
 			raise_error(L, "Error: iface property is not scriptable.");
@@ -1246,7 +1262,7 @@ static int cf_pane_metatable_index(lua_State *L) {
 
 static int cf_pane_metatable_newindex(lua_State *L) {
 	if (lua_isstring(L, 2)) {
-		auto prop = ifacemixer.FindProperty(lua_tostring(L, 2));
+		auto prop = SciIFaceTable.FindProperty(lua_tostring(L, 2));
 		if (prop != nullptr) {
 			if (IFacePropertyIsScriptable(*prop)) {
 				if (prop->setter) {
@@ -1394,11 +1410,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		lua_pushnil(luaState);
 		lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
 
-		// Also reset buffer data, since scripts might depend on this to know
-		// whether they need to re-initialize something.
-		lua_pushnil(luaState);
-		lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_BufferData_Array");
-
 		// Don't replace global scope using new_table, because then startup script is
 		// bound to a different copy of the globals than the extension script.
 		lua_pushglobaltable(luaState);
@@ -1424,25 +1435,14 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		return false;
 	}
 
-	ifacemixer.AddIFaceTable(&SciteIFaceTable);
-	//ifacemixer.AddIFaceTable(&NppIFaceTable);
+	ifacemixer.AddIFaceTable(&SciIFaceTable);
+	ifacemixer.AddIFaceTable(&NppIFaceTable);
 
 	// ...register standard libraries
 	luaL_openlibs(luaState);
 
 	// override a library function whose default impl uses stdout
 	lua_register(luaState, "print", cf_global_print);
-
-	// props object - provides access to Property and SetProperty
-	lua_newuserdata(luaState, 1); // the value doesn't matter.
-	if (luaL_newmetatable(luaState, "Npp_MT_Props")) {
-		lua_pushcfunction(luaState, cf_props_metatable_index);
-		lua_setfield(luaState, -2, "__index");
-		lua_pushcfunction(luaState, cf_props_metatable_newindex);
-		lua_setfield(luaState, -2, "__newindex");
-	}
-	lua_setmetatable(luaState, -2);
-	lua_setglobal(luaState, "props");
 
 	// pane objects
 	push_pane_object(luaState, NppExtensionAPI::paneEditor);
@@ -1500,8 +1500,18 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		strcat(removeall, callbacks[i]);
 		lua_setfield(luaState, -2, removeall);
 	}
+
+	// Create the registry table to hold callbacks
 	lua_newtable(luaState);
 	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_Callbacks");
+
+	// Noteapd++ metatable (make sure to do this last)
+	lua_newtable(luaState); // the metatable
+	lua_pushcfunction(luaState, cf_npp_metatable_index);
+	lua_setfield(luaState, -2, "__index");
+	lua_pushcfunction(luaState, cf_npp_metatable_newindex);
+	lua_setfield(luaState, -2, "__newindex");
+	lua_setmetatable(luaState, -2);
 
 	// Keep "scite" for backwards compatibility but also allow "npp"
 	lua_setglobal(luaState, "scite");

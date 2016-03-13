@@ -41,14 +41,8 @@ static IFaceFunction ifaceFunctions[] = {
 };
 
 static IFaceProperty ifaceProperties[] = {
-	{ "CurrentLangType ", NPPM_GETCURRENTLANGTYPE, NPPM_SETCURRENTLANGTYPE, iface_int, iface_void },
-	{ "WindowsVersion ", NPPM_GETWINDOWSVERSION, 0, iface_int, iface_void }
+	{ "CurrentLangType", NPPM_GETCURRENTLANGTYPE, NPPM_SETCURRENTLANGTYPE, iface_int, iface_void },
+	{ "WindowsVersion", NPPM_GETWINDOWSVERSION, 0, iface_int, iface_void }
 };
 
-enum {
-	ifaceFunctionCount = 1,
-	ifaceConstantCount = 14,
-	ifacePropertyCount = 2
-};
-
-IFaceTable NppIFaceTable("NPPM_", ifaceFunctions, ifaceFunctionCount, ifaceConstants, ifaceConstantCount, ifaceProperties, ifacePropertyCount);
+IFaceTable NppIFaceTable("NPPM_", ifaceFunctions, ELEMENTS(ifaceFunctions), ifaceConstants, ELEMENTS(ifaceConstants), ifaceProperties, ELEMENTS(ifaceProperties));

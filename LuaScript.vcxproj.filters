@@ -48,13 +48,13 @@
     <ClCompile Include="LuaScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SciteIFaceTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NppIFaceTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IFaceTableMixer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SciIFaceTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,13 +131,13 @@
     <ClInclude Include="NppExtensionAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SciteIFaceTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NppIFaceTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IFaceTableMixer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SciIFaceTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

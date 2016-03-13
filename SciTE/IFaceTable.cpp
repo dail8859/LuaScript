@@ -47,13 +47,13 @@ const IFaceFunction *IFaceTable::FindFunction(const char *name) {
 }
 
 const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) {
-	if (strncmp(name, prefix, strlen(prefix))==0) {
+	if (strncmp(name, prefix, strlen(prefix)) == 0) {
 		// This looks like a constant for an iface function.  This requires
 		// a sequential search.  Take special care since the function names
 		// are mixed case, whereas the constants are all-caps.
 
 		for (int idx = 0; idx < functionCount; ++idx) {
-			const char *nm = name+4;
+			const char *nm = name + strlen(prefix);
 			const char *fn = functions[idx].name;
 			while (*nm && *fn && (*nm == toupper(*fn))) {
 				++nm;
@@ -94,12 +94,12 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 	// Look in both the constants table and the functions table.  Start with functions.
 	for (int funcIdx = 0; funcIdx < functionCount; ++funcIdx) {
 		if (functions[funcIdx].value == value) {
-			int len = static_cast<int>(strlen(functions[funcIdx].name)) + 4;
+			int len = static_cast<int>(strlen(functions[funcIdx].name)) + strlen(prefix);
 			if (nameOut && (static_cast<int>(nameBufferLen) > len)) {
 				strcpy(nameOut, prefix);
 				strcat(nameOut, functions[funcIdx].name);
 				// fix case
-				for (char *nm = nameOut + 4; *nm; ++nm) {
+				for (char *nm = nameOut + strlen(prefix); *nm; ++nm) {
 					if (*nm >= 'a' && *nm <= 'z') {
 						*nm = static_cast<char>(*nm - 'a' + 'A');
 					}
