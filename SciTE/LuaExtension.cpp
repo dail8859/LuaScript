@@ -120,24 +120,6 @@ static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index);
 static void push_pane_object(lua_State *L, NppExtensionAPI::Pane p);
 static int iface_function_helper(lua_State *L, const IFaceFunction &func);
 
-inline bool IFaceTypeIsScriptable(IFaceType t, int index) {
-	return t < iface_stringresult || (index==1 && t == iface_stringresult);
-}
-
-inline bool IFaceTypeIsNumeric(IFaceType t) {
-	return (t > iface_void && t < iface_bool);
-}
-
-inline bool IFaceFunctionIsScriptable(const IFaceFunction &f) {
-	return IFaceTypeIsScriptable(f.paramType[0], 0) && IFaceTypeIsScriptable(f.paramType[1], 1);
-}
-
-inline bool IFacePropertyIsScriptable(const IFaceProperty &p) {
-	return (((p.valueType > iface_void) && (p.valueType <= iface_stringresult) && (p.valueType != iface_keymod)) &&
-	        ((p.paramType < iface_colour) || (p.paramType == iface_string) ||
-	                (p.paramType == iface_bool)) && (p.getter || p.setter));
-}
-
 inline void raise_error(lua_State *L, const char *errMsg=NULL) {
 	luaL_where(L, 1);
 	if (errMsg) {

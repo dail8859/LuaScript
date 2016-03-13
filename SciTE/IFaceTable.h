@@ -70,6 +70,24 @@ struct IFaceProperty {
 	}
 };
 
+inline bool IFaceTypeIsScriptable(IFaceType t, int index) {
+	return t < iface_stringresult || (index == 1 && t == iface_stringresult);
+}
+
+inline bool IFaceTypeIsNumeric(IFaceType t) {
+	return (t > iface_void && t < iface_bool);
+}
+
+inline bool IFaceFunctionIsScriptable(const IFaceFunction &f) {
+	return IFaceTypeIsScriptable(f.paramType[0], 0) && IFaceTypeIsScriptable(f.paramType[1], 1);
+}
+
+inline bool IFacePropertyIsScriptable(const IFaceProperty &p) {
+	return (((p.valueType > iface_void) && (p.valueType <= iface_stringresult) && (p.valueType != iface_keymod)) &&
+		((p.paramType < iface_colour) || (p.paramType == iface_string) ||
+		(p.paramType == iface_bool)) && (p.getter || p.setter));
+}
+
 class IFaceTableInterface {
 public:
 	virtual const IFaceConstant *FindConstant(const char *name) = 0;
