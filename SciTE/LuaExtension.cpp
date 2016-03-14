@@ -268,10 +268,10 @@ static int cf_npp_send(lua_State *L) {
 	lua_replace(L, 1);
 
 	const IFaceFunction *func;
-	func = NppIFaceTable.GetFunctionByMessage(message);
+	func = SciIFaceTable.GetFunctionByMessage(message);
 
 	if (func == nullptr) {
-		func = NppIFaceTable.GetPropertyFuncByMessage(message);
+		func = SciIFaceTable.GetPropertyFuncByMessage(message);
 	}
 
 	if (func != nullptr) {
@@ -531,6 +531,15 @@ static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 		return *pPane;
 	}
 
+	pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Application"));
+
+	// NOTE: I'm not sure what the above comment about the "back reference" means. This may or
+	// may not apply in thise case. So that if statement may need pasted/modified in this case
+
+	if (pPane) {
+		return *pPane;
+	}
+
 	if (index == 1)
 		lua_pushliteral(L, "Self object is missing in pane method or property access.");
 	else if (index == lua_upvalueindex(1))
@@ -539,7 +548,7 @@ static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
 		lua_pushliteral(L, "Pane object expected.");
 
 	raise_error(L);
-	return NppExtensionAPI::paneOutput; // this line never reached
+	return host->paneOutput; // this line never reached
 }
 
 static int cf_pane_textrange(lua_State *L) {
@@ -1137,8 +1146,8 @@ static int cf_pane_iface_function(lua_State *L) {
 	}
 }
 
-static int push_iface_function(lua_State *L, const char *name) {
-	auto func= ifacemixer.FindFunction(name);
+static int push_iface_function(lua_State *L, const char *name, IFaceTableInterface *iface) {
+	auto func = iface->FindFunction(name);
 	if (func != nullptr) {
 		if (IFaceFunctionIsScriptable(*func)) {
 			lua_pushlightuserdata(L, (void*)func);
@@ -1155,10 +1164,10 @@ static int push_iface_function(lua_State *L, const char *name) {
 	return -1; // signal to try next pane index handler
 }
 
-static int push_iface_propval(lua_State *L, const char *name) {
+static int push_iface_propval(lua_State *L, const char *name, IFaceTableInterface *iface) {
 	// this function doesn't raise errors, but returns 0 if the function is not handled.
 
-	auto prop = SciIFaceTable.FindProperty(name);
+	auto prop = iface->FindProperty(name);
 	if (prop != nullptr) {
 		if (!IFacePropertyIsScriptable(*prop)) {
 			raise_error(L, "Error: iface property is not scriptable.");
@@ -1217,13 +1226,14 @@ static int push_iface_propval(lua_State *L, const char *name) {
 }
 
 static int cf_pane_metatable_index(lua_State *L) {
+	IFaceTableInterface *iface = static_cast<IFaceTableInterface *>(lua_touserdata(L, lua_upvalueindex(1)));
 	if (lua_isstring(L, 2)) {
 		const char *name = lua_tostring(L, 2);
 
 		// these return the number of values pushed (possibly 0), or -1 if no match
-		int results = push_iface_function(L, name);
+		int results = push_iface_function(L, name, iface);
 		if (results < 0)
-			results = push_iface_propval(L, name);
+			results = push_iface_propval(L, name, iface);
 
 		if (results >= 0) {
 			return results;
@@ -1243,8 +1253,9 @@ static int cf_pane_metatable_index(lua_State *L) {
 }
 
 static int cf_pane_metatable_newindex(lua_State *L) {
+	IFaceTableInterface *iface = static_cast<IFaceTableInterface *>(lua_touserdata(L, lua_upvalueindex(1)));
 	if (lua_isstring(L, 2)) {
-		auto prop = SciIFaceTable.FindProperty(lua_tostring(L, 2));
+		auto prop = iface->FindProperty(lua_tostring(L, 2));
 		if (prop != nullptr) {
 			if (IFacePropertyIsScriptable(*prop)) {
 				if (prop->setter) {
@@ -1280,9 +1291,11 @@ static int cf_pane_metatable_newindex(lua_State *L) {
 void push_pane_object(lua_State *L, NppExtensionAPI::Pane p) {
 	*static_cast<NppExtensionAPI::Pane *>(lua_newuserdata(L, sizeof(p))) = p;
 	if (luaL_newmetatable(L, "Npp_MT_Pane")) {
-		lua_pushcfunction(L, cf_pane_metatable_index);
+		lua_pushlightuserdata(L, &SciIFaceTable);
+		lua_pushcclosure(L, cf_pane_metatable_index, 1);
 		lua_setfield(L, -2, "__index");
-		lua_pushcfunction(L, cf_pane_metatable_newindex);
+		lua_pushlightuserdata(L, &SciIFaceTable);
+		lua_pushcclosure(L, cf_pane_metatable_newindex, 1);
 		lua_setfield(L, -2, "__newindex");
 
 		// Push built-in functions into the metatable, where the custom
@@ -1427,16 +1440,16 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_register(luaState, "print", cf_global_print);
 
 	// pane objects
-	push_pane_object(luaState, NppExtensionAPI::paneEditor);
+	push_pane_object(luaState, host->paneEditor);
 	lua_setglobal(luaState, "editor");
 
-	push_pane_object(luaState, NppExtensionAPI::paneEditorMain);
+	push_pane_object(luaState, host->paneEditorMain);
 	lua_setglobal(luaState, "editor1");
 
-	push_pane_object(luaState, NppExtensionAPI::paneEditorSecondary);
+	push_pane_object(luaState, host->paneEditorSecondary);
 	lua_setglobal(luaState, "editor2");
 
-	push_pane_object(luaState, NppExtensionAPI::paneOutput);
+	push_pane_object(luaState, host->paneOutput);
 	lua_setglobal(luaState, "console");
 
 	// scite
@@ -2066,7 +2079,7 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 			sc.lengthDoc = lengthDoc;
 			sc.initStyle = initStyle;
 			sc.styler = styler;
-			sc.codePage = static_cast<int>(host->Send(NppExtensionAPI::paneEditor, SCI_GETCODEPAGE));
+			sc.codePage = static_cast<int>(host->Send(host->paneEditor, SCI_GETCODEPAGE));
 
 			lua_newtable(luaState);
 

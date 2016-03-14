@@ -30,12 +30,9 @@ HWND NppExtensionAPI::getScintillaHandle(NppExtensionAPI::Pane p) {
 		if (which == -1) return nullptr;
 		return (which == 0) ? m_nppData->_scintillaMainHandle : m_nppData->_scintillaSecondHandle;
 	}
-	if (p == NppExtensionAPI::paneEditorMain) return m_nppData->_scintillaMainHandle;
-	if (p == NppExtensionAPI::paneEditorSecondary) return m_nppData->_scintillaSecondHandle;
-	if (p == NppExtensionAPI::paneOutput) return this->cd->getScintillaHwnd();
+	else return p;
 
 	return nullptr;
-	
 }
 
 sptr_t NppExtensionAPI::Send(NppExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {

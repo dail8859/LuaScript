@@ -38,9 +38,21 @@ inline uptr_t UptrFromString(const char *cp) {
 
 class NppExtensionAPI final {
 public:
-	enum Pane { paneEditor = 1, paneEditorMain = 2, paneEditorSecondary = 3, paneOutput = 4, paneFindOutput = 5 };
+	typedef HWND  Pane;
+	Pane paneEditor;
+	Pane paneEditorMain;
+	Pane paneEditorSecondary;
+	Pane paneOutput;
+	Pane application;
 
-	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { m_nppData = nppData; }
+	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { 
+		m_nppData = nppData;
+		application = m_nppData->_nppHandle;
+		paneEditor = 0;
+		paneEditorMain = m_nppData->_scintillaMainHandle;
+		paneEditorSecondary = m_nppData->_scintillaSecondHandle;
+		paneOutput = cd->getScintillaHwnd();
+	}
 	~NppExtensionAPI();
 
 	sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);
