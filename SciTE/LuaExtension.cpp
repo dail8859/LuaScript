@@ -204,56 +204,6 @@ static void *checkudata(lua_State *L, int ud, const char *tname) {
 	return NULL;
 }
 
-static int cf_npp_metatable_index(lua_State *L) {
-	if (lua_isstring(L, 2)) {
-		const char *name = lua_tostring(L, 2);
-
-		// TODO
-	}
-
-	raise_error(L, "Notepad++ function / readable property / indexed writable property name expected");
-	return 0;
-}
-
-static int cf_npp_metatable_newindex(lua_State *L) {
-	if (lua_isstring(L, 2)) {
-		auto prop = NppIFaceTable.FindProperty(lua_tostring(L, 2));
-		if (prop != nullptr) {
-			if (IFacePropertyIsScriptable(*prop)) {
-				if (prop->setter) {
-					// stack needs to be rearranged to look like an iface function call
-					lua_remove(L, 2);
-					if (prop->paramType == iface_void) {
-						return iface_function_helper(L, prop->SetterFunction());
-					}
-					else if ((prop->paramType == iface_bool)) {
-						if (!lua_isnil(L, 3)) {
-							lua_pushboolean(L, 1);
-							lua_insert(L, 2);
-						}
-						else {
-							// the nil will do as a false value.
-							// just push an arbitrary numeric value that Scintilla will ignore
-							lua_pushinteger(L, 0);
-						}
-						return iface_function_helper(L, prop->SetterFunction());
-
-					}
-					else {
-						raise_error(L, "Error - (Notepad++ object) cannot assign directly to indexed property");
-					}
-				}
-				else {
-					raise_error(L, "Error - (Notepad++ object) cannot assign to a read-only property");
-				}
-			}
-		}
-	}
-
-	raise_error(L, "Error - (Notepad++ object) expected the name of a writable property");
-	return 0;
-}
-
 static int cf_npp_send(lua_State *L) {
 	// This is reinstated as a replacement for the old <pane>:send, which was removed
 	// due to safety concerns.  Is now exposed as npp.SendEditor / npp.SendOutput.
@@ -1453,65 +1403,68 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_setglobal(luaState, "console");
 
 	// scite
-	lua_newtable(luaState);
+	*static_cast<NppExtensionAPI::Pane *>(lua_newuserdata(luaState, sizeof(host->application))) = host->application;
+	if (luaL_newmetatable(luaState, "Npp_MT_Application")) {
+		lua_pushlightuserdata(luaState, &NppIFaceTable);
+		lua_pushcclosure(luaState, cf_pane_metatable_index, 1);
+		lua_setfield(luaState, -2, "__index");
+		lua_pushlightuserdata(luaState, &NppIFaceTable);
+		lua_pushcclosure(luaState, cf_pane_metatable_newindex, 1);
+		lua_setfield(luaState, -2, "__newindex");
 
-	lua_getglobal(luaState, "editor");
-	lua_pushcclosure(luaState, cf_npp_send, 1);
-	lua_setfield(luaState, -2, "SendEditor");
+		// Push built-in functions into the metatable, where the custom
+		// __index metamethod will find them.
+		lua_getglobal(luaState, "editor");
+		lua_pushcclosure(luaState, cf_npp_send, 1);
+		lua_setfield(luaState, -2, "SendEditor");
 
-	lua_pushcfunction(luaState, cf_npp_constname);
-	lua_setfield(luaState, -2, "ConstantName");
+		lua_pushcfunction(luaState, cf_npp_constname);
+		lua_setfield(luaState, -2, "ConstantName");
 
-	lua_pushcfunction(luaState, cf_npp_menu_command);
-	lua_setfield(luaState, -2, "MenuCommand");
+		lua_pushcfunction(luaState, cf_npp_menu_command);
+		lua_setfield(luaState, -2, "MenuCommand");
 
-	lua_pushcfunction(luaState, cf_npp_add_shortcut);
-	lua_setfield(luaState, -2, "AddShortcut");
+		lua_pushcfunction(luaState, cf_npp_add_shortcut);
+		lua_setfield(luaState, -2, "AddShortcut");
 
-	lua_pushcfunction(luaState, cf_npp_write_error);
-	lua_setfield(luaState, -2, "WriteError");
+		lua_pushcfunction(luaState, cf_npp_write_error);
+		lua_setfield(luaState, -2, "WriteError");
 
-	lua_pushcfunction(luaState, cf_npp_clear_console);
-	lua_setfield(luaState, -2, "ClearConsole");
+		lua_pushcfunction(luaState, cf_npp_clear_console);
+		lua_setfield(luaState, -2, "ClearConsole");
 
-	// Register the callbacks
-	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
-		char add[32] = "Add";
-		char remove[32] = "Remove";
-		char removeall[32] = "RemoveAll";
+		// Register the callbacks
+		for (int i = 0; i < ELEMENTS(callbacks); ++i) {
+			char add[32] = "Add";
+			char remove[32] = "Remove";
+			char removeall[32] = "RemoveAll";
 
-		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_npp_add_callback, 1);
-		strcat(add, callbacks[i]);
-		lua_setfield(luaState, -2, add);
+			lua_pushstring(luaState, callbacks[i]);
+			lua_pushcclosure(luaState, cf_npp_add_callback, 1);
+			strcat(add, callbacks[i]);
+			lua_setfield(luaState, -2, add);
 
-		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_npp_remove_callback, 1);
-		strcat(remove, callbacks[i]);
-		lua_setfield(luaState, -2, remove);
+			lua_pushstring(luaState, callbacks[i]);
+			lua_pushcclosure(luaState, cf_npp_remove_callback, 1);
+			strcat(remove, callbacks[i]);
+			lua_setfield(luaState, -2, remove);
 
-		lua_pushstring(luaState, callbacks[i]);
-		lua_pushcclosure(luaState, cf_npp_removeall_callbacks, 1);
-		strcat(removeall, callbacks[i]);
-		lua_setfield(luaState, -2, removeall);
+			lua_pushstring(luaState, callbacks[i]);
+			lua_pushcclosure(luaState, cf_npp_removeall_callbacks, 1);
+			strcat(removeall, callbacks[i]);
+			lua_setfield(luaState, -2, removeall);
+		}
 	}
-
-	// Create the registry table to hold callbacks
-	lua_newtable(luaState);
-	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_Callbacks");
-
-	// Noteapd++ metatable (make sure to do this last)
-	lua_newtable(luaState); // the metatable
-	lua_pushcfunction(luaState, cf_npp_metatable_index);
-	lua_setfield(luaState, -2, "__index");
-	lua_pushcfunction(luaState, cf_npp_metatable_newindex);
-	lua_setfield(luaState, -2, "__newindex");
 	lua_setmetatable(luaState, -2);
 
 	// Keep "scite" for backwards compatibility but also allow "npp"
 	lua_setglobal(luaState, "scite");
 	lua_getglobal(luaState, "scite");
 	lua_setglobal(luaState, "npp");
+
+	// Create the registry table to hold callbacks
+	lua_newtable(luaState);
+	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_Callbacks");
 
 	// get global environment table from registry
 	lua_pushglobaltable(luaState);
