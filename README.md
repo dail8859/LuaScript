@@ -9,8 +9,11 @@ Major features include:
 - Interactive console with auto-completion
 - Requires no special permissions
 
+## Documentation
+The full API documentation can be found [here](http://dail8859.github.io/LuaScript/).
+
 ## Examples
-Just show me what it can do!
+Just show me what it can do! Also, check out the [examples](/examples/) directory.
 
 - Change Notepad++'s ugly marker symbols:
 ```lua
@@ -45,53 +48,6 @@ npp.AddShortcut("Cut Allow Line", "Ctrl+X", function()
 	end
 end)
 ```
-
-## Documentation
-#### Globals
-Global objects/functions are made available to access the editing component.
-- `editor` - refers to the current editor view. Since Notepad++ has 2 views, this controls the one currently selected
-  - `editor1` - refers to the "first" view
-  - `editor2` - refers to the "second" view
-- `npp` - the Notepad++ application itself
-
-#### Editor object
-The full documentation can be found [here](/doc/editor.md). The `editor` also has a few helper functions:
-- `editor:textrange(startPos, endPos)`
-  - gets the text in the specified range
-- `editor:findtext(text, [flags], [startPos, [endPos]])`
-  - returns the start and end of the first match, or `nil` if no match
-  - flags can be 0 (the default), or a combination of [SCFIND](http://www.scintilla.org/ScintillaDoc.html#searchFlags) constants such as `SCFIND_WHOLEWORD`, `SCFIND_MATCHCASE`, and `SCFIND_REGEXP`
-- `editor:match(text, [flags], [startPos])`
-  - returns a generator that allows you to loop over the matches i.e. `for m in editor:match(text, flags) do ... end`
-  - the match object (i.e. the loop counter `m` in the above example) supports read-only properties `pos`, `len`, and `text`; and also supports a function `replace(replaceText)` to support search and replace.
-  - while looping through matches, if the document is modified by any method other than the loop counter's replace method, this may cause the match generator to lose its place.
-  - also, do not attempt to store the match object for later access outside the loop; it will not be useable.
-- `editor:append(text)`
-  - appends text to the end of the document
-- `editor:insert(pos, text)`
-  - inserts text at the specified position
-- `editor:remove(startPos, endPos)`
-  - removes the text in the range
-
-#### Notepad++ object
-- `npp.ConstantName(number, [hint])`
-  - returns the symbolic name of a Scintilla / Notepad++ constant
-  - optional `hint` parameter for the name of the appropriate constant
-- `npp.AddEventHandler(event, function)`
-  - adds a function handler for a specific event. Full documentation for events can be found [here](/doc/events.md)
-- `npp.RemoveEventHandler(event, function)`
-  - removes a previously added function handler for a specific event
-- `npp.AddShortcut(name, shortcut, function)`
-  - adds a shortcut under the plugin menu. *This can only be called during start-up.*
-  - `name` the human readable text that will be shown in the menu
-  - `shortcut` a string that specifies the modifiers and key for the shortcut e.g. `"Alt+Shift+F5"` or an empty string `""`
-    - The modifiers (`Ctrl`, `Alt`, and `Shift`) can appear in any order
-    - The key must be last. It can be `A-Z`, `0-9`, or `F1-F12`
-  - `function` the function to be called. It takes no parameters and has no return value
-- `npp.WriteError(...)`
-  - acts like `print` but the text is styled in red
-- `npp.ClearConsole()`
-  - clears the console
 
 ## Development
 The code has been developed using MSVC 2013. To compile the code:

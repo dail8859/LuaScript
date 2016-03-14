@@ -214,6 +214,23 @@ static void *checkudata(lua_State *L, int ud, const char *tname) {
 	return NULL;
 }
 
+/// Notepad++ wrapper.
+// Provides access to the Notepad++ application. Most of the API messages and notifications have been made available, but more can be made available as needed.
+// 
+// The global instance `npp` is used for application access.
+// @classmod Notepad
+
+/// Helper Methods
+// @section helpermethods
+
+/// Sends a message to the current editor.
+// This duplicates the functionality of the editor object, providing access to this through an interface that is more familiar to Scintilla C++ developers.
+// @function SendEditor
+// @static
+// @tparam int sci_const A SCI_xxx message constant
+// @param[opt=0] wparam optional parameter dependent on the specific message
+// @param[opt=0] lparam optional parameter dependent on the specific message
+// @return optional return value dependent on the specific message
 static int cf_npp_send(lua_State *L) {
 	// This is reinstated as a replacement for the old <pane>:send, which was removed
 	// due to safety concerns.  Is now exposed as npp.SendEditor / npp.SendOutput.
@@ -249,6 +266,12 @@ static int cf_npp_send(lua_State *L) {
 	}
 }
 
+/// Looks up the symoblic name of a constant.
+// @function ConstantName
+// @static
+// @tparam int const number
+// @tparam[opt] string hint the prefix of the constant to attempt to find
+// @treturn string The symbolic name of a Scintilla / Notepad++ constant. Raises error if not found.
 static int cf_npp_constname(lua_State *L) {
 	char constName[100] = "";
 	const char *hint = nullptr;
@@ -286,6 +309,33 @@ static bool isValidCallback(const char *cb) {
 	return false;
 }
 
+/// Registers a Lua function to handle a given event.
+//  `event` must be one of the following
+// 
+// * `"OnReady"`
+// * `"OnBeforeOpen"`
+// * `"OnOpen"`
+// * `"OnSwitchFile"`
+// * `"OnBeforeSave"`
+// * `"OnSave"`
+// * `"OnFileRenamed"`
+// * `"OnFileDeleted"`
+// * `"OnChar"`
+// * `"OnSavePointReached"`
+// * `"OnSavePointLeft"`
+// * `"OnUpdateUI"`
+// * `"OnLangChange"`
+// * `"OnBeforeClose"`
+// * `"OnClose"`
+// * `"OnBeforeShutdown"`
+// * `"OnCancelShutdown"`
+// * `"OnShutdown"`
+// 
+// @function AddEventHandler
+// @static
+// @tparam string event name of the desired event
+// @tparam function callback the function to call when the event is triggered
+// @treturn bool always returns `true` currently
 static int cf_npp_add_callback(lua_State *L) {
 	const char *callback = luaL_checkstring(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -315,6 +365,13 @@ static int cf_npp_add_callback(lua_State *L) {
 	return 1;
 }
 
+/// Removes previously registered Lua function for a given event.
+// @function RemoveEventHandler
+// @static
+// @tparam string event name of the desired event
+// @tparam function callback the previously registered function
+// @treturn bool `true` if the function had been previously registered, else `false`
+// @see AddEventHandler
 static int cf_npp_remove_callback(lua_State *L) {
 	const char *callback = luaL_checkstring(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -364,6 +421,11 @@ static int cf_npp_remove_callback(lua_State *L) {
 	return 1;
 }
 
+/// Removes all registered Lua functions for a given event.
+// @function RemoveAllEventHandlers
+// @static
+// @tparam string event name of the desired event
+// @see AddEventHandler
 static int cf_npp_removeall_callbacks(lua_State *L) {
 	const char *callback = luaL_checkstring(L, 1);
 
@@ -384,6 +446,15 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 	return 0;
 }
 
+/// Registers a Lua function for a shortcut key.
+// The callback is not passed any parameters.
+// 
+// **Note:** This can only be called during startup.
+// @function AddShortcut
+// @static
+// @tparam string name the user-friendly name of the shortcut (this is displayed in the menu)
+// @tparam string shortcut the modifier and key (e.g. "Ctrl+Alt+Shift+D"). The key must be A-Z, 0-9, or F1-F12
+// @tparam function callback the function to call when the shortcut is triggered
 static int cf_npp_add_shortcut(lua_State *L) {
 	ShortcutKey *sk = NULL;
 	const char *name = luaL_checkstring(L, 1);
@@ -453,6 +524,11 @@ static int cf_npp_add_shortcut(lua_State *L) {
 	return 0;
 }
 
+/// Writes an error message to the console.
+// Calls `tostring` on each parameter and prints the results in the console in red text.
+// @function WriteError
+// @static
+// @param ... variable number of arguments
 static int cf_npp_write_error(lua_State *L) {
 	int nargs = lua_gettop(L);
 
@@ -485,6 +561,9 @@ static int cf_npp_write_error(lua_State *L) {
 	return 0;
 }
 
+/// Clears the console.
+// @function ClearConsole
+// @static
 static int cf_npp_clear_console(lua_State *L) {
 	host->ClearConsole();
 	return 0;

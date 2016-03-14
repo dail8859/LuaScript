@@ -520,7 +520,7 @@ static IFaceFunction ifaceFunctions[] = {
 	//{ "LaunchFindInFilesDlg", NPPM_LAUNCHFINDINFILESDLG, iface_void, { iface_tstring, iface_tstring } },
 	//{ "LoadSession", NPPM_LOADSESSION, iface_void, { iface_void, iface_tstring } },
 	{ "MenuCommand", NPPM_MENUCOMMAND, iface_void, { iface_void, iface_int } },
-	{ "ReloadFile", NPPM_RELOADFILE, iface_bool, { iface_bool, iface_tstring } },
+	{ "ReloadFile", NPPM_RELOADFILE, iface_int, { iface_bool, iface_tstring } },
 	{ "SaveAllFiles", NPPM_SAVEALLFILES, iface_bool, { iface_void, iface_void } },
 	{ "SaveCurrentFile", NPPM_SAVECURRENTFILE, iface_bool, { iface_void, iface_void } },
 	{ "SaveCurrentFileAs", NPPM_SAVECURRENTFILEAS, iface_bool, { iface_bool, iface_tstring } },

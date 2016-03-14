@@ -10,44 +10,44 @@ editor1.IndicOutlineAlpha[indicator] = 20
 editor2.IndicOutlineAlpha[indicator] = 20
 
 npp.AddEventHandler("OnUpdateUI", function()
-	local function getRangeOnScreen()
-		local firstLine = editor.FirstVisibleLine
-		local lastLine = firstLine + editor.LinesOnScreen
-		local startPos = editor:PositionFromLine(firstLine)
-		local endPos = editor.LineEndPosition[lastLine]
-		return startPos, endPos
-	end
+    local function getRangeOnScreen()
+        local firstLine = editor.FirstVisibleLine
+        local lastLine = firstLine + editor.LinesOnScreen
+        local startPos = editor:PositionFromLine(firstLine)
+        local endPos = editor.LineEndPosition[lastLine]
+        return startPos, endPos
+    end
 
-	local function clearIndicatorOnScreen()
-		local s, e = getRangeOnScreen()
-		editor:IndicatorClearRange(s, e - s)
-	end
+    local function clearIndicatorOnScreen()
+        local s, e = getRangeOnScreen()
+        editor:IndicatorClearRange(s, e - s)
+    end
 
-	editor.IndicatorCurrent = indicator
+    editor.IndicatorCurrent = indicator
 
-	if not editor.SelectionEmpty then
-		clearIndicatorOnScreen()
-		return false
-	end
+    if not editor.SelectionEmpty then
+        clearIndicatorOnScreen()
+        return false
+    end
 
-	local startWord = editor:WordStartPosition(editor.CurrentPos, true)
-	local endWord = editor:WordEndPosition(startWord, true)
+    local startWord = editor:WordStartPosition(editor.CurrentPos, true)
+    local endWord = editor:WordEndPosition(startWord, true)
 
-	-- Not a word
-	if startWord == endWord then
-		clearIndicatorOnScreen()
-		return false
-	end
+    -- Not a word
+    if startWord == endWord then
+        clearIndicatorOnScreen()
+        return false
+    end
 
-	local word = editor:textrange(startWord, endWord)
+    local word = editor:textrange(startWord, endWord)
 
-	clearIndicatorOnScreen()
+    clearIndicatorOnScreen()
 
-	-- for each match on screen turn on the indicator
-	local startPos, endPos = getRangeOnScreen()
-	local s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, startPos, endPos)
-	while s ~= nil do
-		editor:IndicatorFillRange(s, e - s)
-		s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, e, endPos)
-	end
+    -- for each match on screen turn on the indicator
+    local startPos, endPos = getRangeOnScreen()
+    local s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, startPos, endPos)
+    while s ~= nil do
+        editor:IndicatorFillRange(s, e - s)
+        s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, e, endPos)
+    end
 end)

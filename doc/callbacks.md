@@ -1,4 +1,4 @@
-# Callback Events
+# Callbacks
 Scripts can register Lua functions as a callback when certain events take place. Each event type can have mulitple callbacks registered. Supported events include:
 
 - `OnReady()`
