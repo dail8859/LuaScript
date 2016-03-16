@@ -19,7 +19,9 @@ enum IFaceType {
 	iface_bool,
 	iface_keymod,
 	iface_string,
+	iface_tstring,
 	iface_stringresult,
+	iface_tstringresult,
 	iface_cells, // This and everything else below is not "scriptable"
 	iface_textrange,
 	iface_findtext,
@@ -56,6 +58,8 @@ struct IFaceProperty {
 			result.paramType[0] = paramType;
 			if (valueType == iface_stringresult)
 				result.paramType[1] = iface_string;
+			else if (valueType == iface_tstringresult)
+				result.paramType[1] = iface_tstring;
 			else
 				result.paramType[1] = valueType;
 		}
@@ -66,12 +70,19 @@ struct IFaceProperty {
 			else
 				result.paramType[1] = valueType;
 		}
+		else if ((paramType == iface_void) && ((valueType == iface_tstring) || (valueType == iface_tstringresult))) {
+			result.paramType[0] = paramType;
+			if (valueType == iface_tstringresult)
+				result.paramType[1] = iface_tstring;
+			else
+				result.paramType[1] = valueType;
+		}
 		return result;
 	}
 };
 
 inline bool IFaceTypeIsScriptable(IFaceType t, int index) {
-	return t < iface_stringresult || (index == 1 && t == iface_stringresult);
+	return t < iface_tstringresult || (index == 1 && (t == iface_stringresult || t == iface_tstringresult));
 }
 
 inline bool IFaceTypeIsNumeric(IFaceType t) {
@@ -83,9 +94,8 @@ inline bool IFaceFunctionIsScriptable(const IFaceFunction &f) {
 }
 
 inline bool IFacePropertyIsScriptable(const IFaceProperty &p) {
-	return (((p.valueType > iface_void) && (p.valueType <= iface_stringresult) && (p.valueType != iface_keymod)) &&
-		((p.paramType < iface_colour) || (p.paramType == iface_string) ||
-		(p.paramType == iface_bool)) && (p.getter || p.setter));
+	return (((p.valueType > iface_void) && (p.valueType <= iface_tstringresult) && (p.valueType != iface_keymod)) &&
+		((p.paramType < iface_colour) || (p.paramType == iface_string) || (p.paramType == iface_tstring) || (p.paramType == iface_bool)) && (p.getter || p.setter));
 }
 
 class IFaceTableInterface {

@@ -966,15 +966,18 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 	sptr_t params[2] = {0,0};
 
 	char *stringResult = 0;
-	bool needStringResult = false;
+	wchar_t *wstringResult = 0;
+	std::shared_ptr<wchar_t> nppstrparam;
+	enum stringResultType { none, string, tstring } needStringResult = none;
 	int loopParamCount = 2;
 
 	if (func.paramType[0] == iface_length && func.paramType[1] == iface_string) {
 		params[0] = lua_rawlen(L, arg);
 		params[1] = SptrFromString(params[0] ? lua_tostring(L, arg) : "");
 		loopParamCount = 0;
-	} else if ((func.paramType[1] == iface_stringresult) || (func.returnType == iface_stringresult)) {
-		needStringResult = true;
+	} else if ((func.paramType[1] == iface_stringresult) || (func.returnType == iface_stringresult) ||
+				(func.paramType[1] == iface_tstringresult) || (func.returnType == iface_tstringresult)) {
+		needStringResult = (func.paramType[1] == iface_stringresult) || (func.returnType == iface_stringresult) ? string : tstring;
 		// The buffer will be allocated later, so it won't leak if Lua does
 		// a longjmp in response to a bad arg.
 		if (func.paramType[0] == iface_length) {
@@ -988,6 +991,10 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 		if (func.paramType[i] == iface_string) {
 			const char *s = lua_tostring(L, arg++);
 			params[i] = SptrFromString(s ? s : "");
+		} else if (func.paramType[i] == iface_tstring) {
+			const char *s = lua_tostring(L, arg++);
+			nppstrparam = WcharMbcsConverter::char2tchar(s ? s : "");
+			params[i] = reinterpret_cast<sptr_t>(nppstrparam.get());
 		} else if (func.paramType[i] == iface_keymod) {
 			int keycode = static_cast<int>(luaL_checkinteger(L, arg++)) & 0xFFFF;
 			int modifiers = static_cast<int>(luaL_checkinteger(L, arg++)) & (SCMOD_SHIFT|SCMOD_CTRL|SCMOD_ALT);
@@ -999,17 +1006,27 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 		}
 	}
 
-	if (needStringResult) {
-		sptr_t stringResultLen = host->Send(p, func.value, params[0], 0);
-		if (stringResultLen > 0) {
-			// not all string result methods are guaranteed to add a null terminator
-			stringResult = new char[stringResultLen+1];
-			stringResult[stringResultLen]='\0';
-			params[1] = SptrFromPointer(stringResult);
+	if (needStringResult != none) {
+		sptr_t stringResultLen;
+		if (needStringResult == string) {
+			stringResultLen = host->Send(p, func.value, params[0], 0);
+			if (stringResultLen > 0) {
+				// not all string result methods are guaranteed to add a null terminator
+				stringResult = new char[stringResultLen+1];
+				stringResult[stringResultLen]='\0';
+				params[1] = SptrFromPointer(stringResult);
+			} else {
+				// Is this an error?  Are there any cases where it's not an error,
+				// and where the right thing to do is just return a blank string?
+				return 0;
+			}
 		} else {
-			// Is this an error?  Are there any cases where it's not an error,
-			// and where the right thing to do is just return a blank string?
-			return 0;
+			// Per the Notepad++ documentation buffers should be MAX_PATH in length
+			// There aren't any Notepad++ messages currently that use iface_length
+			// so this would always report the length as MAX_PATH instead of the actual len
+			stringResultLen = MAX_PATH;
+			wstringResult = new wchar_t[stringResultLen];
+			params[1] = SptrFromPointer(wstringResult);
 		}
 		if (func.paramType[0] == iface_length) {
 			params[0] = stringResultLen;
@@ -1028,6 +1045,13 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 	if (stringResult) {
 		lua_pushstring(L, stringResult);
 		delete[] stringResult;
+		resultCount++;
+	}
+	if (wstringResult) {
+		// lua makes its own copy of the string so we only need the shared_ptr in this block
+		std::shared_ptr<char> res = WcharMbcsConverter::wchar2char(wstringResult);
+		lua_pushstring(L, res.get());
+		delete[] wstringResult;
 		resultCount++;
 	}
 
