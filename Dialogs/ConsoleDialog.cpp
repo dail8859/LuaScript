@@ -508,5 +508,6 @@ void ConsoleDialog::clearText()
 {
 	m_sciOutput.Send(SCI_SETREADONLY, 0);
 	m_sciOutput.Send(SCI_CLEARALL);
+	m_sciOutput.Send(SCI_SETSCROLLWIDTH, 1);
 	m_sciOutput.Send(SCI_SETREADONLY, 1);
 }
