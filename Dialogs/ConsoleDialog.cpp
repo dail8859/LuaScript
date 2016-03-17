@@ -397,6 +397,28 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	m_sciInput.Send(SCI_AUTOCSETIGNORECASE, true);
 	m_sciInput.Send(SCI_AUTOCSETMAXHEIGHT, 8);
 	m_sciInput.Send(SCI_AUTOCSETCANCELATSTART, false);
+
+	// Remove several command keys. This is not all inclusive but attempts to clear the 
+	// obvious ones. Some insert ascii codes, others are not desired for the dialog box
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'Q' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'W' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'E' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'R' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'T' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'O' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'P' + (SCMOD_CTRL << 16));
+
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'S' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'D' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'F' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'G' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'H' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'J' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'K' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'L' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'B' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'N' + (SCMOD_CTRL << 16));
+	m_sciInput.Send(SCI_CLEARCMDKEY, 'M' + (SCMOD_CTRL << 16));
 }
 
 void ConsoleDialog::setStyles(GUI::ScintillaWindow &sw) {
