@@ -220,8 +220,13 @@ void ConsoleDialog::showAutoCompletion() {
 		std::string prev = getWordAt(m_sciInput, curPos - 1);
 
 		// TODO: all these are hard coded but they could either be pulled from the IFaceTable or some generated from Lua: for i, v in pairs(npp) do print(i, v) end
-		if (prev.compare("npp") == 0 && prevCh == '.') {
-			m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "AddOnBeforeClose AddOnBeforeOpen AddOnBeforeSave AddOnChar AddOnClose AddOnOpen AddOnSave AddOnSavePointLeft AddOnSavePointReached AddOnSwitchFile AddShortcut ClearConsole ConstantName MenuCommand RemoveAllOnBeforeClose RemoveAllOnBeforeOpen RemoveAllOnBeforeSave RemoveAllOnChar RemoveAllOnClose RemoveAllOnOpen RemoveAllOnSave RemoveAllOnSavePointLeft RemoveAllOnSavePointReached RemoveAllOnSwitchFile RemoveOnBeforeClose RemoveOnBeforeOpen RemoveOnBeforeSave RemoveOnChar RemoveOnClose RemoveOnOpen RemoveOnSave RemoveOnSavePointLeft RemoveOnSavePointReached RemoveOnSwitchFile SendEditor WriteError");
+		if (prev.compare("npp") == 0) {
+			if (prevCh == '.') {
+				m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "AddOnBeforeClose AddOnBeforeOpen AddOnBeforeSave AddOnChar AddOnClose AddOnOpen AddOnSave AddOnSavePointLeft AddOnSavePointReached AddOnSwitchFile AddShortcut AppDataPluginsAllowed BufferLangType ClearConsole ConstantName CurrentBufferID CurrentColumn CurrentLine CurrentView DefaultBackgroundColor DefaultForegroundColor LanguageDescription LanguageName MenuCommand RemoveAllOnBeforeClose RemoveAllOnBeforeOpen RemoveAllOnBeforeSave RemoveAllOnChar RemoveAllOnClose RemoveAllOnOpen RemoveAllOnSave RemoveAllOnSavePointLeft RemoveAllOnSavePointReached RemoveAllOnSwitchFile RemoveOnBeforeClose RemoveOnBeforeOpen RemoveOnBeforeSave RemoveOnChar RemoveOnClose RemoveOnOpen RemoveOnSave RemoveOnSavePointLeft RemoveOnSavePointReached RemoveOnSwitchFile SendEditor Version WindowsVersion WriteError");
+			}
+			else if (prevCh == ':') {
+				m_sciInput.SendPointer(SCI_AUTOCSHOW, partialWord.size(), "ActivateDoc DoOpen GetBufferIDFromPos GetCurrentDirectory GetCurrentDocIndex GetCurrentWord GetExtPart GetFileName GetFullCurrentPath GetNamePart GetNbOpenFiles GetNppDirectory ReloadFile SaveAllFiles SaveCurrentFile SaveCurrentFileAs SwitchToFile");
+			}
 		}
 		else if (prev.compare("editor") == 0 || prev.compare("editor1") == 0 || prev.compare("editor2") == 0 || prev.compare("console") == 0) {
 			if (prevCh == '.') {
