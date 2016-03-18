@@ -1,0 +1,55 @@
+npp.RemoveAllOnUpdateUI()
+
+indicator = 12
+editor1.IndicStyle[indicator] = INDIC_ROUNDBOX
+editor2.IndicStyle[indicator] = INDIC_ROUNDBOX
+editor1.IndicAlpha[12] = 20
+editor2.IndicAlpha[12] = 20
+editor1.IndicOutlineAlpha[12] = 20
+editor2.IndicOutlineAlpha[12] = 20
+
+npp.AddOnUpdateUI(function()
+	local function getRangeOnScreen()
+		local firstLine = editor.FirstVisibleLine
+		local lastLine = firstLine + editor.LinesOnScreen
+		local startPos = editor:PositionFromLine(firstLine)
+		local endPos = editor.LineEndPosition[lastLine]
+		return startPos, endPos
+	end
+
+	local function clearIndicatorOnScreen()
+		local s, e = getRangeOnScreen()
+		editor:IndicatorClearRange(s, e - s)
+	end
+
+	editor.IndicatorCurrent = indicator
+
+	if not editor.SelectionEmpty then
+		clearIndicatorOnScreen()
+		return false
+	end
+
+	local startWord = editor:WordStartPosition(editor.CurrentPos, true)
+	local endWord = editor:WordEndPosition(startWord, true)
+
+	-- Not a word
+	if startWord == endWord then
+		clearIndicatorOnScreen()
+		return false
+	end
+
+	local word = editor:textrange(startWord, endWord)
+
+	-- It's the same word we've already highlighted
+	if word == currentWord then return false end
+
+	clearIndicatorOnScreen()
+
+	-- for each match on screen turn on the indicator
+	local startPos, endPos = getRangeOnScreen()
+	local s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, startPos, endPos)
+	while s ~= nil do
+		editor:IndicatorFillRange(s, e - s)
+		s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, e, endPos)
+	end
+end)

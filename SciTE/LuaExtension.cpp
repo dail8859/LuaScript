@@ -45,7 +45,7 @@ const char *callbacks[] = {
 	"OnSavePointLeft",
 	//"OnStyle",
 	//"OnDoubleClick",
-	//"OnUpdateUI",
+	"OnUpdateUI",
 	//"OnMarginClick",
 	//"OnUserListSelection",
 	//"OnKey",
