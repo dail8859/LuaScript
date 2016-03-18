@@ -1,12 +1,12 @@
 npp.RemoveAllOnUpdateUI()
 
-indicator = 12
+local indicator = 12
 editor1.IndicStyle[indicator] = INDIC_ROUNDBOX
 editor2.IndicStyle[indicator] = INDIC_ROUNDBOX
-editor1.IndicAlpha[12] = 20
-editor2.IndicAlpha[12] = 20
-editor1.IndicOutlineAlpha[12] = 20
-editor2.IndicOutlineAlpha[12] = 20
+editor1.IndicAlpha[indicator] = 20
+editor2.IndicAlpha[indicator] = 20
+editor1.IndicOutlineAlpha[indicator] = 20
+editor2.IndicOutlineAlpha[indicator] = 20
 
 npp.AddOnUpdateUI(function()
 	local function getRangeOnScreen()
@@ -39,9 +39,6 @@ npp.AddOnUpdateUI(function()
 	end
 
 	local word = editor:textrange(startWord, endWord)
-
-	-- It's the same word we've already highlighted
-	if word == currentWord then return false end
 
 	clearIndicatorOnScreen()
 
