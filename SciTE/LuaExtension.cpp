@@ -213,6 +213,7 @@ static int cf_npp_send(lua_State *L) {
 	// It is rewritten to be typesafe, checking the arguments against the metadata in
 	// IFaceTable in the same way that the object interface does.
 
+	IFaceFunction propfunc;
 	int paneIndex = lua_upvalueindex(1);
 	check_pane_object(L, paneIndex);
 	int message = (int)luaL_checkinteger(L, 1);
@@ -224,7 +225,8 @@ static int cf_npp_send(lua_State *L) {
 	func = SciIFaceTable.GetFunctionByMessage(message);
 
 	if (func == nullptr) {
-		func = SciIFaceTable.GetPropertyFuncByMessage(message);
+		propfunc = SciIFaceTable.GetPropertyFuncByMessage(message);
+		if (propfunc.value != -1) func = &propfunc;
 	}
 
 	if (func != nullptr) {

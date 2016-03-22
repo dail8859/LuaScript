@@ -135,14 +135,14 @@ const IFaceFunction *IFaceTable::GetFunctionByMessage(int message) {
 	return nullptr;
 }
 
-const IFaceFunction *IFaceTable::GetPropertyFuncByMessage(int message) {
+IFaceFunction IFaceTable::GetPropertyFuncByMessage(int message) {
 	for (int propIdx = 0; propIdx < propertyCount; ++propIdx) {
 		if (properties[propIdx].getter == message) {
-			return &properties[propIdx].GetterFunction();
+			return properties[propIdx].GetterFunction();
 		}
 		else if (properties[propIdx].setter == message) {
-			return &properties[propIdx].SetterFunction();
+			return properties[propIdx].SetterFunction();
 		}
 	}
-	return nullptr;
+	return { "invalid", -1, iface_void, {iface_void, iface_void} };
 }

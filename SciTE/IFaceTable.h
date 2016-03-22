@@ -106,7 +106,7 @@ public:
 	virtual const IFaceProperty *FindProperty(const char *name) = 0;
 	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) = 0;
 	virtual const IFaceFunction *GetFunctionByMessage(int message) = 0;
-	virtual const IFaceFunction *GetPropertyFuncByMessage(int message) = 0;
+	virtual IFaceFunction GetPropertyFuncByMessage(int message) = 0;
 };
 
 class IFaceTable : public IFaceTableInterface {
@@ -140,7 +140,7 @@ public:
 	const IFaceProperty *FindProperty(const char *name);
 	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
 	const IFaceFunction *GetFunctionByMessage(int message);
-	const IFaceFunction *GetPropertyFuncByMessage(int message);
+	IFaceFunction GetPropertyFuncByMessage(int message);
 };
 
 #endif

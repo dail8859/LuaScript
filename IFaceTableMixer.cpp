@@ -65,10 +65,11 @@ const IFaceFunction *IFaceTableMixer::GetFunctionByMessage(int message) {
 	}
 	return nullptr;
 }
-const IFaceFunction *IFaceTableMixer::GetPropertyFuncByMessage(int message) {
+
+IFaceFunction IFaceTableMixer::GetPropertyFuncByMessage(int message) {
 	for (auto const &iface : ifaces) {
-		const IFaceFunction *ret = iface->GetPropertyFuncByMessage(message);
-		if (ret != nullptr) return ret;
+		IFaceFunction ret = iface->GetPropertyFuncByMessage(message);
+		if (ret.value != -1) return ret;
 	}
-	return nullptr;
+	return{ "invalid", -1, iface_void, { iface_void, iface_void } };
 }
