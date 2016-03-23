@@ -77,8 +77,6 @@ The full documentation can be found [here](/doc/editor.md). The `editor` also ha
 - `npp.ConstantName(number, [hint])`
   - returns the symbolic name of a Scintilla / Notepad++ constant
   - optional `hint` parameter for the name of the appropriate constant
-- `npp.MenuCommand(IDM_constant)`
-  - runs a menu command using one of the `IDM_` constants defined in [menuCmdID.h](/Npp/menuCmdID.h)
 - `npp.Add<Event>(function)`
   - adds a function handler for a specific event. Full documentation for events can be found [here](/doc/events.md)
 - `npp.Remove<Event>(function)`

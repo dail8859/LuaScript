@@ -258,14 +258,6 @@ static int cf_npp_constname(lua_State *L) {
 	}
 }
 
-static int cf_npp_menu_command(lua_State *L) {
-	int cmdID = (int)luaL_checkinteger(L, 1);
-	if (cmdID) {
-		host->DoMenuCommand(cmdID);
-	}
-	return 0;
-}
-
 void stackdump(lua_State* l)
 {
 	int i;
@@ -411,7 +403,6 @@ static int cf_npp_add_shortcut(lua_State *L) {
 		} while (*cur != NULL);
 		// Do a quick sanity check?
 	}
-
 
 	lua_pushliteral(L, "Npp_Shortcuts");
 	lua_gettable(L, LUA_REGISTRYINDEX);
@@ -1449,9 +1440,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 
 		lua_pushcfunction(luaState, cf_npp_constname);
 		lua_setfield(luaState, -2, "ConstantName");
-
-		lua_pushcfunction(luaState, cf_npp_menu_command);
-		lua_setfield(luaState, -2, "MenuCommand");
 
 		lua_pushcfunction(luaState, cf_npp_add_shortcut);
 		lua_setfield(luaState, -2, "AddShortcut");

@@ -1,6 +1,7 @@
-npp.RemoveAllOnUpdateUI()
+-- Mark occurrences of the current word under the cursor
 
-local indicator = 12
+-- Adjust these values if desired
+local indicator = 12 -- not sure what one is best to use but this works
 editor1.IndicStyle[indicator] = INDIC_ROUNDBOX
 editor2.IndicStyle[indicator] = INDIC_ROUNDBOX
 editor1.IndicAlpha[indicator] = 20
