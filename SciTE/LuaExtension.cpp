@@ -50,6 +50,7 @@ const char *callbacks[] = {
 	//"OnUserListSelection",
 	//"OnKey",
 	//"OnDwellStart",
+	"OnLangChange", // Npp specific
 	"OnBeforeClose", // Npp specific
 	"OnClose",
 	//"OnUserStrip",
@@ -2138,6 +2139,10 @@ bool LuaExtension::OnKey(int keyval, int modifiers) {
 
 bool LuaExtension::OnDwellStart(int pos, const char *word) {
 	return CallNamedFunction("OnDwellStart", pos, word);
+}
+
+bool LuaExtension::OnLangChange() {
+	return CallNamedFunction("OnLangChange");
 }
 
 bool LuaExtension::OnBeforeClose(const char *filename) {

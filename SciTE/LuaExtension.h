@@ -51,6 +51,7 @@ public:
 	bool OnUserListSelection(int listType, const char *selection);
 	bool OnKey(int keyval, int modifiers);
 	bool OnDwellStart(int pos, const char *word);
+	bool OnLangChange();
 	bool OnBeforeClose(const char *filename);
 	bool OnClose(const char *filename);
 	bool NeedsOnClose();

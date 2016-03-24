@@ -179,6 +179,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	case NPPN_READY:
 		isReady = true;
 		break;
+	case NPPN_LANGCHANGED:
+		LuaExtension::Instance().OnLangChange();
+		break;
 	case NPPN_FILEBEFOREOPEN:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 		LuaExtension::Instance().OnBeforeOpen(WcharMbcsConverter::wchar2char(fname).get());
