@@ -211,6 +211,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get());
 		break;
 	case NPPN_SHUTDOWN:
+		LuaExtension::Instance().OnShutdown();
 		LuaExtension::Instance().Finalise();
 		break;
 	}

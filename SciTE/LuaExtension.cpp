@@ -54,6 +54,7 @@ const char *callbacks[] = {
 	"OnBeforeClose", // Npp specific
 	"OnClose",
 	//"OnUserStrip",
+	"OnShutdown",
 };
 
 
@@ -2151,6 +2152,10 @@ bool LuaExtension::OnBeforeClose(const char *filename) {
 
 bool LuaExtension::OnClose(const char *filename) {
 	return CallNamedFunction("OnClose", filename);
+}
+
+bool LuaExtension::OnShutdown() {
+	return CallNamedFunction("OnShutdown");
 }
 
 bool LuaExtension::NeedsOnClose() {

@@ -54,6 +54,7 @@ public:
 	bool OnLangChange();
 	bool OnBeforeClose(const char *filename);
 	bool OnClose(const char *filename);
+	bool OnShutdown();
 	bool NeedsOnClose();
 
 	void CallShortcut(int id);
