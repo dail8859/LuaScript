@@ -35,11 +35,11 @@ public:
 	bool RunString(const char *s);
 	bool RunFile(const wchar_t *filename);
 
-	bool OnBeforeOpen(const char *filename);
-	bool OnOpen(const char *filename);
-	bool OnSwitchFile(const char *filename);
-	bool OnBeforeSave(const char *filename);
-	bool OnSave(const char *filename);
+	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
+	bool OnOpen(const char *filename, uptr_t bufferid);
+	bool OnSwitchFile(const char *filename, uptr_t bufferid);
+	bool OnBeforeSave(const char *filename, uptr_t bufferid);
+	bool OnSave(const char *filename, uptr_t bufferid);
 	bool OnChar(char ch);
 	bool OnExecute(const char *s);
 	bool OnSavePointReached();
@@ -52,8 +52,8 @@ public:
 	bool OnKey(int keyval, int modifiers);
 	bool OnDwellStart(int pos, const char *word);
 	bool OnLangChange();
-	bool OnBeforeClose(const char *filename);
-	bool OnClose(const char *filename);
+	bool OnBeforeClose(const char *filename, uptr_t bufferid);
+	bool OnClose(const char *filename, uptr_t bufferid);
 	bool OnShutdown();
 	bool NeedsOnClose();
 

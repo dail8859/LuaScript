@@ -184,31 +184,31 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		break;
 	case NPPN_FILEBEFOREOPEN:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeOpen(WcharMbcsConverter::wchar2char(fname).get());
+		LuaExtension::Instance().OnBeforeOpen(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
 	case NPPN_FILEOPENED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnOpen(WcharMbcsConverter::wchar2char(fname).get());
+		LuaExtension::Instance().OnOpen(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
 	case NPPN_BUFFERACTIVATED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSwitchFile(WcharMbcsConverter::wchar2char(fname).get());
+		LuaExtension::Instance().OnSwitchFile(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
 	case NPPN_FILEBEFORESAVE:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeSave(WcharMbcsConverter::wchar2char(fname).get());
+		LuaExtension::Instance().OnBeforeSave(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
 	case NPPN_FILESAVED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSave(WcharMbcsConverter::wchar2char(fname).get());
+		LuaExtension::Instance().OnSave(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
 	case NPPN_FILEBEFORECLOSE:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
-		LuaExtension::Instance().OnBeforeClose(WcharMbcsConverter::wchar2char(static_fname).get());
+		LuaExtension::Instance().OnBeforeClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
 		break;
 	case NPPN_FILECLOSED:
 		// NOTE: cannot use idFrom to get the path since it is no longer valid
-		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get());
+		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
 		break;
 	case NPPN_SHUTDOWN:
 		LuaExtension::Instance().OnShutdown();

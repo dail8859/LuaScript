@@ -882,7 +882,9 @@ static bool HasNamedFunction(const char *name) {
 	return hasFunction;
 }
 
-static bool CallNamedFunction(const char *name) {
+// Generic function to pass parameters to the callbacks
+// varfmt is a string defining what type the following arguments are
+static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 	bool handled = false;
 	if (luaState) {
 		lua_pushstring(luaState, "Npp_Callbacks");
@@ -891,64 +893,23 @@ static bool CallNamedFunction(const char *name) {
 		if (lua_istable(luaState, -1)) {
 			lua_pushnil(luaState); /* first key */
 			while (lua_next(luaState, -2) != 0) {
-				handled = call_function(luaState, 0);
+				// Push all the variables
+				va_list vl;
+				va_start(vl, varfmt);
+				const char *type = varfmt;
+				while (*type) {
+					switch (*type++) {
+					case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
+					case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
+					default: raise_error(luaState, varfmt);
+					}
+				}
+				va_end(vl);
+				handled = call_function(luaState, strlen(varfmt));
 				// call_function removes the function for us, the key stays on the stack
 			}
 		}
 		lua_pop(luaState, 2); // the Npp_Callbacks table and the callback table
-	}
-	return handled;
-}
-
-static bool CallNamedFunction(const char *name, const char *arg) {
-	bool handled = false;
-	if (luaState) {
-		lua_pushstring(luaState, "Npp_Callbacks");
-		lua_gettable(luaState, LUA_REGISTRYINDEX);
-		lua_getfield(luaState, -1, name);
-		if (lua_istable(luaState, -1)) {
-			lua_pushnil(luaState); /* first key */
-			while (lua_next(luaState, -2) != 0) {
-				lua_pushstring(luaState, arg);
-				handled = call_function(luaState, 1);
-				// call_function removes the function for us, the key stays on the stack
-			}
-		}
-		lua_pop(luaState, 2); // the Npp_Callbacks table and the callback table
-	}
-	return handled;
-}
-
-static bool CallNamedFunction(const char *name, int numberArg, const char *stringArg) {
-	// Temporarily disable this function
-	return false;
-	bool handled = false;
-	if (luaState) {
-		lua_getglobal(luaState, name);
-		if (lua_isfunction(luaState, -1)) {
-			lua_pushinteger(luaState, numberArg);
-			lua_pushstring(luaState, stringArg);
-			handled = call_function(luaState, 2);
-		} else {
-			lua_pop(luaState, 1);
-		}
-	}
-	return handled;
-}
-
-static bool CallNamedFunction(const char *name, int numberArg, int numberArg2) {
-	// Temporarily disable this function
-	return false;
-	bool handled = false;
-	if (luaState) {
-		lua_getglobal(luaState, name);
-		if (lua_isfunction(luaState, -1)) {
-			lua_pushinteger(luaState, numberArg);
-			lua_pushinteger(luaState, numberArg2);
-			handled = call_function(luaState, 2);
-		} else {
-			lua_pop(luaState, 1);
-		}
 	}
 	return handled;
 }
@@ -1542,7 +1503,7 @@ bool LuaExtension::Finalise() {
 
 bool LuaExtension::Clear() {
 	if (luaState) {
-		CallNamedFunction("OnClear");
+		CallNamedFunction("OnClear", NULL);
 	}
 	if (luaState) {
 		InitGlobalScope(true);
@@ -1696,24 +1657,24 @@ bool LuaExtension::OnExecute(const char *s) {
 	return true;
 }
 
-bool LuaExtension::OnBeforeOpen(const char *filename) {
-	return CallNamedFunction("OnBeforeOpen", filename);
+bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnOpen(const char *filename) {
-	return CallNamedFunction("OnOpen", filename);
+bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnOpen", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnSwitchFile(const char *filename) {
-	return CallNamedFunction("OnSwitchFile", filename);
+bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnSwitchFile", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnBeforeSave(const char *filename) {
-	return CallNamedFunction("OnBeforeSave", filename);
+bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeSave", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnSave(const char *filename) {
-	bool result = CallNamedFunction("OnSave", filename);
+bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
+	bool result = CallNamedFunction("OnSave", "si", filename, bufferid);
 
 #if 0
 	FilePath fpSaving = FilePath(GUI::StringFromUTF8(filename)).NormalizePath();
@@ -1738,15 +1699,15 @@ bool LuaExtension::OnSave(const char *filename) {
 
 bool LuaExtension::OnChar(char ch) {
 	char chs[2] = {ch, '\0'};
-	return CallNamedFunction("OnChar", chs);
+	return CallNamedFunction("OnChar", "s", chs);
 }
 
 bool LuaExtension::OnSavePointReached() {
-	return CallNamedFunction("OnSavePointReached");
+	return CallNamedFunction("OnSavePointReached", NULL);
 }
 
 bool LuaExtension::OnSavePointLeft() {
-	return CallNamedFunction("OnSavePointLeft");
+	return CallNamedFunction("OnSavePointLeft", NULL);
 }
 
 // Similar to StyleContext class in Scintilla
@@ -2106,19 +2067,19 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 }
 
 bool LuaExtension::OnDoubleClick() {
-	return CallNamedFunction("OnDoubleClick");
+	return CallNamedFunction("OnDoubleClick", NULL);
 }
 
 bool LuaExtension::OnUpdateUI() {
-	return CallNamedFunction("OnUpdateUI");
+	return CallNamedFunction("OnUpdateUI", NULL);
 }
 
 bool LuaExtension::OnMarginClick() {
-	return CallNamedFunction("OnMarginClick");
+	return CallNamedFunction("OnMarginClick", NULL);
 }
 
 bool LuaExtension::OnUserListSelection(int listType, const char *selection) {
-	return CallNamedFunction("OnUserListSelection", listType, selection);
+	return CallNamedFunction("OnUserListSelection", "is", listType, selection);
 }
 
 bool LuaExtension::OnKey(int keyval, int modifiers) {
@@ -2139,23 +2100,23 @@ bool LuaExtension::OnKey(int keyval, int modifiers) {
 }
 
 bool LuaExtension::OnDwellStart(int pos, const char *word) {
-	return CallNamedFunction("OnDwellStart", pos, word);
+	return CallNamedFunction("OnDwellStart", "is", pos, word);
 }
 
 bool LuaExtension::OnLangChange() {
-	return CallNamedFunction("OnLangChange");
+	return CallNamedFunction("OnLangChange", NULL);
 }
 
-bool LuaExtension::OnBeforeClose(const char *filename) {
-	return CallNamedFunction("OnBeforeClose", filename);
+bool LuaExtension::OnBeforeClose(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeClose", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnClose(const char *filename) {
-	return CallNamedFunction("OnClose", filename);
+bool LuaExtension::OnClose(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnClose", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnShutdown() {
-	return CallNamedFunction("OnShutdown");
+	return CallNamedFunction("OnShutdown", NULL);
 }
 
 bool LuaExtension::NeedsOnClose() {

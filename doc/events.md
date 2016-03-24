@@ -5,13 +5,13 @@ Scripts can register Lua functions as a callback when certain events take place.
 - `OnUpdateUI()`
 - `OnSavePointReached()`
 - `OnSavePointLeft()`
-- `OnBeforeOpen(filename)`
-- `OnOpen(filename)`
-- `OnSwitchFile(filename)`
-- `OnBeforeSave(filename)`
-- `OnSave(filename)`
-- `OnBeforeClose(filename)`
-- `OnClose(filename)`
+- `OnBeforeOpen(filename, bufferid)`
+- `OnOpen(filename, bufferid)`
+- `OnSwitchFile(filename, bufferid)`
+- `OnBeforeSave(filename, bufferid)`
+- `OnSave(filename, bufferid)`
+- `OnBeforeClose(filename, bufferid)`
+- `OnClose(filename, bufferid)`
 - `OnLangChange()`
 - `OnShutdown()`
 
