@@ -1,6 +1,7 @@
 # Callback Events
 Scripts can register Lua functions as a callback when certain events take place. Each event type can have mulitple callbacks registered. Supported events include:
 
+- `OnReady()`
 - `OnChar(character)`
 - `OnUpdateUI()`
 - `OnSavePointReached()`
@@ -10,9 +11,13 @@ Scripts can register Lua functions as a callback when certain events take place.
 - `OnSwitchFile(filename, bufferid)`
 - `OnBeforeSave(filename, bufferid)`
 - `OnSave(filename, bufferid)`
+- `OnFileRenamed(filename, bufferid)`
+- `OnFileDeleted(filename, bufferid)`
 - `OnBeforeClose(filename, bufferid)`
 - `OnClose(filename, bufferid)`
 - `OnLangChange()`
+- `OnBeforeShutdown()`
+- `OnCancelShutdown()`
 - `OnShutdown()`
 
 The Notepad++ object allows adding, removing, and clearing callback functions for the events. 

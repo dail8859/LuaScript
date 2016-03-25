@@ -178,6 +178,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		break;
 	case NPPN_READY:
 		isReady = true;
+		LuaExtension::Instance().OnReady();
 		break;
 	case NPPN_LANGCHANGED:
 		LuaExtension::Instance().OnLangChange();
@@ -202,6 +203,14 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 		LuaExtension::Instance().OnSave(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
 		break;
+	case NPPN_FILERENAMED:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnFileRenamed(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		break;
+	case NPPN_FILEDELETED:
+		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+		LuaExtension::Instance().OnFileDeleted(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		break;
 	case NPPN_FILEBEFORECLOSE:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
 		LuaExtension::Instance().OnBeforeClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
@@ -209,6 +218,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	case NPPN_FILECLOSED:
 		// NOTE: cannot use idFrom to get the path since it is no longer valid
 		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
+		break;
+	case NPPN_BEFORESHUTDOWN:
+		LuaExtension::Instance().OnBeforeShutdown();
+		break;
+	case NPPN_CANCELSHUTDOWN:
+		LuaExtension::Instance().OnCancelShutdown();
 		break;
 	case NPPN_SHUTDOWN:
 		LuaExtension::Instance().OnShutdown();

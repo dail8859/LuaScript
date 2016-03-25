@@ -35,11 +35,14 @@ public:
 	bool RunString(const char *s);
 	bool RunFile(const wchar_t *filename);
 
+	bool OnReady();
 	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
 	bool OnOpen(const char *filename, uptr_t bufferid);
 	bool OnSwitchFile(const char *filename, uptr_t bufferid);
 	bool OnBeforeSave(const char *filename, uptr_t bufferid);
 	bool OnSave(const char *filename, uptr_t bufferid);
+	bool OnFileRenamed(const char *filename, uptr_t bufferid);
+	bool OnFileDeleted(const char *filename, uptr_t bufferid);
 	bool OnChar(char ch);
 	bool OnExecute(const char *s);
 	bool OnSavePointReached();
@@ -54,6 +57,8 @@ public:
 	bool OnLangChange();
 	bool OnBeforeClose(const char *filename, uptr_t bufferid);
 	bool OnClose(const char *filename, uptr_t bufferid);
+	bool OnBeforeShutdown();
+	bool OnCancelShutdown();
 	bool OnShutdown();
 	bool NeedsOnClose();
 

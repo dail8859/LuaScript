@@ -35,11 +35,14 @@ IFaceTableMixer ifacemixer;
 std::vector<LuaFuncItem> luaShortcuts;
 
 const char *callbacks[] = {
+	"OnReady", // Npp specific
 	"OnBeforeOpen", // Npp specific
 	"OnOpen",
 	"OnSwitchFile",
 	"OnBeforeSave",
 	"OnSave",
+	"OnFileRenamed", // Npp specific
+	"OnFileDeleted", // Npp specific
 	"OnChar",
 	"OnSavePointReached",
 	"OnSavePointLeft",
@@ -54,7 +57,9 @@ const char *callbacks[] = {
 	"OnBeforeClose", // Npp specific
 	"OnClose",
 	//"OnUserStrip",
-	"OnShutdown",
+	"OnBeforeShutdown", // Npp specific
+	"OnCancelShutdown", // Npp specific
+	"OnShutdown", // Npp specific
 };
 
 
@@ -893,19 +898,21 @@ static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 		if (lua_istable(luaState, -1)) {
 			lua_pushnil(luaState); /* first key */
 			while (lua_next(luaState, -2) != 0) {
-				// Push all the variables
-				va_list vl;
-				va_start(vl, varfmt);
-				const char *type = varfmt;
-				while (*type) {
-					switch (*type++) {
-					case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
-					case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
-					default: raise_error(luaState, varfmt);
+				if (varfmt) {
+					// Push all the variables
+					va_list vl;
+					va_start(vl, varfmt);
+					const char *type = varfmt;
+					while (*type) {
+						switch (*type++) {
+						case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
+						case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
+						default: raise_error(luaState, varfmt);
+						}
 					}
+					va_end(vl);
 				}
-				va_end(vl);
-				handled = call_function(luaState, strlen(varfmt));
+				handled = call_function(luaState, varfmt != NULL ? strlen(varfmt) : 0);
 				// call_function removes the function for us, the key stays on the stack
 			}
 		}
@@ -1657,6 +1664,9 @@ bool LuaExtension::OnExecute(const char *s) {
 	return true;
 }
 
+bool LuaExtension::OnReady() {
+	return CallNamedFunction("OnReady", NULL);
+}
 bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
 }
@@ -1695,6 +1705,14 @@ bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
 #endif // 0
 
 	return result;
+}
+
+bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileRenamed", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileDeleted(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileDeleted", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnChar(char ch) {
@@ -2113,6 +2131,14 @@ bool LuaExtension::OnBeforeClose(const char *filename, uptr_t bufferid) {
 
 bool LuaExtension::OnClose(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnClose", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnBeforeShutdown() {
+	return CallNamedFunction("OnBeforeShutdown", NULL);
+}
+
+bool LuaExtension::OnCancelShutdown() {
+	return CallNamedFunction("OnCancelShutdown", NULL);
 }
 
 bool LuaExtension::OnShutdown() {
