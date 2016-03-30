@@ -9,7 +9,7 @@ editor2.IndicAlpha[indicator] = 20
 editor1.IndicOutlineAlpha[indicator] = 20
 editor2.IndicOutlineAlpha[indicator] = 20
 
-npp.AddOnUpdateUI(function()
+npp.AddEventHandler("OnUpdateUI", function()
 	local function getRangeOnScreen()
 		local firstLine = editor.FirstVisibleLine
 		local lastLine = firstLine + editor.LinesOnScreen

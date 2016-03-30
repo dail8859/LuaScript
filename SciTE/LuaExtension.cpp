@@ -279,9 +279,21 @@ void stackdump(lua_State* l)
 	host->Trace("\r\n");  /* end the listing */
 }
 
+static bool isValidCallback(const char *cb) {
+	for (int i = 0; i < ELEMENTS(callbacks); ++i) {
+		if (strcmp(callbacks[i], cb) == 0) return true;
+	}
+	return false;
+}
+
 static int cf_npp_add_callback(lua_State *L) {
-	const char *callback = lua_tostring(L, lua_upvalueindex(1));
-	luaL_checktype(L, 1, LUA_TFUNCTION);
+	const char *callback = luaL_checkstring(L, 1);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	if (!isValidCallback(callback)) {
+		lua_pushfstring(L, "Unrecognized callback name '%s'", callback);
+		raise_error(L);
+	}
 
 	lua_pushliteral(L, "Npp_Callbacks");
 	lua_gettable(L, LUA_REGISTRYINDEX);
@@ -304,9 +316,14 @@ static int cf_npp_add_callback(lua_State *L) {
 }
 
 static int cf_npp_remove_callback(lua_State *L) {
-	const char *callback = lua_tostring(L, lua_upvalueindex(1));
-	luaL_checktype(L, 1, LUA_TFUNCTION);
+	const char *callback = luaL_checkstring(L, 1);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
 	int idx = -1;
+
+	if (!isValidCallback(callback)) {
+		lua_pushfstring(L, "Unrecognized callback name '%s'", callback);
+		raise_error(L);
+	}
 
 	lua_pushliteral(L, "Npp_Callbacks");
 	lua_gettable(L, LUA_REGISTRYINDEX);
@@ -320,15 +337,14 @@ static int cf_npp_remove_callback(lua_State *L) {
 	// Iterate the callback table to see if the function is registered
 	lua_pushnil(L);
 	while (lua_next(luaState, -2) != 0) {
-		lua_pushvalue(L, 1); // copy the function to the top of the stack
-		if (lua_rawequal(L, -1, -2) == 1) {
-			idx = (int)lua_tointeger(L, -3);
-			// remove the key, value, and copied function
-			lua_pop(L, 3);
+		if (lua_rawequal(L, -1, 2) == 1) {
+			idx = (int)lua_tointeger(L, -2);
+			// remove the key and value
+			lua_pop(L, 2);
 			break;
 		}
-		// remove the value and copied function; keep 'key' for next iteration
-		lua_pop(L, 2);
+		// remove the value; keep 'key' for next iteration
+		lua_pop(L, 1);
 	}
 
 	if (idx != -1) {
@@ -349,7 +365,12 @@ static int cf_npp_remove_callback(lua_State *L) {
 }
 
 static int cf_npp_removeall_callbacks(lua_State *L) {
-	const char *callback = lua_tostring(L, lua_upvalueindex(1));
+	const char *callback = luaL_checkstring(L, 1);
+
+	if (!isValidCallback(callback)) {
+		lua_pushfstring(L, "Unrecognized callback name '%s'", callback);
+		raise_error(L);
+	}
 
 	lua_pushliteral(L, "Npp_Callbacks");
 	lua_gettable(L, LUA_REGISTRYINDEX);
@@ -357,7 +378,7 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 	if (lua_istable(L, -1)) {
 		lua_pushstring(L, callback);
 		lua_pushnil(L);
-		lua_settable(L, 1);
+		lua_settable(L, -4);
 	}
 
 	return 0;
@@ -1420,27 +1441,14 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		lua_pushcfunction(luaState, cf_npp_clear_console);
 		lua_setfield(luaState, -2, "ClearConsole");
 
-		// Register the callbacks
-		for (int i = 0; i < ELEMENTS(callbacks); ++i) {
-			char add[32] = "Add";
-			char remove[32] = "Remove";
-			char removeall[32] = "RemoveAll";
+		lua_pushcfunction(luaState, cf_npp_add_callback);
+		lua_setfield(luaState, -2, "AddEventHandler");
 
-			lua_pushstring(luaState, callbacks[i]);
-			lua_pushcclosure(luaState, cf_npp_add_callback, 1);
-			strcat(add, callbacks[i]);
-			lua_setfield(luaState, -2, add);
+		lua_pushcfunction(luaState, cf_npp_remove_callback);
+		lua_setfield(luaState, -2, "RemoveEventHandler");
 
-			lua_pushstring(luaState, callbacks[i]);
-			lua_pushcclosure(luaState, cf_npp_remove_callback, 1);
-			strcat(remove, callbacks[i]);
-			lua_setfield(luaState, -2, remove);
-
-			lua_pushstring(luaState, callbacks[i]);
-			lua_pushcclosure(luaState, cf_npp_removeall_callbacks, 1);
-			strcat(removeall, callbacks[i]);
-			lua_setfield(luaState, -2, removeall);
-		}
+		lua_pushcfunction(luaState, cf_npp_removeall_callbacks);
+		lua_setfield(luaState, -2, "RemoveAllEventHandlers");
 	}
 	lua_setmetatable(luaState, -2);
 

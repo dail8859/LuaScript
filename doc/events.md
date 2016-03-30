@@ -22,9 +22,9 @@ Scripts can register Lua functions as a callback when certain events take place.
 
 The Notepad++ object allows adding, removing, and clearing callback functions for the events. 
 
-- `npp.Add<Event>(function)`
-- `npp.Remove<Event>(function)`
-- `npp.RemoveAll<Event>()`
+- `npp.AddEventHandler(event, function)`
+- `npp.RemoveEventHandler(event, function)`
+- `npp.RemoveAllEventHandlers(event)`
 
 To register for an event, first define your fuction that accepts the parameters (if any). You can then add the callback to the appropriate event. Although callbacks are not required to return a value, in order to ensure forwards compatibility it should return `false`. For example:
 
@@ -34,7 +34,7 @@ function printchar(ch)
     return false
 end
 
-npp.AddOnChar(printchar)
+npp.AddEventHandler("OnChar", printchar)
 ```
 
 Take care not to register the same callback twice. To be safe you can attempt to remove it before adding it.

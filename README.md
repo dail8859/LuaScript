@@ -77,9 +77,9 @@ The full documentation can be found [here](/doc/editor.md). The `editor` also ha
 - `npp.ConstantName(number, [hint])`
   - returns the symbolic name of a Scintilla / Notepad++ constant
   - optional `hint` parameter for the name of the appropriate constant
-- `npp.Add<Event>(function)`
+- `npp.AddEventHandler(event, function)`
   - adds a function handler for a specific event. Full documentation for events can be found [here](/doc/events.md)
-- `npp.Remove<Event>(function)`
+- `npp.RemoveEventHandler(event, function)`
   - removes a previously added function handler for a specific event
 - `npp.AddShortcut(name, shortcut, function)`
   - adds a shortcut under the plugin menu. *This can only be called during start-up.*

@@ -10,7 +10,7 @@ local is_shutting_down = false
 
 -- If a session is found, load it. Note this cannot be done directly during
 -- startup since N++ hasn't completely initialized yet.
-npp.AddOnReady(function()
+npp.AddEventHandler("OnReady", function()
 	local files = table.load(npp:GetPluginsConfigDir() .. "\\session.lua")
 	if files ~= nil then
 		for i,v in pairs(files) do
@@ -25,7 +25,7 @@ npp.AddOnReady(function()
 end)
 
 -- Remove any files that are closed
-npp.AddOnClose(function(f,i)
+npp.AddEventHandler("OnClose", function(f,i)
 	-- If N++ is in the middle of shutting down, just ignore it
 	if is_shutting_down then return false end
 	opened_files[i] = nil
@@ -34,14 +34,14 @@ end)
 
 -- This won't be called unless the user manually changes it, else it just
 -- defaults to whatever value N++ decides is best
-npp.AddOnLangChange(function()
+npp.AddEventHandler("OnLangChange", function()
 	local i = npp.CurrentBufferID
 	opened_files[i].lang = npp.BufferLangType[i]
 end)
 
 -- Keep track of some of the variables we want to restore in the file
 -- This event will also catch any files being opened for the first time
-npp.AddOnUpdateUI(function()
+npp.AddEventHandler("OnUpdateUI", function()
 	local i = npp.CurrentBufferID
 	if opened_files[i] == nil then
 		opened_files[i] = {}
@@ -52,25 +52,25 @@ npp.AddOnUpdateUI(function()
 	opened_files[i].top = editor.FirstVisibleLine
 end)
 
-npp.AddOnFileRenamed(function(f,i)
+npp.AddEventHandler("OnFileRenamed", function(f,i)
 	opened_files[i].name = f -- update the name
 	return false
 end)
 
 -- Set a flag so we know N++ is shutting down
-npp.AddOnBeforeShutdown(function()
+npp.AddEventHandler("OnBeforeShutdown", function()
 	is_shutting_down = true
 	return false
 end)
 
 -- The user could cancel the shutdown
-npp.AddOnCancelShutdown(function()
+npp.AddEventHandler("OnCancelShutdown", function()
 	is_shutting_down = false
 	return false
 end)
 
 -- If it is actually shutting down, save the session file
-npp.AddOnShutdown(function()
+npp.AddEventHandler("OnShutdown", function()
 	-- Remove any dummy files, e.g. "new 1"
 	for id, tab in pairs(opened_files) do
 		if tab.name:find("^new %d+$") ~= nil then
