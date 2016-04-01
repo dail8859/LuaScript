@@ -38,5 +38,4 @@ CAPTION "Lua Script"
 FONT 8, "MS Shell Dlg", 400, 0, 1
 {
     PUSHBUTTON      "Run", IDC_RUN, 152, 156, 40, 14, 0, WS_EX_LEFT
-    CTEXT           ">", IDC_PROMPT, 7, 161, 17, 8, SS_CENTER, WS_EX_LEFT
 }

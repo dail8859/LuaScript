@@ -11,4 +11,3 @@
 // From PythonScript for the Console
 #define IDD_CONSOLE                     201
 #define IDC_RUN                         202
-#define IDC_PROMPT                      203

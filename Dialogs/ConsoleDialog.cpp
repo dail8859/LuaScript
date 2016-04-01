@@ -112,14 +112,17 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 			SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 			SetWindowSubclass((HWND)m_sciOutput.GetID(), ConsoleDialog::scintillaWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
 			return FALSE;
-		case WM_SIZE:
-			MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, LOWORD(lParam), HIWORD(lParam) - 30, TRUE);
-			MoveWindow(::GetDlgItem(_hSelf, IDC_PROMPT), 0, HIWORD(lParam)-25, 30, 25, TRUE);
-			MoveWindow((HWND)m_sciInput.GetID(), 30, HIWORD(lParam) - 30, LOWORD(lParam) - 85, 25, TRUE);
-			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), LOWORD(lParam) - 50, HIWORD(lParam) - 30, 50, 25, TRUE);  
+		case WM_SIZE: {
+			RECT rect = { 0, 0, LOWORD(lParam), HIWORD(lParam) };
+			int h = min(m_sciInput.Send(SCI_GETLINECOUNT), 8) * m_sciInput.Send(SCI_TEXTHEIGHT, 1);
+			MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, rect.right, rect.bottom - h - 14, TRUE);
+			MoveWindow((HWND)m_sciInput.GetID(), 0, rect.bottom - h - 14, rect.right - 50, h + 9, TRUE);
+			m_sciOutput.Send(SCI_DOCUMENTEND);
+
+			MoveWindow(::GetDlgItem(_hSelf, IDC_RUN), rect.right - 50, rect.bottom - 30, 50, 25, TRUE);
 			return FALSE;
-		case WM_CONTEXTMENU:
-			{
+		}
+		case WM_CONTEXTMENU: {
 				MENUITEMINFO mi;
 				mi.cbSize = sizeof(mi);
 				mi.fMask = MIIM_STATE;
@@ -168,6 +171,28 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 						SCNotification* scn = reinterpret_cast<SCNotification*>(lParam);
 						if ((scn->ch == '.' || scn->ch == ':') && m_sciInput.Send(SCI_GETCURRENTPOS) > 1) {
 							showAutoCompletion();
+						}
+						break;
+					}
+					case SCN_MODIFIED: {
+						SCNotification* scn = reinterpret_cast<SCNotification*>(lParam);
+						if ((scn->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))) {
+							if (scn->linesAdded != 0) {
+								RECT rect;
+								GetClientRect(_hSelf, &rect);
+								int h = min(m_sciInput.Send(SCI_GETLINECOUNT), 8) * m_sciInput.Send(SCI_TEXTHEIGHT, 1);
+								MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, rect.right, rect.bottom - h - 14, TRUE);
+								MoveWindow((HWND)m_sciInput.GetID(), 0, rect.bottom - h - 14, rect.right - 50, h + 9, TRUE);
+								m_sciOutput.Send(SCI_DOCUMENTEND);
+							}
+
+							// Not the most efficient way but by far the easiest to do it here
+							int startLine = 0;
+							int endLine = m_sciInput.Send(SCI_GETLINECOUNT);
+							for (int i = startLine; i < endLine; ++i) {
+								m_sciInput.SendPointer(SCI_MARGINSETTEXT, i, ">");
+								m_sciInput.Send(SCI_MARGINSETSTYLE, i, STYLE_LINENUMBER);
+							}
 						}
 						break;
 					}
@@ -249,7 +274,7 @@ void ConsoleDialog::historyPrevious() {
 		m_sciInput.SendPointer(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
 		m_sciInput.Send(SCI_DOCUMENTEND);
 		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
-		m_sciInput.Send(SCI_SCROLLRANGE, 0, m_sciInput.Send(SCI_GETCURRENTPOS));
+		m_sciInput.Send(SCI_SCROLLTOEND);
 	}
 }
 
@@ -266,7 +291,7 @@ void ConsoleDialog::historyNext() {
 	}
 	m_sciInput.Send(SCI_DOCUMENTEND);
 	m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
-	m_sciInput.Send(SCI_SCROLLRANGE, 0, m_sciInput.Send(SCI_GETCURRENTPOS));
+	m_sciInput.Send(SCI_SCROLLTOEND);
 }
 
 void ConsoleDialog::historyAdd(const TCHAR *line)
@@ -295,19 +320,26 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 			switch (wParam) {
 				case VK_UP:
 					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
-					cd->historyPrevious();
-					return FALSE;
+					if (cd->m_sciInput.Send(SCI_GETCURRENTPOS) == 0) {
+						cd->historyPrevious(); // Only go to the next one if the cursor is at the beginning of the text
+						return FALSE;
+					}
+					break;
 				case VK_DOWN:
 					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
-					cd->historyNext();
-					return FALSE;
+					if (cd->m_sciInput.Send(SCI_GETCURRENTPOS) == cd->m_sciInput.Send(SCI_GETLENGTH)) {
+						cd->historyNext(); // Only go to the next one if the cursor is at the end of the text
+						return FALSE;
+					}
+					break;
 			}
 			break;
 		case WM_KEYUP:
 			switch (wParam) {
 				case VK_RETURN:
 					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
-					cd->runStatement();
+					if (GetKeyState(VK_SHIFT) & (1 << 15)) cd->m_sciInput.Send(SCI_NEWLINE);
+					else cd->runStatement();
 					return FALSE;
 				case VK_ESCAPE:
 					if (cd->m_sciInput.Send(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
@@ -359,6 +391,8 @@ void ConsoleDialog::runStatement()
 		m_console->runStatement(text);
 		m_sciInput.Send(SCI_CLEARALL);
 		m_sciInput.Send(SCI_EMPTYUNDOBUFFER);
+		m_sciInput.SendPointer(SCI_MARGINSETTEXT, 0, ">");
+		m_sciInput.Send(SCI_MARGINSETSTYLE, 0, STYLE_LINENUMBER);
 	}
 }
 
@@ -366,7 +400,7 @@ void ConsoleDialog::setPrompt(const char *prompt)
 {
 	m_prompt = prompt;
 	// NOTE: This doesn't seem to work at all
-	::SetWindowTextA(::GetDlgItem(_hSelf, IDC_PROMPT), prompt);
+	//::SetWindowTextA(::GetDlgItem(_hSelf, IDC_PROMPT), prompt);
 }
 
 void ConsoleDialog::createOutputWindow(HWND hParentWindow)
@@ -434,6 +468,15 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	m_sciInput.Send(SCI_CLEARCMDKEY, 'B' + (SCMOD_CTRL << 16));
 	m_sciInput.Send(SCI_CLEARCMDKEY, 'N' + (SCMOD_CTRL << 16));
 	m_sciInput.Send(SCI_CLEARCMDKEY, 'M' + (SCMOD_CTRL << 16));
+
+	m_sciInput.Send(SCI_CLEARCMDKEY, SCK_RETURN); // don't allow normal new lines
+
+	// Margin for the prompt
+	m_sciInput.Send(SCI_SETMARGINWIDTHN, 1, m_sciOutput.SendPointer(SCI_TEXTWIDTH, STYLE_DEFAULT, ">") * 2);
+	m_sciInput.Send(SCI_SETMARGINTYPEN, 1, SC_MARGIN_RTEXT);
+	m_sciInput.Send(SCI_STYLESETBOLD, STYLE_LINENUMBER, true);
+	m_sciInput.SendPointer(SCI_MARGINSETTEXT, 0, ">");
+	m_sciInput.Send(SCI_MARGINSETSTYLE, 0, STYLE_LINENUMBER);
 }
 
 void ConsoleDialog::setStyles(GUI::ScintillaWindow &sw) {
