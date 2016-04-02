@@ -16,6 +16,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include <Windows.h>
+#include <Shellapi.h>
 #include <vector>
 #include "PluginDefinition.h"
 #include "AboutDialog.h"
@@ -29,6 +31,7 @@
 static void showConsole();
 static void editStartupScript();
 static void runCurrentFile();
+static void showDocumentation();
 static void showAbout();
 
 // --- Local variables ---
@@ -145,6 +148,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	}
 
 	funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("Documentation..."), showDocumentation, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("About..."), showAbout, 0, false, NULL });
 }
 
@@ -273,6 +277,10 @@ static void runCurrentFile() {
 	}
 }
 
-void showAbout() {
+static void showDocumentation() {
+	ShellExecute(nppData._nppHandle, TEXT("open"), TEXT("https://dail8859.github.io/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+static void showAbout() {
 	CreateDialog((HINSTANCE) _hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc);
 }
