@@ -25,13 +25,14 @@ title = 'LuaScript Reference'
 description = 'Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities.'
 format = 'markdown'
 dir = './gh-pages'
-style = '!pale'
+style = true
+template = true
 no_lua_ref = true
 merge = true
 no_space_before_args = true
 
 topics = { -- Put any md files here
-	'callbacks.md',
+	'Callbacks.md',
 }
 
 file = { -- sourcecode to parse comments from (Lua or C)

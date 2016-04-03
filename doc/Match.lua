@@ -4,7 +4,7 @@
 -- search results. While looping through matches, if the document is modified
 -- by any method other than the match object's replace method, this may cause 
 -- the match generator to lose its place. Also, do not attempt to store the 
--- match object for later access outside the loop; it will not be useable.
+-- match object for later access outside the loop; it will not be usable.
 -- 
 -- @usage for m in editor:match("teh") do m:replace("the") end
 -- 

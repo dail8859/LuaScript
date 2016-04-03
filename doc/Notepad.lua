@@ -74,7 +74,7 @@
 -- @tparam bool withAlert whether to use an alert or not
 -- @tparam string filename file name to reload
 
---- Saves all the opened docuents.
+--- Saves all the opened documents.
 -- @function SaveAllFiles
 -- @treturn bool
 

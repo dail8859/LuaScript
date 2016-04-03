@@ -255,10 +255,7 @@ void showConsole() {
 
 void editStartupScript() {
 	wchar_t buff[MAX_PATH];
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)buff);
-	wcscat_s(buff, MAX_PATH, TEXT("\\"));
-	wcscat_s(buff, MAX_PATH, TEXT("startup"));
-	wcscat_s(buff, MAX_PATH, TEXT(".lua"));
+	getStartupScriptFilePath(buff, MAX_PATH);
 	if (PathFileExists(buff) == 0) {
 		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
 		DWORD dwBytesWritten;

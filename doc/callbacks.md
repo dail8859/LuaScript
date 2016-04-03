@@ -1,5 +1,5 @@
 # Callbacks
-Scripts can register Lua functions as a callback when certain events take place. Each event type can have mulitple callbacks registered. Supported events include:
+Scripts can register Lua functions as a callback when certain events take place. Each event type can have multiple callbacks registered. Supported events include:
 
 - `OnReady()`
 - `OnChar(character)`
@@ -26,7 +26,7 @@ The Notepad++ object allows adding, removing, and clearing callback functions fo
 - `npp.RemoveEventHandler(event, function)`
 - `npp.RemoveAllEventHandlers(event)`
 
-To register for an event, first define your fuction that accepts the parameters (if any). You can then add the callback to the appropriate event. Although callbacks are not required to return a value, in order to ensure forwards compatibility it should return `false`. For example:
+To register for an event, first define your function that accepts the parameters (if any). You can then add the callback to the appropriate event. Although callbacks are not required to return a value, in order to ensure forwards compatibility it should return `false`. For example:
 
 ```lua
 function printchar(ch)
