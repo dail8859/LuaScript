@@ -97,7 +97,12 @@ for m in editor:match([[^[ \t]*<p>(.+?)<a.+?#(SCI_[\w_]+)'>(.+?)</a>(.*?)<span c
 		-- parameters
 		local params = string.sub(parameters, 2, string.len(parameters) - 1)
 		for param in string.gmatch(params, "(%w+ %w+)") do
-			t = t .. "-- @tparam " .. param .. "\r\n"
+			if param:sub(1,6) == "keymod" then
+				t = t .. "-- @tparam int keycode e.g. SCK_LEFT or string.byte(\"A\")\r\n"
+				t = t .. "-- @tparam int modifiers e.g. SCMOD_CTRL | SCMOD_SHIFT\r\n"
+			else
+				t = t .. "-- @tparam " .. param .. "\r\n"
+			end
 		end
 
 		-- return
