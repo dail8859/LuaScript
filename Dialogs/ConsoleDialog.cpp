@@ -247,10 +247,10 @@ void ConsoleDialog::showAutoCompletion() {
 		// TODO: all these are hard coded but they could either be pulled from the IFaceTable or some generated from Lua: for i, v in pairs(npp) do print(i, v) end
 		if (prev.compare("npp") == 0) {
 			if (prevCh == '.') {
-				m_sciInput.CallString(SCI_AUTOCSHOW, partialWord.size(), "AddEventHandler AddShortcut AppDataPluginsAllowed BufferLangType ClearConsole ConstantName CurrentBufferID CurrentColumn CurrentLine CurrentView DefaultBackgroundColor DefaultForegroundColor LanguageDescription LanguageName MenuCommand RemoveAllEventHandlers RemoveEventHandler SendEditor Version WindowsVersion WriteError");
+				m_sciInput.CallString(SCI_AUTOCSHOW, partialWord.size(), "AddEventHandler AddShortcut AppDataPluginsAllowed BufferLangType ClearConsole ConstantName CurrentBufferID CurrentColumn CurrentLine CurrentView DefaultBackgroundColor DefaultForegroundColor LanguageDescription LanguageName RemoveAllEventHandlers RemoveEventHandler SendEditor Version WindowsVersion WriteError");
 			}
 			else if (prevCh == ':') {
-				m_sciInput.CallString(SCI_AUTOCSHOW, partialWord.size(), "ActivateDoc DoOpen GetBufferIDFromPos GetCurrentDirectory GetCurrentDocIndex GetCurrentWord GetExtPart GetFileName GetFullCurrentPath GetNamePart GetNbOpenFiles GetNppDirectory ReloadFile SaveAllFiles SaveCurrentFile SaveCurrentFileAs SwitchToFile");
+				m_sciInput.CallString(SCI_AUTOCSHOW, partialWord.size(), "ActivateDoc DoOpen GetBufferIDFromPos GetCurrentDirectory GetCurrentDocIndex GetCurrentWord GetExtPart GetFileName GetFullCurrentPath GetNamePart GetNbOpenFiles GetNppDirectory GetPluginsConfigDir MenuCommand ReloadFile SaveAllFiles SaveCurrentFile SaveCurrentFileAs SwitchToFile");
 			}
 		}
 		else if (prev.compare("editor") == 0 || prev.compare("editor1") == 0 || prev.compare("editor2") == 0 || prev.compare("console") == 0) {

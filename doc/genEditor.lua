@@ -86,7 +86,7 @@ for m in editor:match([[^[ \t]*<p>(.+?)<a.+?#(SCI_[\w_]+)'>(.+?)</a>(.*?)<span c
 	local description = editor.Tag[5]
 	local t = "--- " .. description .. "\r\n"
 	local ch = parameters and string.sub(parameters, 1, 1)
-	
+
 	-- It can either be a function, array, or field
 	local mapping = {['(']='function', ['[']='array'}
 	local match_type = mapping[ch] or 'field'
@@ -137,5 +137,21 @@ for m in editor:match("_") do m:replace("\\_") end
 for m in editor:match("@see SCI\\") do m:replace("@see SCI") end
 
 editor:EndUndoAction()
-
 npp:SaveCurrentFileAs(false, npp:GetCurrentDirectory() .. "\\Editor.lua")
+
+-- Find the right spot
+editor:GotoPos(editor:findtext("-- @section popupeditmenu"))
+editor:LineUp()
+editor:LineUp()
+editor:NewLine()
+
+-- Open the file and copy it all
+npp:DoOpen(npp:GetCurrentDirectory() .. "\\KeyboardCommands.lua")
+editor:SelectAll()
+editor:Copy()
+npp:MenuCommand(IDM_FILE_CLOSE)
+
+-- Make sure we are back in the righ file
+npp:SwitchToFile(npp:GetCurrentDirectory() .. "\\Editor.lua")
+editor:Paste()
+npp:SaveCurrentFile()

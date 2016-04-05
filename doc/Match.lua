@@ -1,5 +1,5 @@
 --- 
--- Match object used for searching and replacing text. A 
+-- Used for searching and replacing text. A 
 -- match generator is returned from `Editor:match` which can be used to iterate 
 -- search results. While looping through matches, if the document is modified
 -- by any method other than the match object's replace method, this may cause 

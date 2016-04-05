@@ -1,4 +1,7 @@
---- 
+--- Notepad++ wrapper.
+-- Provides access to the Notepad++ application. Most of the API messages and notifications have been made available, but more can be made available as needed.
+-- 
+-- The global instance `npp` is used for application access.
 -- @classmod Notepad
 
 --- Activates the specified document.
@@ -139,3 +142,84 @@
 
 --- Gets the version of the Windows operating system (one of the `WV_xxx` constants) (read-only).
 -- @tparam int WindowsVersion
+
+--- Helper Methods
+-- @section helpermethods
+
+--- Sends a message to the current editor.
+-- This duplicates the functionality of the editor object, providing access to this through an interface that is more familiar to Scintilla C++ developers.
+-- @function SendEditor
+-- @static
+-- @tparam int sci_const A `SCI_xxx` message constant
+-- @param[opt=0] wparam optional parameter dependent on the specific message
+-- @param[opt=0] lparam optional parameter dependent on the specific message
+-- @return optional return value dependent on the specific message
+
+--- Looks up the symoblic name of a constant.
+-- @function ConstantName
+-- @static
+-- @tparam int const number
+-- @tparam[opt] string hint the prefix of the constant to attempt to find
+-- @treturn string The symbolic name of a Scintilla / Notepad++ constant. Raises error if not found.
+
+--- Registers a Lua function to handle a given event.
+--  `event` must be one of the following
+-- 
+-- * `"OnReady"`
+-- * `"OnBeforeOpen"`
+-- * `"OnOpen"`
+-- * `"OnSwitchFile"`
+-- * `"OnBeforeSave"`
+-- * `"OnSave"`
+-- * `"OnFileRenamed"`
+-- * `"OnFileDeleted"`
+-- * `"OnChar"`
+-- * `"OnSavePointReached"`
+-- * `"OnSavePointLeft"`
+-- * `"OnUpdateUI"`
+-- * `"OnLangChange"`
+-- * `"OnBeforeClose"`
+-- * `"OnClose"`
+-- * `"OnBeforeShutdown"`
+-- * `"OnCancelShutdown"`
+-- * `"OnShutdown"`
+-- 
+-- @function AddEventHandler
+-- @static
+-- @tparam string event name of the desired event
+-- @tparam function callback the function to call when the event is triggered
+-- @treturn bool always returns `true` currently
+
+--- Removes previously registered Lua function for a given event.
+-- @function RemoveEventHandler
+-- @static
+-- @tparam string event name of the desired event
+-- @tparam function callback the previously registered function
+-- @treturn bool `true` if the function had been previously registered, else `false`
+-- @see AddEventHandler
+
+--- Removes all registered Lua functions for a given event.
+-- @function RemoveAllEventHandlers
+-- @static
+-- @tparam string event name of the desired event
+-- @see AddEventHandler
+
+--- Registers a Lua function for a shortcut key.
+-- The callback is not passed any parameters.
+-- 
+-- **Note:** This can only be called during startup.
+-- @function AddShortcut
+-- @static
+-- @tparam string name the user-friendly name of the shortcut (this is displayed in the menu)
+-- @tparam string shortcut the modifier and key (e.g. "Ctrl+Alt+Shift+D"). The key must be A-Z, 0-9, or F1-F12
+-- @tparam function callback the function to call when the shortcut is triggered
+
+--- Writes an error message to the console.
+-- Calls `tostring` on each parameter and prints the results in the console in red text.
+-- @function WriteError
+-- @static
+-- @param ... variable number of arguments
+
+--- Clears the console.
+-- @function ClearConsole
+-- @static
