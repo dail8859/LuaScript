@@ -2,12 +2,13 @@
 -- Provides access to the Notepad++ application. Most of the API messages and notifications have been made available, but more can be made available as needed.
 -- 
 -- The global instance `npp` is used for application access.
+-- 
 -- @classmod Notepad
 
 --- Activates the specified document.
 -- @function ActivateDoc
 -- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
--- @tparam int index2Activate
+-- @tparam int index2Activate index of the view to activate
 
 --- Opens a document.
 -- @function DoOpen
@@ -16,7 +17,7 @@
 
 --- Gets the BufferID located at the given position.
 -- @function GetBufferIDFromPos
--- @tparam int position of document
+-- @tparam int position position of document
 -- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
 -- @treturn int BufferID or 0 if invalid
 
@@ -28,7 +29,6 @@
 -- @function GetBufferIDFromPos
 -- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
 -- @treturn int 
-
 
 --- Gets the current document index within the view.
 -- @function GetCurrentDocIndex
@@ -53,28 +53,28 @@
 
 --- Gets the file name (without extension) of the current document.
 -- @function GetNamePart
--- @treturn string file name (without extension)
+-- @treturn string
 
 --- Gets the number of open documents.
 -- @function GetNbOpenFiles
 -- @tparam int view either `ALL_OPEN_FILES`, `PRIMARY_VIEW`, or `SECOND_VIEW`
--- @treturn int number of documents
+-- @treturn int
 
 --- Gets the directory of the Notepad++ application.
 -- @function GetNppDirectory
--- @treturn string Notepad++ directory
+-- @treturn string
 
 --- Gets the plugin configuration directory.
 -- @function GetPluginsConfigDir
--- @treturn strign plugin configuration directory
+-- @treturn string
 
 --- Executes a menu command.
 -- @function MenuCommand
--- @tparam int one of the `IDM_xxx` constants
+-- @tparam int command one of the [IDM_xxx](https://github.com/dail8859/LuaScript/blob/master/Npp/menuCmdID.h) constants
 
 --- Reloads the specified file.
 -- @function ReloadFile
--- @tparam bool withAlert whether to use an alert or not
+-- @tparam bool withAlert use an alert or not
 -- @tparam string filename file name to reload
 
 --- Saves all the opened documents.
@@ -87,61 +87,61 @@
 
 --- Saves the current document as the specified name.
 -- @function SaveCurrentFileAs
--- @tparam bool asCopy
--- @tparam string file name
+-- @tparam bool asCopy flag to indicate of the file should be saved as a copy
+-- @tparam string filename file name
 -- @treturn bool
 
 --- Switch to the specified document.
 -- @function SwitchToFile
--- @tparam string file name
+-- @tparam string filename file name
 -- @treturn bool `true` if successful, else `false`
 
 --- Properties
 -- @section properties
 
---- Whether plugins are allowed to be loaded from the %APPDATA% directory (read-only).
--- @tparam bool AppDataPluginsAllowed
+--- Whether plugins are allowed to be loaded from the %APPDATA% directory.
+-- @tparam[readonly] bool AppDataPluginsAllowed
 
---- Gets and sets the buffer's language type (one of the `L_xxx` constants).
+--- Gets or sets the buffer's language type (one of the `L_xxx` constants).
 -- @array BufferLangType
 -- @tparam BufferID id
 -- @treturn int
 
---- Gets the current BufferID (read-only).
--- @tparam BufferID CurrentBufferID
+--- Gets the current BufferID.
+-- @tparam[readonly] BufferID CurrentBufferID
 
---- Gets the current column of the cursor (read-only).
--- @tparam int CurrentColumn
+--- Gets the current column of the cursor.
+-- @tparam[readonly] int CurrentColumn
 
---- Gets the current line number of the cursor (read-only).
--- @tparam int CurrentLine
+--- Gets the current line number of the cursor.
+-- @tparam[readonly] int CurrentLine
 
---- Gets the currently active view, either `MAIN_VIEW` or `SUB_VIEW` (read-only).
--- @tparam int CurrentView
+--- Gets the currently active view, either `MAIN_VIEW` or `SUB_VIEW`.
+-- @tparam[readonly] int CurrentView
 
---- Gets the default background color used for documents (read-only).
--- @tparam colour DefaultBackgroundColor
+--- Gets the default background color used for documents.
+-- @tparam[readonly] colour DefaultBackgroundColor
 
---- Gets the default foreground color used for documents (read-only).
--- @tparam colour DefaultForegroundColor
+--- Gets the default foreground color used for documents.
+-- @tparam[readonly] colour DefaultForegroundColor
 
---- Gets the description of a language (read-only).
+--- Gets the description of a language.
 -- @array LanguageDescription
--- @tparam int language one of the `L_xxx` constant
+-- @tparam[readonly] int language one of the `L_xxx` constant
 -- @treturn string
 
---- Gets the language name (read-only).
+--- Gets the language name.
 -- @array LanguageName
--- @tparam int language one of the `L_xxx` constant
+-- @tparam[readonly] int language one of the `L_xxx` constant
 -- @treturn string
 
---- Gets the Notepad++ version (read-only).
+--- Gets the Notepad++ version.
 -- The high 16 bits contain the major version. The low 16 bits contain the minor version.
 -- @usage print((npp.Version >> 16) .. '.' .. (npp.Version & 0xff))
--- @tparam int Version
+-- @tparam[readonly] int Version
 
---- Gets the version of the Windows operating system (one of the `WV_xxx` constants) (read-only).
--- @tparam int WindowsVersion
+--- Gets the version of the Windows operating system (one of the `WV_xxx` constants).
+-- @tparam[readonly] int WindowsVersion
 
 --- Helper Methods
 -- @section helpermethods
@@ -155,7 +155,7 @@
 -- @param[opt=0] lparam optional parameter dependent on the specific message
 -- @return optional return value dependent on the specific message
 
---- Looks up the symoblic name of a constant.
+--- Looks up the symbolic name of a constant.
 -- @function ConstantName
 -- @static
 -- @tparam int const number
@@ -187,14 +187,14 @@
 -- @function AddEventHandler
 -- @static
 -- @tparam string event name of the desired event
--- @tparam function callback the function to call when the event is triggered
+-- @tparam function callback function to call when the event is triggered
 -- @treturn bool always returns `true` currently
 
 --- Removes previously registered Lua function for a given event.
 -- @function RemoveEventHandler
 -- @static
 -- @tparam string event name of the desired event
--- @tparam function callback the previously registered function
+-- @tparam function callback a previously registered function
 -- @treturn bool `true` if the function had been previously registered, else `false`
 -- @see AddEventHandler
 
@@ -212,7 +212,7 @@
 -- @static
 -- @tparam string name the user-friendly name of the shortcut (this is displayed in the menu)
 -- @tparam string shortcut the modifier and key (e.g. "Ctrl+Alt+Shift+D"). The key must be A-Z, 0-9, or F1-F12
--- @tparam function callback the function to call when the shortcut is triggered
+-- @tparam function callback function to call when the shortcut is triggered
 
 --- Writes an error message to the console.
 -- Calls `tostring` on each parameter and prints the results in the console in red text.
