@@ -46,7 +46,7 @@ const char *callbacks[] = {
 	"OnChar",
 	"OnSavePointReached",
 	"OnSavePointLeft",
-	//"OnStyle",
+	"OnStyle",
 	//"OnDoubleClick",
 	"OnUpdateUI",
 	//"OnMarginClick",
@@ -2028,68 +2028,72 @@ struct StylingContext {
 };
 
 bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler) {
-	bool handled = false;
 	if (luaState) {
-		lua_getglobal(luaState, "OnStyle");
-		if (lua_isfunction(luaState, -1)) {
+		lua_pushstring(luaState, "Npp_Callbacks");
+		lua_gettable(luaState, LUA_REGISTRYINDEX);
+		lua_getfield(luaState, -1, "OnStyle");
+		if (lua_istable(luaState, -1)) {
+			lua_pushnil(luaState); /* first key */
+			while (lua_next(luaState, -2) != 0) {
+				StylingContext sc;
+				sc.startPos = startPos;
+				sc.lengthDoc = lengthDoc;
+				sc.initStyle = initStyle;
+				sc.styler = styler;
+				sc.codePage = static_cast<int>(host->Send(host->paneEditor, SCI_GETCODEPAGE));
 
-			StylingContext sc;
-			sc.startPos = startPos;
-			sc.lengthDoc = lengthDoc;
-			sc.initStyle = initStyle;
-			sc.styler = styler;
-			sc.codePage = static_cast<int>(host->Send(host->paneEditor, SCI_GETCODEPAGE));
+				lua_newtable(luaState);
 
-			lua_newtable(luaState);
+				lua_pushstring(luaState, "startPos");
+				lua_pushinteger(luaState, startPos);
+				lua_settable(luaState, -3);
 
-			lua_pushstring(luaState, "startPos");
-			lua_pushinteger(luaState, startPos);
-			lua_settable(luaState, -3);
+				lua_pushstring(luaState, "lengthDoc");
+				lua_pushinteger(luaState, lengthDoc);
+				lua_settable(luaState, -3);
 
-			lua_pushstring(luaState, "lengthDoc");
-			lua_pushinteger(luaState, lengthDoc);
-			lua_settable(luaState, -3);
+				lua_pushstring(luaState, "initStyle");
+				lua_pushinteger(luaState, initStyle);
+				lua_settable(luaState, -3);
 
-			lua_pushstring(luaState, "initStyle");
-			lua_pushinteger(luaState, initStyle);
-			lua_settable(luaState, -3);
+				//lua_pushstring(luaState, "language");
+				//std::string lang = host->Property("Language");
+				//lua_pushstring(luaState, lang.c_str());
+				//lua_settable(luaState, -3);
 
-			lua_pushstring(luaState, "language");
-			std::string lang = host->Property("Language");
-			lua_pushstring(luaState, lang.c_str());
-			lua_settable(luaState, -3);
+				sc.PushMethod(luaState, StylingContext::Line, "Line");
+				sc.PushMethod(luaState, StylingContext::CharAt, "CharAt");
+				sc.PushMethod(luaState, StylingContext::StyleAt, "StyleAt");
+				sc.PushMethod(luaState, StylingContext::LevelAt, "LevelAt");
+				sc.PushMethod(luaState, StylingContext::SetLevelAt, "SetLevelAt");
+				sc.PushMethod(luaState, StylingContext::LineState, "LineState");
+				sc.PushMethod(luaState, StylingContext::SetLineState, "SetLineState");
 
-			sc.PushMethod(luaState, StylingContext::Line, "Line");
-			sc.PushMethod(luaState, StylingContext::CharAt, "CharAt");
-			sc.PushMethod(luaState, StylingContext::StyleAt, "StyleAt");
-			sc.PushMethod(luaState, StylingContext::LevelAt, "LevelAt");
-			sc.PushMethod(luaState, StylingContext::SetLevelAt, "SetLevelAt");
-			sc.PushMethod(luaState, StylingContext::LineState, "LineState");
-			sc.PushMethod(luaState, StylingContext::SetLineState, "SetLineState");
+				sc.PushMethod(luaState, StylingContext::StartStyling, "StartStyling");
+				sc.PushMethod(luaState, StylingContext::EndStyling, "EndStyling");
+				sc.PushMethod(luaState, StylingContext::More, "More");
+				sc.PushMethod(luaState, StylingContext::Forward, "Forward");
+				sc.PushMethod(luaState, StylingContext::Position, "Position");
+				sc.PushMethod(luaState, StylingContext::AtLineStart, "AtLineStart");
+				sc.PushMethod(luaState, StylingContext::AtLineEnd, "AtLineEnd");
+				sc.PushMethod(luaState, StylingContext::State, "State");
+				sc.PushMethod(luaState, StylingContext::SetState, "SetState");
+				sc.PushMethod(luaState, StylingContext::ForwardSetState, "ForwardSetState");
+				sc.PushMethod(luaState, StylingContext::ChangeState, "ChangeState");
+				sc.PushMethod(luaState, StylingContext::Current, "Current");
+				sc.PushMethod(luaState, StylingContext::Next, "Next");
+				sc.PushMethod(luaState, StylingContext::Previous, "Previous");
+				sc.PushMethod(luaState, StylingContext::Token, "Token");
+				sc.PushMethod(luaState, StylingContext::Match, "Match");
 
-			sc.PushMethod(luaState, StylingContext::StartStyling, "StartStyling");
-			sc.PushMethod(luaState, StylingContext::EndStyling, "EndStyling");
-			sc.PushMethod(luaState, StylingContext::More, "More");
-			sc.PushMethod(luaState, StylingContext::Forward, "Forward");
-			sc.PushMethod(luaState, StylingContext::Position, "Position");
-			sc.PushMethod(luaState, StylingContext::AtLineStart, "AtLineStart");
-			sc.PushMethod(luaState, StylingContext::AtLineEnd, "AtLineEnd");
-			sc.PushMethod(luaState, StylingContext::State, "State");
-			sc.PushMethod(luaState, StylingContext::SetState, "SetState");
-			sc.PushMethod(luaState, StylingContext::ForwardSetState, "ForwardSetState");
-			sc.PushMethod(luaState, StylingContext::ChangeState, "ChangeState");
-			sc.PushMethod(luaState, StylingContext::Current, "Current");
-			sc.PushMethod(luaState, StylingContext::Next, "Next");
-			sc.PushMethod(luaState, StylingContext::Previous, "Previous");
-			sc.PushMethod(luaState, StylingContext::Token, "Token");
-			sc.PushMethod(luaState, StylingContext::Match, "Match");
-
-			handled = call_function(luaState, 1);
-		} else {
-			lua_pop(luaState, 1);
+				call_function(luaState, 1);
+				// call_function removes the function for us, the key stays on the stack
+				break; // Only use the first styler, all others are ignored
+			}
 		}
+		lua_pop(luaState, 2); // the Npp_Callbacks table and the callback table
 	}
-	return handled;
+	return false;
 }
 
 bool LuaExtension::OnDoubleClick() {

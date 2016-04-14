@@ -163,7 +163,7 @@
 -- @treturn string The symbolic name of a Scintilla / Notepad++ constant. Raises error if not found.
 
 --- Registers a Lua function to handle a given event.
---  `event` must be one of the following
+-- `event` must be one of the following
 -- 
 -- * `"OnReady"`
 -- * `"OnBeforeOpen"`
@@ -182,6 +182,7 @@
 -- * `"OnClose"`
 -- * `"OnBeforeShutdown"`
 -- * `"OnCancelShutdown"`
+-- * `"OnStyle"`
 -- * `"OnShutdown"`
 -- 
 -- @function AddEventHandler

@@ -38,7 +38,7 @@ topics = { -- Put any md files here
 file = { -- sourcecode to parse comments from (Lua or C)
 	'Editor.lua',
 	'Match.lua',
-	'../SciTE/LuaExtension.cpp',
+	'Styler.lua',
 	'Notepad.lua',
 }
 

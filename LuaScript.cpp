@@ -26,6 +26,8 @@
 #include "LuaExtension.h"
 #include "NppExtensionAPI.h"
 #include "WcharMbcsConverter.h"
+#include "GUI.h"
+#include "StyleWriter.h"
 
 // --- Menu callbacks ---
 static void showConsole();
@@ -36,6 +38,7 @@ static void showAbout();
 
 // --- Local variables ---
 static NppData nppData;
+static HWND curScintilla;
 static SciFnDirect pSciMsg;			// For direct scintilla call
 static sptr_t pSciWndData;			// For direct scintilla call
 static HANDLE _hModule;				// For dialog initialization
@@ -64,8 +67,6 @@ static inline LRESULT SendNpp(UINT Msg, WPARAM wParam = SCI_UNUSED, LPARAM lPara
 }
 
 static bool updateScintilla() {
-	HWND curScintilla;
-
 	// Get the current scintilla
 	int which = -1;
 	SendNpp(NPPM_GETCURRENTSCINTILLA, SCI_UNUSED, (LPARAM)&which);
@@ -180,6 +181,21 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	case SCN_SAVEPOINTLEFT:
 		LuaExtension::Instance().OnSavePointLeft();
 		break;
+	case SCN_STYLENEEDED: {
+		updateScintilla();
+		// Copied from SciTE
+		GUI::ScintillaWindow wEditor;
+		wEditor.SetID(curScintilla);
+		int lineEndStyled = wEditor.Call(SCI_LINEFROMPOSITION, wEditor.Call(SCI_GETENDSTYLED));
+		int endStyled = wEditor.Call(SCI_POSITIONFROMLINE, lineEndStyled);
+		StyleWriter styler(wEditor);
+		int styleStart = 0;
+		if (endStyled > 0) styleStart = styler.StyleAt(endStyled - 1);
+		styler.SetCodePage(wEditor.Call(SCI_GETCODEPAGE));
+		LuaExtension::Instance().OnStyle(endStyled, notifyCode->position - endStyled, styleStart, &styler);
+		styler.Flush();
+		break;
+	}
 	case NPPN_READY:
 		isReady = true;
 		LuaExtension::Instance().OnReady();

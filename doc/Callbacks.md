@@ -18,6 +18,7 @@ Scripts can register Lua functions as a callback when certain events take place.
 - `OnLangChange()`
 - `OnBeforeShutdown()`
 - `OnCancelShutdown()`
+- `OnStyle(styler)`
 - `OnShutdown()`
 
 The Notepad++ object allows adding, removing, and clearing callback functions for the events. 
