@@ -18,7 +18,6 @@
 #include "StyleWriter.h"
 #include "NppExtensionAPI.h"
 #include "LuaExtension.h"
-#include "WcharMbcsConverter.h"
 
 #include "IFaceTableMixer.h"
 #include "SciIFaceTable.h"
@@ -951,7 +950,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 
 	char *stringResult = 0;
 	wchar_t *wstringResult = 0;
-	std::shared_ptr<wchar_t> nppstrparam;
+	tstring nppstrparam;
 	enum stringResultType { none, string, tstring } needStringResult = none;
 	int loopParamCount = 2;
 
@@ -977,8 +976,8 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 			params[i] = SptrFromString(s ? s : "");
 		} else if (func.paramType[i] == iface_tstring) {
 			const char *s = lua_tostring(L, arg++);
-			nppstrparam = WcharMbcsConverter::char2tchar(s ? s : "");
-			params[i] = reinterpret_cast<sptr_t>(nppstrparam.get());
+			nppstrparam = GUI::StringFromUTF8(s ? s : "");
+			params[i] = reinterpret_cast<sptr_t>(nppstrparam.c_str());
 		} else if (func.paramType[i] == iface_keymod) {
 			int keycode = static_cast<int>(luaL_checkinteger(L, arg++)) & 0xFFFF;
 			int modifiers = static_cast<int>(luaL_checkinteger(L, arg++)) & (SCMOD_SHIFT|SCMOD_CTRL|SCMOD_ALT);
@@ -1033,8 +1032,8 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 	}
 	if (wstringResult) {
 		// lua makes its own copy of the string so we only need the shared_ptr in this block
-		std::shared_ptr<char> res = WcharMbcsConverter::wchar2char(wstringResult);
-		lua_pushstring(L, res.get());
+		std::string res = GUI::UTF8FromString(wstringResult);
+		lua_pushstring(L, res.c_str());
 		delete[] wstringResult;
 		resultCount++;
 	}

@@ -128,7 +128,6 @@
     <ClCompile Include="SciTE\IFaceTable.cpp" />
     <ClCompile Include="SciTE\LuaExtension.cpp" />
     <ClCompile Include="SciTE\StyleWriter.cpp" />
-    <ClCompile Include="Utilities\WcharMbcsConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dialogs\AboutDialog.h" />
@@ -150,13 +149,11 @@
     <ClInclude Include="Npp\PluginInterface.h" />
     <ClInclude Include="Npp\SciLexer.h" />
     <ClInclude Include="Npp\Scintilla.h" />
-    <ClInclude Include="PluginDefinition.h" />
     <ClInclude Include="SciIFaceTable.h" />
     <ClInclude Include="SciTE\GUI.h" />
     <ClInclude Include="SciTE\IFaceTable.h" />
     <ClInclude Include="SciTE\LuaExtension.h" />
     <ClInclude Include="SciTE\StyleWriter.h" />
-    <ClInclude Include="Utilities\WcharMbcsConverter.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>

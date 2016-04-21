@@ -5,7 +5,6 @@
 #include "resource.h"
 #include "SciLexer.h"
 #include "Scintilla.h"
-#include "WcharMbcsConverter.h"
 
 #include <Commctrl.h>
 
@@ -267,11 +266,11 @@ void ConsoleDialog::showAutoCompletion() {
 void ConsoleDialog::historyPrevious() {
 	if (m_currentHistory > 0) {
 		if (m_currentHistory == m_history.size()) { // Yes, this is mean to be "=="
-			m_curLine = WcharMbcsConverter::char2tchar((const char *)m_sciInput.CallReturnPointer(SCI_GETCHARACTERPOINTER)).get();
+			m_curLine = GUI::StringFromUTF8((const char *)m_sciInput.CallReturnPointer(SCI_GETCHARACTERPOINTER));
 		}
 		--m_currentHistory;
 
-		m_sciInput.CallString(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
+		m_sciInput.CallString(SCI_SETTEXT, 0, GUI::UTF8FromString(m_history[m_currentHistory]).c_str());
 		m_sciInput.Call(SCI_DOCUMENTEND);
 		m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
 		m_sciInput.Call(SCI_SCROLLTOEND);
@@ -283,11 +282,11 @@ void ConsoleDialog::historyNext() {
 
 	if (m_currentHistory < m_history.size() - 1) {
 		++m_currentHistory;
-		m_sciInput.CallString(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_history[m_currentHistory].c_str()).get());
+		m_sciInput.CallString(SCI_SETTEXT, 0, GUI::UTF8FromString(m_history[m_currentHistory]).c_str());
 	}
 	else if (m_currentHistory == m_history.size() - 1) {
 		++m_currentHistory;
-		m_sciInput.CallString(SCI_SETTEXT, 0, WcharMbcsConverter::tchar2char(m_curLine.c_str()).get());
+		m_sciInput.CallString(SCI_SETTEXT, 0, GUI::UTF8FromString(m_curLine).c_str());
 	}
 	m_sciInput.Call(SCI_DOCUMENTEND);
 	m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
@@ -387,7 +386,7 @@ void ConsoleDialog::runStatement()
 		}
 
 		const char *text = (const char *)m_sciInput.CallReturnPointer(SCI_GETCHARACTERPOINTER);
-		historyAdd(WcharMbcsConverter::char2tchar(text).get());
+		historyAdd(GUI::StringFromUTF8(text).c_str());
 		m_console->runStatement(text);
 		m_sciInput.Call(SCI_CLEARALL);
 		m_sciInput.Call(SCI_EMPTYUNDOBUFFER);

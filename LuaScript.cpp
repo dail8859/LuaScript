@@ -19,13 +19,12 @@
 #include <Windows.h>
 #include <Shellapi.h>
 #include <vector>
-#include "PluginDefinition.h"
+#include "PluginInterface.h"
 #include "AboutDialog.h"
 
 #include "LuaConsole.h"
 #include "LuaExtension.h"
 #include "NppExtensionAPI.h"
-#include "WcharMbcsConverter.h"
 #include "GUI.h"
 #include "StyleWriter.h"
 
@@ -132,7 +131,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 
 		for (size_t i = 0; i < luaShortcuts.size(); ++i) {
 			funcItems.emplace_back();
-			_tcscpy_s(funcItems.back()._itemName, 64, WcharMbcsConverter::char2wchar(luaShortcuts[i]._itemName).get());
+			_tcscpy_s(funcItems.back()._itemName, 64, GUI::StringFromUTF8(luaShortcuts[i]._itemName).c_str());
 			funcItems.back()._pFunc = LuaShortcutWrappers[i];
 			funcItems.back()._cmdID = 0;
 			funcItems.back()._init2Check = false;
@@ -205,39 +204,39 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		break;
 	case NPPN_FILEBEFOREOPEN:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeOpen(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnBeforeOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILEOPENED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnOpen(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_BUFFERACTIVATED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSwitchFile(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILEBEFORESAVE:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeSave(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnBeforeSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILESAVED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSave(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILERENAMED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnFileRenamed(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILEDELETED:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnFileDeleted(WcharMbcsConverter::wchar2char(fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnFileDeleted(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILEBEFORECLOSE:
 		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
-		LuaExtension::Instance().OnBeforeClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_FILECLOSED:
 		// NOTE: cannot use idFrom to get the path since it is no longer valid
-		LuaExtension::Instance().OnClose(WcharMbcsConverter::wchar2char(static_fname).get(), nh.idFrom);
+		LuaExtension::Instance().OnClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
 		break;
 	case NPPN_BEFORESHUTDOWN:
 		LuaExtension::Instance().OnBeforeShutdown();

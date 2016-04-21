@@ -18,7 +18,7 @@
 
 #include <Windows.h>
 #include <Shellapi.h>
-#include "PluginDefinition.h"
+#include "PluginInterface.h"
 #include "AboutDialog.h"
 #include "resource.h"
 #include "Hyperlinks.h"

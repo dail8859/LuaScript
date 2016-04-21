@@ -72,3 +72,6 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *);
 extern "C" __declspec(dllexport) void beNotified(SCNotification *);
 extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam);
 extern "C" __declspec(dllexport) BOOL isUnicode();
+
+#define SCI_UNUSED 0
+const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
