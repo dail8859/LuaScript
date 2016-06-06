@@ -2087,6 +2087,8 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 
 				call_function(luaState, 1);
 				// call_function removes the function for us, the key stays on the stack
+				lua_pop(luaState, 1); // remove the key
+
 				break; // Only use the first styler, all others are ignored
 			}
 		}
