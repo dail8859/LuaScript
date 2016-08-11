@@ -60,6 +60,7 @@ public:
 	bool OnBeforeShutdown();
 	bool OnCancelShutdown();
 	bool OnShutdown();
+	bool OnModification(const SCNotification *sc);
 	bool NeedsOnClose();
 
 	void CallShortcut(int id);

@@ -59,6 +59,7 @@ const char *callbacks[] = {
 	"OnBeforeShutdown", // Npp specific
 	"OnCancelShutdown", // Npp specific
 	"OnShutdown", // Npp specific
+	"OnModification", // Npp specific (text has been modified; added or deleted)
 };
 
 
@@ -2156,6 +2157,13 @@ bool LuaExtension::OnCancelShutdown() {
 
 bool LuaExtension::OnShutdown() {
 	return CallNamedFunction("OnShutdown", NULL);
+}
+
+bool LuaExtension::OnModification(const SCNotification *sc) {
+	const std::string text(sc->text, sc->length); // sc->text is not null terminated
+	int modType = sc->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT);
+
+	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length, text.c_str(), sc->linesAdded);
 }
 
 bool LuaExtension::NeedsOnClose() {
