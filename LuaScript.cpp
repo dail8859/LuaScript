@@ -166,92 +166,91 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
-	switch (nh.code)
-	{
-	case SCN_CHARADDED:
-		LuaExtension::Instance().OnChar(notifyCode->ch);
-		break;
-	case SCN_MODIFIED:
-		if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
-			LuaExtension::Instance().OnModification(notifyCode);
-		break;
-	case SCN_SAVEPOINTREACHED:
-		LuaExtension::Instance().OnSavePointReached();
-		break;
-	case SCN_UPDATEUI:
-		LuaExtension::Instance().OnUpdateUI();
-		break;
-	case SCN_SAVEPOINTLEFT:
-		LuaExtension::Instance().OnSavePointLeft();
-		break;
-	case SCN_STYLENEEDED: {
-		updateScintilla();
-		// Copied from SciTE
-		GUI::ScintillaWindow wEditor;
-		wEditor.SetID(curScintilla);
-		int lineEndStyled = wEditor.Call(SCI_LINEFROMPOSITION, wEditor.Call(SCI_GETENDSTYLED));
-		int endStyled = wEditor.Call(SCI_POSITIONFROMLINE, lineEndStyled);
-		StyleWriter styler(wEditor);
-		int styleStart = 0;
-		if (endStyled > 0) styleStart = styler.StyleAt(endStyled - 1);
-		styler.SetCodePage(wEditor.Call(SCI_GETCODEPAGE));
-		LuaExtension::Instance().OnStyle(endStyled, notifyCode->position - endStyled, styleStart, &styler);
-		styler.Flush();
-		break;
-	}
-	case NPPN_READY:
-		isReady = true;
-		LuaExtension::Instance().OnReady();
-		break;
-	case NPPN_LANGCHANGED:
-		LuaExtension::Instance().OnLangChange();
-		break;
-	case NPPN_FILEBEFOREOPEN:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILEOPENED:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_BUFFERACTIVATED:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILEBEFORESAVE:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnBeforeSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILESAVED:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILERENAMED:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILEDELETED:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-		LuaExtension::Instance().OnFileDeleted(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILEBEFORECLOSE:
-		SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
-		LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_FILECLOSED:
-		// NOTE: cannot use idFrom to get the path since it is no longer valid
-		LuaExtension::Instance().OnClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
-		break;
-	case NPPN_BEFORESHUTDOWN:
-		LuaExtension::Instance().OnBeforeShutdown();
-		break;
-	case NPPN_CANCELSHUTDOWN:
-		LuaExtension::Instance().OnCancelShutdown();
-		break;
-	case NPPN_SHUTDOWN:
-		LuaExtension::Instance().OnShutdown();
-		LuaExtension::Instance().Finalise();
-		break;
+	switch (nh.code) {
+		case SCN_CHARADDED:
+			LuaExtension::Instance().OnChar(notifyCode->ch);
+			break;
+		case SCN_MODIFIED:
+			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
+				LuaExtension::Instance().OnModification(notifyCode);
+			break;
+		case SCN_SAVEPOINTREACHED:
+			LuaExtension::Instance().OnSavePointReached();
+			break;
+		case SCN_UPDATEUI:
+			LuaExtension::Instance().OnUpdateUI();
+			break;
+		case SCN_SAVEPOINTLEFT:
+			LuaExtension::Instance().OnSavePointLeft();
+			break;
+		case SCN_STYLENEEDED: {
+			updateScintilla();
+			// Copied from SciTE
+			GUI::ScintillaWindow wEditor;
+			wEditor.SetID(curScintilla);
+			int lineEndStyled = wEditor.Call(SCI_LINEFROMPOSITION, wEditor.Call(SCI_GETENDSTYLED));
+			int endStyled = wEditor.Call(SCI_POSITIONFROMLINE, lineEndStyled);
+			StyleWriter styler(wEditor);
+			int styleStart = 0;
+			if (endStyled > 0) styleStart = styler.StyleAt(endStyled - 1);
+			styler.SetCodePage(wEditor.Call(SCI_GETCODEPAGE));
+			LuaExtension::Instance().OnStyle(endStyled, notifyCode->position - endStyled, styleStart, &styler);
+			styler.Flush();
+			break;
+		}
+		case NPPN_READY:
+			isReady = true;
+			LuaExtension::Instance().OnReady();
+			break;
+		case NPPN_LANGCHANGED:
+			LuaExtension::Instance().OnLangChange();
+			break;
+		case NPPN_FILEBEFOREOPEN:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnBeforeOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEOPENED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_BUFFERACTIVATED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEBEFORESAVE:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnBeforeSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILESAVED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILERENAMED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEDELETED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileDeleted(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEBEFORECLOSE:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
+			LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILECLOSED:
+			// NOTE: cannot use idFrom to get the path since it is no longer valid
+			LuaExtension::Instance().OnClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_BEFORESHUTDOWN:
+			LuaExtension::Instance().OnBeforeShutdown();
+			break;
+		case NPPN_CANCELSHUTDOWN:
+			LuaExtension::Instance().OnCancelShutdown();
+			break;
+		case NPPN_SHUTDOWN:
+			LuaExtension::Instance().OnShutdown();
+			LuaExtension::Instance().Finalise();
+			break;
 	}
 	return;
 }
