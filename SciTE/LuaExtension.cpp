@@ -2102,8 +2102,8 @@ bool LuaExtension::OnDoubleClick() {
 	return CallNamedFunction("OnDoubleClick", NULL);
 }
 
-bool LuaExtension::OnUpdateUI() {
-	return CallNamedFunction("OnUpdateUI", NULL);
+bool LuaExtension::OnUpdateUI(const SCNotification *sc) {
+	return CallNamedFunction("OnUpdateUI", "i", sc->updated);
 }
 
 bool LuaExtension::OnMarginClick() {

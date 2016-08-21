@@ -49,7 +49,7 @@ public:
 	bool OnSavePointLeft();
 	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
 	bool OnDoubleClick();
-	bool OnUpdateUI();
+	bool OnUpdateUI(const SCNotification *sc);
 	bool OnMarginClick();
 	bool OnUserListSelection(int listType, const char *selection);
 	bool OnKey(int keyval, int modifiers);

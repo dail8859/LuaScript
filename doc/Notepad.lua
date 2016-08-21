@@ -166,6 +166,11 @@
 -- `event` must be one of the following
 -- 
 -- * `"OnReady"`
+-- * `"OnChar"`
+-- * `"OnModification"`
+-- * `"OnUpdateUI"`
+-- * `"OnSavePointReached"`
+-- * `"OnSavePointLeft"`
 -- * `"OnBeforeOpen"`
 -- * `"OnOpen"`
 -- * `"OnSwitchFile"`
@@ -173,13 +178,9 @@
 -- * `"OnSave"`
 -- * `"OnFileRenamed"`
 -- * `"OnFileDeleted"`
--- * `"OnChar"`
--- * `"OnSavePointReached"`
--- * `"OnSavePointLeft"`
--- * `"OnUpdateUI"`
--- * `"OnLangChange"`
 -- * `"OnBeforeClose"`
 -- * `"OnClose"`
+-- * `"OnLangChange"`
 -- * `"OnBeforeShutdown"`
 -- * `"OnCancelShutdown"`
 -- * `"OnStyle"`

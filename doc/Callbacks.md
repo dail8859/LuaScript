@@ -4,7 +4,7 @@ Scripts can register Lua functions as a callback when certain events take place.
 - `OnReady()`
 - `OnChar(character)`
 - `OnModification(modType, position, length, text, linesAdded)`
-- `OnUpdateUI()`
+- `OnUpdateUI(flags)`
 - `OnSavePointReached()`
 - `OnSavePointLeft()`
 - `OnBeforeOpen(filename, bufferid)`

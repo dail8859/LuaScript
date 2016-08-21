@@ -178,7 +178,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			LuaExtension::Instance().OnSavePointReached();
 			break;
 		case SCN_UPDATEUI:
-			LuaExtension::Instance().OnUpdateUI();
+			LuaExtension::Instance().OnUpdateUI(notifyCode);
 			break;
 		case SCN_SAVEPOINTLEFT:
 			LuaExtension::Instance().OnSavePointLeft();
