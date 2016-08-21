@@ -184,6 +184,7 @@
 -- * `"OnBeforeShutdown"`
 -- * `"OnCancelShutdown"`
 -- * `"OnStyle"`
+-- * `"OnDoubleClick"`
 -- * `"OnShutdown"`
 -- 
 -- @function AddEventHandler

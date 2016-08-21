@@ -174,6 +174,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
 				LuaExtension::Instance().OnModification(notifyCode);
 			break;
+		case SCN_DOUBLECLICK:
+			LuaExtension::Instance().OnDoubleClick(notifyCode);
+			break;
 		case SCN_SAVEPOINTREACHED:
 			LuaExtension::Instance().OnSavePointReached();
 			break;
