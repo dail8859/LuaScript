@@ -2175,7 +2175,7 @@ bool LuaExtension::OnShutdown() {
 
 bool LuaExtension::OnModification(const SCNotification *sc) {
 	const std::string text(sc->text, sc->length); // sc->text is not null terminated
-	int modType = sc->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT);
+	int modType = sc->modificationType;
 
 	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length, text.c_str(), sc->linesAdded);
 }
