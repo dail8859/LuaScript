@@ -17,6 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "LuaConsole.h"
+#include "SciIFaceTable.h"
+#include "NppIFaceTable.h"
+
 
 static void setStyles(GUI::ScintillaWindow &sci, bool is_input) {
 	sci.Call(SCI_SETEOLMODE, SC_EOL_CRLF, 0);
@@ -53,8 +56,10 @@ static void setStyles(GUI::ScintillaWindow &sci, bool is_input) {
 	sci.Call(SCI_STYLESETITALIC, SCE_LUA_WORD4, 1); // for SCI_SETKEYWORDS, 3
 	sci.Call(SCI_STYLESETFORE, SCE_LUA_LABEL, 0x008080);
 	sci.Call(SCI_STYLESETBOLD, SCE_LUA_LABEL, 1);
-	sci.Call(SCI_STYLESETFORE, SCE_LUA_WORD5, 0x808080); // for SCI_SETKEYWORDS, 4
+	sci.Call(SCI_STYLESETFORE, SCE_LUA_WORD5, 0x004080); // for SCI_SETKEYWORDS, 4, Scintilla defines
 	sci.Call(SCI_STYLESETBOLD, SCE_LUA_WORD5, 1);
+	sci.Call(SCI_STYLESETFORE, SCE_LUA_WORD6, 0x004080); // for SCI_SETKEYWORDS, 5, Notepad++ defines
+	sci.Call(SCI_STYLESETBOLD, SCE_LUA_WORD6, 1);
 
 	// Only the input window needs the wordlists
 	if (is_input) {
@@ -62,7 +67,24 @@ static void setStyles(GUI::ScintillaWindow &sci, bool is_input) {
 		sci.CallString(SCI_SETKEYWORDS, 1, "_ENV _G _VERSION assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring module next pairs pcall print rawequal rawget rawlen rawset require select setfenv setmetatable tonumber tostring type unpack xpcall string table math bit32 coroutine io os debug package __index __newindex __call __add __sub __mul __div __mod __pow __unm __concat __len __eq __lt __le __gc __mode");
 		sci.CallString(SCI_SETKEYWORDS, 2, "byte char dump find format gmatch gsub len lower rep reverse sub upper abs acos asin atan atan2 ceil cos cosh deg exp floor fmod frexp ldexp log log10 max min modf pow rad random randomseed sin sinh sqrt tan tanh arshift band bnot bor btest bxor extract lrotate lshift replace rrotate rshift shift string.byte string.char string.dump string.find string.format string.gmatch string.gsub string.len string.lower string.match string.rep string.reverse string.sub string.upper table.concat table.insert table.maxn table.pack table.remove table.sort table.unpack math.abs math.acos math.asin math.atan math.atan2 math.ceil math.cos math.cosh math.deg math.exp math.floor math.fmod math.frexp math.huge math.ldexp math.log math.log10 math.max math.min math.modf math.pi math.pow math.rad math.random math.randomseed math.sin math.sinh math.sqrt math.tan math.tanh bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift");
 		sci.CallString(SCI_SETKEYWORDS, 3, "close flush lines read seek setvbuf write clock date difftime execute exit getenv remove rename setlocale time tmpname coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield io.close io.flush io.input io.lines io.open io.output io.popen io.read io.tmpfile io.type io.write io.stderr io.stdin io.stdout os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue debug.traceback debug.upvalueid debug.upvaluejoin package.cpath package.loaded package.loaders package.loadlib package.path package.preload package.seeall");
-		//sci.CallString(SCI_SETKEYWORDS, 4, "SC_MOD_TEXTINSERT etc...");
+
+		// Highlight Scintilla constants
+		std::string scicon;
+		scicon.reserve(SciIFaceTable.constants.size() * 10);
+		for (const auto &con : SciIFaceTable.constants) {
+			scicon.append(con.name);
+			scicon.append(" ");
+		}
+		sci.CallString(SCI_SETKEYWORDS, 4, scicon.c_str());
+
+		// Highlight Notepad++ constants
+		std::string nppcon;
+		nppcon.reserve(NppIFaceTable.constants.size() * 10);
+		for (const auto &con : NppIFaceTable.constants) {
+			nppcon.append(con.name);
+			nppcon.append(" ");
+		}
+		sci.CallString(SCI_SETKEYWORDS, 5, nppcon.c_str());
 	}
 }
 
