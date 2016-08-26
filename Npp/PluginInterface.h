@@ -28,6 +28,7 @@
 #pragma once
 
 #include "Scintilla.h"
+#include "SciLexer.h"
 #include "Notepad_plus_msgs.h"
 
 const int nbChar = 64;

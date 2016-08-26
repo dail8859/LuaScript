@@ -120,6 +120,7 @@
     <ClCompile Include="Dialogs\Hyperlinks.cpp" />
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="IFaceTableMixer.cpp" />
+    <ClCompile Include="LuaConsole.cpp" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="NppIFaceTable.cpp" />
@@ -132,7 +133,6 @@
   <ItemGroup>
     <ClInclude Include="Dialogs\AboutDialog.h" />
     <ClInclude Include="Dialogs\ConsoleDialog.h" />
-    <ClInclude Include="Dialogs\ConsoleInterface.h" />
     <ClInclude Include="Dialogs\Hyperlinks.h" />
     <ClInclude Include="Dialogs\LuaConsole.h" />
     <ClInclude Include="Dialogs\resource.h" />

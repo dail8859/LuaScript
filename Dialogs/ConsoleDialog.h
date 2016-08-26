@@ -20,7 +20,6 @@
 #pragma once
 
 #include "DockingDlgInterface.h"
-#include "ConsoleInterface.h"
 #include "Scintilla.h"
 #include "GUI.h"
 
@@ -31,6 +30,8 @@ struct NppData;
 struct LineDetails;
 typedef std::basic_string<TCHAR> tstring;
 
+class LuaConsole;
+
 class ConsoleDialog : public DockingDlgInterface
 {
 public:
@@ -38,7 +39,7 @@ public:
 	ConsoleDialog(const ConsoleDialog& other);
 	~ConsoleDialog();
 
-	void initDialog(HINSTANCE hInst, NppData& nppData, ConsoleInterface *console);
+	void initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole *console);
 
 	void doDialog();
 	void hide();
@@ -59,13 +60,10 @@ private:
 
 	void createOutputWindow(HWND hParentWindow);
 	void createInputWindow(HWND hParentWindow);
-	void setStyles(GUI::ScintillaWindow &sw);
 	void runStatement();
 
 	static LRESULT CALLBACK inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 	static LRESULT CALLBACK scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-
-	void showAutoCompletion();
 
 	void historyNext();
 	void historyPrevious();
@@ -76,7 +74,7 @@ private:
 	GUI::ScintillaWindow  m_sciOutput;
 	GUI::ScintillaWindow  m_sciInput;
 
-	ConsoleInterface *m_console;
+	LuaConsole *m_console;
 	std::string m_prompt;
 	HICON m_hTabIcon;
 

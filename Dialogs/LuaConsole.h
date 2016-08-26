@@ -18,14 +18,13 @@
 
 #pragma once
 
-#include "ConsoleInterface.h"
 #include "ConsoleDialog.h"
 #include "LuaExtension.h"
 #include "PluginInterface.h"
 
 #include "lua.hpp"
 
-class LuaConsole final : public ConsoleInterface
+class LuaConsole final
 {
 public:
 	explicit LuaConsole(HWND hNotepad) :
@@ -51,11 +50,19 @@ public:
 
 	void showDialog() { mp_consoleDlg->doDialog(); }
 	void runStatement(const char *statement) { LuaExtension::Instance().OnExecute(statement); }
-	void openFile(const char *filename, size_t lineNumber) {};
+
+	void setupInput(GUI::ScintillaWindow &sci);
+	void setupOutput(GUI::ScintillaWindow &sci);
+
+	bool processNotification(const SCNotification *scn);
+
+	void showAutoCompletion();
 
 	ConsoleDialog *mp_consoleDlg;
 private:
 	NppData* m_nppData;
 	HWND m_hNotepad;
+
+	GUI::ScintillaWindow *m_sciInput;
 };
 

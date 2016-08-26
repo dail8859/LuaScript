@@ -54,6 +54,9 @@
     <ClCompile Include="SciIFaceTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LuaConsole.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Version.h">
@@ -99,9 +102,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Npp\SciLexer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\ConsoleInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\LuaConsole.h">
