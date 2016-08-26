@@ -20,7 +20,7 @@
 #include "Notepad_plus_msgs.h"
 #include "menuCmdID.h"
 
-static IFaceConstant ifaceConstants[] = {
+static std::vector<IFaceConstant> ifaceConstants = {
 	{ "ALL_OPEN_FILES", ALL_OPEN_FILES },
 	{ "IDM_CLEAN_RECENT_FILE_LIST", IDM_CLEAN_RECENT_FILE_LIST },
 	{ "IDM_CMDLINEARGUMENTS", IDM_CMDLINEARGUMENTS },
@@ -500,7 +500,7 @@ static IFaceConstant ifaceConstants[] = {
 	{ "WV_XPX64", WV_XPX64 },
 };
 
-static IFaceFunction ifaceFunctions[] = {
+static std::vector<IFaceFunction> ifaceFunctions = {
 	{ "ActivateDoc", NPPM_ACTIVATEDOC, iface_void, { iface_int, iface_int } },
 	{ "DoOpen", NPPM_DOOPEN, iface_bool, { iface_void, iface_tstring } },
 	{ "GetBufferIDFromPos", NPPM_GETBUFFERIDFROMPOS, iface_int, { iface_int, iface_int } },
@@ -528,7 +528,7 @@ static IFaceFunction ifaceFunctions[] = {
 	{ "SwitchToFile", NPPM_SWITCHTOFILE, iface_bool, { iface_void, iface_tstring } },
 }; 
 
-static IFaceProperty ifaceProperties[] = {
+static std::vector<IFaceProperty> ifaceProperties = {
 	{ "AppDataPluginsAllowed", NPPM_GETAPPDATAPLUGINSALLOWED, 0, iface_bool, iface_void },
 	{ "BufferLangType", NPPM_GETBUFFERLANGTYPE, NPPM_SETBUFFERLANGTYPE, iface_int, iface_int },
 	{ "CurrentBufferID", NPPM_GETCURRENTBUFFERID, 0, iface_int, iface_void },
@@ -544,4 +544,4 @@ static IFaceProperty ifaceProperties[] = {
 	{ "WindowsVersion", NPPM_GETWINDOWSVERSION, 0, iface_int, iface_void },
 };
 
-IFaceTable NppIFaceTable("NPPM_", ifaceFunctions, ELEMENTS(ifaceFunctions), ifaceConstants, ELEMENTS(ifaceConstants), ifaceProperties, ELEMENTS(ifaceProperties));
+IFaceTable NppIFaceTable("NPPM_", ifaceFunctions, ifaceConstants, ifaceProperties);

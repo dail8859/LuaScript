@@ -23,7 +23,7 @@
 
 const IFaceConstant *IFaceTable::FindConstant(const char *name) {
 	int lo = 0;
-	int hi = constantCount - 1;
+	int hi = constants.size() - 1;
 	do {
 		int idx = (lo+hi)/2;
 		int cmp = strcmp(name, constants[idx].name);
@@ -42,7 +42,7 @@ const IFaceConstant *IFaceTable::FindConstant(const char *name) {
 
 const IFaceFunction *IFaceTable::FindFunction(const char *name) {
 	int lo = 0;
-	int hi = functionCount - 1;
+	int hi = functions.size() - 1;
 	do {
 		int idx = (lo+hi)/2;
 		int cmp = strcmp(name, functions[idx].name);
@@ -64,15 +64,15 @@ const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) {
 		// a sequential search.  Take special care since the function names
 		// are mixed case, whereas the constants are all-caps.
 
-		for (int idx = 0; idx < functionCount; ++idx) {
+		for (const auto &func : functions) {
 			const char *nm = name + strlen(prefix);
-			const char *fn = functions[idx].name;
+			const char *fn = func.name;
 			while (*nm && *fn && (*nm == toupper(*fn))) {
 				++nm;
 				++fn;
 			}
 			if (!*nm && !*fn) {
-				return &functions[idx];
+				return &func;
 			}
 		}
 	}
@@ -81,7 +81,7 @@ const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) {
 
 const IFaceProperty *IFaceTable::FindProperty(const char *name) {
 	int lo = 0;
-	int hi = propertyCount - 1;
+	int hi = properties.size() - 1;
 	do {
 		int idx = (lo+hi)/2;
 		int cmp = strcmp(name, properties[idx].name);
@@ -104,12 +104,12 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 	}
 
 	// Look in both the constants table and the functions table.  Start with functions.
-	for (int funcIdx = 0; funcIdx < functionCount; ++funcIdx) {
-		if (functions[funcIdx].value == value) {
-			int len = static_cast<int>(strlen(functions[funcIdx].name)) + strlen(prefix);
+	for (const auto &func : functions) {
+		if (func.value == value) {
+			int len = static_cast<int>(strlen(func.name)) + strlen(prefix);
 			if (nameOut && (static_cast<int>(nameBufferLen) > len)) {
 				strcpy(nameOut, prefix);
-				strcat(nameOut, functions[funcIdx].name);
+				strcat(nameOut, func.name);
 				// fix case
 				for (char *nm = nameOut + strlen(prefix); *nm; ++nm) {
 					if (*nm >= 'a' && *nm <= 'z') {
@@ -123,11 +123,11 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 		}
 	}
 
-	for (int constIdx = 0; constIdx < constantCount; ++constIdx) {
-		if (constants[constIdx].value == value && (hint == NULL || strncmp(hint, constants[constIdx].name, strlen(hint)) == 0)) {
-			int len = static_cast<int>(strlen(constants[constIdx].name));
+	for (const auto &con : constants) {
+		if (con.value == value && (hint == NULL || strncmp(hint, con.name, strlen(hint)) == 0)) {
+			int len = static_cast<int>(strlen(con.name));
 			if (nameOut && (static_cast<int>(nameBufferLen) > len)) {
-				strcpy(nameOut, constants[constIdx].name);
+				strcpy(nameOut, con.name);
 				return len;
 			} else {
 				return -1 - len;
@@ -139,21 +139,21 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 }
 
 const IFaceFunction *IFaceTable::GetFunctionByMessage(int message) {
-	for (int funcIdx = 0; funcIdx < functionCount; ++funcIdx) {
-		if (functions[funcIdx].value == message) {
-			return &functions[funcIdx];
+	for (const auto &func : functions) {
+		if (func.value == message) {
+			return &func;
 		}
 	}
 	return nullptr;
 }
 
 IFaceFunction IFaceTable::GetPropertyFuncByMessage(int message) {
-	for (int propIdx = 0; propIdx < propertyCount; ++propIdx) {
-		if (properties[propIdx].getter == message) {
-			return properties[propIdx].GetterFunction();
+	for (const auto &prop : properties) {
+		if (prop.getter == message) {
+			return prop.GetterFunction();
 		}
-		else if (properties[propIdx].setter == message) {
-			return properties[propIdx].SetterFunction();
+		else if (prop.setter == message) {
+			return prop.SetterFunction();
 		}
 	}
 	return { "invalid", -1, iface_void, {iface_void, iface_void} };

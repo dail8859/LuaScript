@@ -1,6 +1,7 @@
 // This file is part of LuaScript.
 // 
-// Copyright (C)2016 Justin Dailey <dail8859@yahoo.com>
+// Original work Copyright 1998-2004 by Neil Hodgson <neilh@scintilla.org>
+// Derived work Copyright (C)2016 Justin Dailey <dail8859@yahoo.com>
 // 
 // LuaScript is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -16,13 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-// Most of this code belongs to
-// SciTE - Scintilla based Text Editor
-// Copyright 1998-2004 by Neil Hodgson <neilh@scintilla.org>
-
 #include "SciIFaceTable.h"
 
-static IFaceConstant ifaceConstants[] = {
+static std::vector<IFaceConstant> ifaceConstants = {
 	{ "ANNOTATION_BOXED", 2 },
 	{ "ANNOTATION_HIDDEN", 0 },
 	{ "ANNOTATION_INDENTED", 3 },
@@ -2466,7 +2463,7 @@ static IFaceConstant ifaceConstants[] = {
 	{ "VISIBLE_STRICT", 0x04 }
 };
 
-static IFaceFunction ifaceFunctions[] = {
+static std::vector<IFaceFunction> ifaceFunctions = {
 	{ "AddRefDocument", 2376, iface_void, { iface_void, iface_int } },
 	{ "AddSelection", 2573, iface_int, { iface_int, iface_int } },
 	{ "AddStyledText", 2002, iface_void, { iface_length, iface_cells } },
@@ -2758,7 +2755,7 @@ static IFaceFunction ifaceFunctions[] = {
 	{ "ZoomOut", 2334, iface_void, { iface_void, iface_void } }
 };
 
-static IFaceProperty ifaceProperties[] = {
+static std::vector<IFaceProperty> ifaceProperties = {
 	{ "AdditionalCaretFore", 2605, 2604, iface_colour, iface_void },
 	{ "AdditionalCaretsBlink", 2568, 2567, iface_bool, iface_void },
 	{ "AdditionalCaretsVisible", 2609, 2608, iface_bool, iface_void },
@@ -2982,4 +2979,4 @@ static IFaceProperty ifaceProperties[] = {
 	{ "Zoom", 2374, 2373, iface_int, iface_void }
 };
 
-IFaceTable SciIFaceTable("SCI_", ifaceFunctions, ELEMENTS(ifaceFunctions), ifaceConstants, ELEMENTS(ifaceConstants), ifaceProperties, ELEMENTS(ifaceProperties));
+IFaceTable SciIFaceTable("SCI_", ifaceFunctions, ifaceConstants, ifaceProperties);

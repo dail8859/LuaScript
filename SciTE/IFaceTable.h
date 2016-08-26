@@ -19,7 +19,7 @@
 
 #pragma once
 
-#define ELEMENTS(a) (sizeof(a) / sizeof(a[0]))
+#include <vector>
 
 enum IFaceType {
 	iface_void,
@@ -125,24 +125,20 @@ public:
 
 public:
 	IFaceTable(const char *_prefix,
-		const IFaceFunction *const _functions, int _functionCount,
-		const IFaceConstant *const _constants, int _constantCount,
-		const IFaceProperty *const _properties, int _propertyCount) :
+		const std::vector<IFaceFunction> &_functions,
+		const std::vector<IFaceConstant> &_constants,
+		const std::vector<IFaceProperty> &_properties) :
 		prefix(_prefix),
-		functions(_functions), functionCount(_functionCount),
-		constants(_constants), constantCount(_constantCount),
-		properties(_properties), propertyCount(_propertyCount)
+		functions(_functions),
+		constants(_constants),
+		properties(_properties)
 	{}
 
 	const char *prefix;
 
-	const IFaceFunction *const functions;
-	const IFaceConstant *const constants;
-	const IFaceProperty *const properties;
-
-	const int functionCount;
-	const int constantCount;
-	const int propertyCount;
+	const std::vector<IFaceFunction> &functions;
+	const std::vector<IFaceConstant> &constants;
+	const std::vector<IFaceProperty> &properties;
 
 	// IFaceTableInterface
 	const IFaceConstant *FindConstant(const char *name);
