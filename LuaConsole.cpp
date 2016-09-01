@@ -119,6 +119,14 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 			if ((scn->ch == '.' || scn->ch == ':') && m_sciInput->Call(SCI_GETCURRENTPOS) > 1) {
 				showAutoCompletion();
 			}
+			else if (scn->ch == '\n') {
+				int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
+				int curLine = m_sciInput->Call(SCI_LINEFROMPOSITION, curPos);
+				int prevIndent = m_sciInput->Call(SCI_GETLINEINDENTATION, curLine - 1);
+				m_sciInput->Call(SCI_SETLINEINDENTATION, curLine, prevIndent);
+				curPos = m_sciInput->Call(SCI_GETLINEINDENTPOSITION, curLine);
+				m_sciInput->Call(SCI_SETEMPTYSELECTION, curPos);
+			}
 			break;
 		}
 	}
