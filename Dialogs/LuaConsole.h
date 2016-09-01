@@ -64,5 +64,8 @@ private:
 	HWND m_hNotepad;
 
 	GUI::ScintillaWindow *m_sciInput;
+
+	void maintainIndentation();
+	void braceMatch();
 };
 
