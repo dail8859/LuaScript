@@ -133,6 +133,8 @@ void LuaConsole::setupInput(GUI::ScintillaWindow &sci) {
 	sci.Call(SCI_INDICSETUNDER, INDIC_BRACEHIGHLIGHT, true);
 	sci.Call(SCI_BRACEHIGHLIGHTINDICATOR, true, INDIC_BRACEHIGHLIGHT);
 
+	sci.Call(SCI_SETINDENTATIONGUIDES, SC_IV_LOOKBOTH);
+
 	m_sciInput = &sci;
 }
 

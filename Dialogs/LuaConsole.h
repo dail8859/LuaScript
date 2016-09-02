@@ -43,9 +43,6 @@ public:
 	void init(HINSTANCE hInst, NppData& nppData) {
 		mp_consoleDlg->initDialog(hInst, nppData, this);
 		*m_nppData = nppData;
-
-		const char *msg = LUA_COPYRIGHT "\r\n\r\n";
-		mp_consoleDlg->writeText(strlen(msg), msg);
 	}
 
 	void showDialog() { mp_consoleDlg->doDialog(); }

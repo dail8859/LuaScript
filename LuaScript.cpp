@@ -201,10 +201,13 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			styler.Flush();
 			break;
 		}
-		case NPPN_READY:
+		case NPPN_READY: {
+			const char *msg = LUA_COPYRIGHT "\r\n\r\n";
+			g_console->mp_consoleDlg->writeText(strlen(msg), msg);
 			isReady = true;
 			LuaExtension::Instance().OnReady();
 			break;
+		}
 		case NPPN_LANGCHANGED:
 			LuaExtension::Instance().OnLangChange();
 			break;
