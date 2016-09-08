@@ -3,12 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaScript", "LuaScript.vcxproj", "{1590D7CD-7D3A-4AB7-A355-EE02F7FB987D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaScript", "src\LuaScript.vcxproj", "{1590D7CD-7D3A-4AB7-A355-EE02F7FB987D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{FCFBB3B0-8628-4CD0-A9B7-1BFB34E31E2A} = {FCFBB3B0-8628-4CD0-A9B7-1BFB34E31E2A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "Lua.vcxproj", "{FCFBB3B0-8628-4CD0-A9B7-1BFB34E31E2A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "src\Lua.vcxproj", "{FCFBB3B0-8628-4CD0-A9B7-1BFB34E31E2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
