@@ -32,7 +32,7 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_INITDIALOG:
 		ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
 		ConvertStaticToHyperlink(hwndDlg, IDC_README);
-		SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), VERSION_TEXT TEXT(" ") VERSION_STAGE);
+		SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("LuaScript v") VERSION_TEXT TEXT(" ") VERSION_STAGE);
 		return true;
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -41,10 +41,10 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(hwndDlg);
 			return true;
 		case IDC_GITHUB:
-			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/LuaScript"), NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		case IDC_README:
-			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/LuaScript/blob/v") VERSION_TEXT TEXT("/README.md"), NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://dail8859.github.io/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		}
 	case WM_DESTROY:
