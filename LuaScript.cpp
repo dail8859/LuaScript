@@ -166,6 +166,10 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
+	// We only want notifications from Notepad++ and it's 2 scintilla handles
+	if (nh.hwndFrom != nppData._nppHandle && nh.hwndFrom != nppData._scintillaMainHandle && nh.hwndFrom != nppData._scintillaSecondHandle)
+		return;
+
 	switch (nh.code) {
 		case SCN_CHARADDED:
 			LuaExtension::Instance().OnChar(notifyCode->ch);
