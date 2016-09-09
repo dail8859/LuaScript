@@ -156,4 +156,4 @@ $RECYCLE.BIN/
 /ResEdit-x64
 LuaDist
 gh-pages
-/doc/Editor.lua
+/docs_gen/Editor.lua

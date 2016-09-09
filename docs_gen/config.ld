@@ -16,15 +16,28 @@ end
 
 local scidocurl = 'http://www.scintilla.org/ScintillaDoc.html#%s'
 custom_see_handler('^(SCI_[%w_]+)$', function(name)
-    local url = scidocurl:format(name)
-    return name, url
+	local url = scidocurl:format(name)
+	return name, url
 end)
 
 project = 'LuaScript <sub>v0.4.0</sub>'
 title = 'LuaScript Reference'
 description = 'Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities.'
+full_description = [[LuaScript allows you to customize Notepad++.
+
+* Assign Lua functions to shortcut keys or menus
+* Register callbacks for events
+* Full Lua 5.3 functionality
+* Interactive console with auto-completion
+
+The startup script is automatically ran when Notepad++ is launched. This is used to register shortcuts and callbacks to extend Notepad++'s functionality
+
+Issues or feature requests can be made on the GitHub [issue tracker](https://github.com/dail8859/LuaScript/issues).
+
+Make sure to check out the examples.
+]]
 format = 'markdown'
-dir = './gh-pages'
+dir = '../docs'
 style = true
 template = true
 no_lua_ref = true

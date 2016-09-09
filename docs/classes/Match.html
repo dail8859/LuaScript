@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.4.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Fields">Fields</a></li>
+<li><a href="#Methods">Methods</a></li>
+<li><a href="#Metamethods">Metamethods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><strong>Match</strong></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Match</code></h1>
+<p>Used for searching and replacing text.</p>
+<p> A match generator is returned from <a href="../classes/Editor.html#Editor:match">Editor:match</a> which can
+ be used to iterate search results. While looping through matches, if the document is modified by any
+ method other than the match object's replace method, this may cause the match generator to lose its
+ place. Also, do not attempt to store the match object for later access outside the loop; it will not
+ be usable.
+ </p>
+    <h3>See also:</h3>
+    <ul>
+         <a href="../classes/Editor.html#Editor:match">Editor:match</a>
+    </ul>
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">for m in editor:match(&quot;teh&quot;) do m:replace(&quot;the&quot;) end</pre>
+    </ul>
+
+
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Match.pos">Match.pos</a></td>
+	<td class="summary">Beginning position of the located match.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Match.len">Match.len</a></td>
+	<td class="summary">Length of text matched.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Match.text">Match.text</a></td>
+	<td class="summary">The actual text matched.</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Match:replace">Match:replace(text)</a></td>
+	<td class="summary">Replaces the matched text.</td>
+	</tr>
+</table>
+<h2><a href="#Metamethods">Metamethods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Match:__tostring">Match:__tostring()</a></td>
+	<td class="summary">String representation of the match.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Match.pos"></a>
+    <strong>Match.pos</strong>
+    </dt>
+    <dd>
+    Beginning position of the located match.
+
+
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Match.len"></a>
+    <strong>Match.len</strong>
+    </dt>
+    <dd>
+    Length of text matched.
+
+
+    <ul>
+        <li><span class="parameter">len</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Match.text"></a>
+    <strong>Match.text</strong>
+    </dt>
+    <dd>
+    The actual text matched.
+
+
+    <ul>
+        <li><span class="parameter">text</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Match:replace"></a>
+    <strong>Match:replace(text)</strong>
+    </dt>
+    <dd>
+    Replaces the matched text.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+            <span class="types"><span class="type">string</span></span>
+         replacement text
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Metamethods"></a>Metamethods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Match:__tostring"></a>
+    <strong>Match:__tostring()</strong>
+    </dt>
+    <dd>
+    String representation of the match.
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-09-09 09:10:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>

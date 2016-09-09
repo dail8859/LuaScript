@@ -1,0 +1,833 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.4.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Fields">Fields</a></li>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><strong>Styler</strong></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Styler</code></h1>
+<p>Description</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Styler.startPos">Styler.startPos</a></td>
+	<td class="summary">Start of the range to be lexed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler.lengthDoc">Styler.lengthDoc</a></td>
+	<td class="summary">Length of the range to be lexed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler.initStyle">Styler.initStyle</a></td>
+	<td class="summary">Starting style.</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Styler:StartStyling">Styler:StartStyling(startPos, length, initStyle)</a></td>
+	<td class="summary">Start setting styles from startPos for length with initial style initStyle.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:EndStyling">Styler:EndStyling()</a></td>
+	<td class="summary">Styling has been completed so tidy up.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:More">Styler:More()</a></td>
+	<td class="summary">Are there any more characters to process.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Forward">Styler:Forward()</a></td>
+	<td class="summary">Move forward one character.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Position">Styler:Position()</a></td>
+	<td class="summary">What is the position in the document of the current character.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:AtLineStart">Styler:AtLineStart()</a></td>
+	<td class="summary">Is the current character the first on a line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:AtLineEnd">Styler:AtLineEnd()</a></td>
+	<td class="summary">Is the current character the last on a line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:State">Styler:State()</a></td>
+	<td class="summary">The current lexical state value.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:SetState">Styler:SetState()</a></td>
+	<td class="summary">Set the style of the current token to the current state and then change the state to the argument.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:ForwardSetState">Styler:ForwardSetState()</a></td>
+	<td class="summary">Combination of moving forward and setting the state.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:ChangeState">Styler:ChangeState(state)</a></td>
+	<td class="summary">Change the current state so that the state of the current token will be set to the argument.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Current">Styler:Current()</a></td>
+	<td class="summary">The current character.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Next">Styler:Next()</a></td>
+	<td class="summary">The next character.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Previous">Styler:Previous()</a></td>
+	<td class="summary">The previous character.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Token">Styler:Token()</a></td>
+	<td class="summary">The current token.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Match">Styler:Match(str)</a></td>
+	<td class="summary">Is the text from the current position the same as the argument?</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:Line">Styler:Line(position)</a></td>
+	<td class="summary">Convert a byte position into a line number.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:CharAt">Styler:CharAt(position)</a></td>
+	<td class="summary">Unsigned byte value at argument.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:StyleAt">Styler:StyleAt(position)</a></td>
+	<td class="summary">Style value at argument.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:LevelAt">Styler:LevelAt(line)</a></td>
+	<td class="summary">Fold level for a line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:SetLevelAt">Styler:SetLevelAt(line, level)</a></td>
+	<td class="summary">Set the fold level for a line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:LineState">Styler:LineState(line)</a></td>
+	<td class="summary">State value for a line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Styler:SetLineState">Styler:SetLineState(line, state)</a></td>
+	<td class="summary">Set state value for a line.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Styler.startPos"></a>
+    <strong>Styler.startPos</strong>
+    </dt>
+    <dd>
+    Start of the range to be lexed.
+
+
+    <ul>
+        <li><span class="parameter">startPos</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler.lengthDoc"></a>
+    <strong>Styler.lengthDoc</strong>
+    </dt>
+    <dd>
+    Length of the range to be lexed.
+
+
+    <ul>
+        <li><span class="parameter">lengthDoc</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler.initStyle"></a>
+    <strong>Styler.initStyle</strong>
+    </dt>
+    <dd>
+    Starting style.
+
+
+    <ul>
+        <li><span class="parameter">initStyle</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Styler:StartStyling"></a>
+    <strong>Styler:StartStyling(startPos, length, initStyle)</strong>
+    </dt>
+    <dd>
+    Start setting styles from startPos for length with initial style initStyle.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">startPos</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">length</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">initStyle</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:EndStyling"></a>
+    <strong>Styler:EndStyling()</strong>
+    </dt>
+    <dd>
+    Styling has been completed so tidy up.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:More"></a>
+    <strong>Styler:More()</strong>
+    </dt>
+    <dd>
+    Are there any more characters to process.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Forward"></a>
+    <strong>Styler:Forward()</strong>
+    </dt>
+    <dd>
+    Move forward one character.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Position"></a>
+    <strong>Styler:Position()</strong>
+    </dt>
+    <dd>
+    What is the position in the document of the current character.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:AtLineStart"></a>
+    <strong>Styler:AtLineStart()</strong>
+    </dt>
+    <dd>
+    Is the current character the first on a line.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:AtLineEnd"></a>
+    <strong>Styler:AtLineEnd()</strong>
+    </dt>
+    <dd>
+    Is the current character the last on a line.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:State"></a>
+    <strong>Styler:State()</strong>
+    </dt>
+    <dd>
+    The current lexical state value.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:SetState"></a>
+    <strong>Styler:SetState()</strong>
+    </dt>
+    <dd>
+    Set the style of the current token to the current state and then change the state to the argument.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:ForwardSetState"></a>
+    <strong>Styler:ForwardSetState()</strong>
+    </dt>
+    <dd>
+    Combination of moving forward and setting the state.
+ Useful when the current character is a token terminator like " for a string.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:ChangeState"></a>
+    <strong>Styler:ChangeState(state)</strong>
+    </dt>
+    <dd>
+    Change the current state so that the state of the current token will be set to the argument.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Current"></a>
+    <strong>Styler:Current()</strong>
+    </dt>
+    <dd>
+    The current character.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Next"></a>
+    <strong>Styler:Next()</strong>
+    </dt>
+    <dd>
+    The next character.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Previous"></a>
+    <strong>Styler:Previous()</strong>
+    </dt>
+    <dd>
+    The previous character.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Token"></a>
+    <strong>Styler:Token()</strong>
+    </dt>
+    <dd>
+    The current token.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Match"></a>
+    <strong>Styler:Match(str)</strong>
+    </dt>
+    <dd>
+    Is the text from the current position the same as the argument?
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:Line"></a>
+    <strong>Styler:Line(position)</strong>
+    </dt>
+    <dd>
+    Convert a byte position into a line number.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">position</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:CharAt"></a>
+    <strong>Styler:CharAt(position)</strong>
+    </dt>
+    <dd>
+    Unsigned byte value at argument.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">position</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:StyleAt"></a>
+    <strong>Styler:StyleAt(position)</strong>
+    </dt>
+    <dd>
+    Style value at argument.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">position</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:LevelAt"></a>
+    <strong>Styler:LevelAt(line)</strong>
+    </dt>
+    <dd>
+    Fold level for a line.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:SetLevelAt"></a>
+    <strong>Styler:SetLevelAt(line, level)</strong>
+    </dt>
+    <dd>
+    Set the fold level for a line.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">level</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:LineState"></a>
+    <strong>Styler:LineState(line)</strong>
+    </dt>
+    <dd>
+    State value for a line.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Styler:SetLineState"></a>
+    <strong>Styler:SetLineState(line, state)</strong>
+    </dt>
+    <dd>
+    Set state value for a line.
+ This can be used to store extra information from lexing, such as a current language mode, so that there is no need to look back in the document.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">state</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-09-09 09:07:12 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>

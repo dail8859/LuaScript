@@ -1,0 +1,1283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.4.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Helper_Methods">Helper Methods </a></li>
+<li><a href="#Methods">Methods</a></li>
+<li><a href="#Properties">Properties </a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><strong>Notepad</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Notepad</code></h1>
+<p>Notepad++ wrapper.</p>
+<p> Provides access to the Notepad++ application. Most of the API messages and notifications have been made available, but more can be made available as needed.</p>
+
+<p> The global instance <code>npp</code> is used for application access.
+ </p>
+
+
+<h2><a href="#Helper_Methods">Helper Methods </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.SendEditor">Notepad.SendEditor(sci_const[, wparam=0[, lparam=0]])</a></td>
+	<td class="summary">Sends a message to the current editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.ConstantName">Notepad.ConstantName(const[, hint])</a></td>
+	<td class="summary">Looks up the symbolic name of a constant.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.AddEventHandler">Notepad.AddEventHandler(event, callback)</a></td>
+	<td class="summary">Registers a Lua function to handle a given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.RemoveEventHandler">Notepad.RemoveEventHandler(event, callback)</a></td>
+	<td class="summary">Removes previously registered Lua function for a given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.RemoveAllEventHandlers">Notepad.RemoveAllEventHandlers(event)</a></td>
+	<td class="summary">Removes all registered Lua functions for a given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.AddShortcut">Notepad.AddShortcut(name, shortcut, callback)</a></td>
+	<td class="summary">Registers a Lua function for a shortcut key.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.WriteError">Notepad.WriteError(...)</a></td>
+	<td class="summary">Writes an error message to the console.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.ClearConsole">Notepad.ClearConsole()</a></td>
+	<td class="summary">Clears the console.</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:ActivateDoc">Notepad:ActivateDoc(view, index2Activate)</a></td>
+	<td class="summary">Activates the specified document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:DoOpen">Notepad:DoOpen(file)</a></td>
+	<td class="summary">Opens a document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetBufferIDFromPos">Notepad:GetBufferIDFromPos(position, view)</a></td>
+	<td class="summary">Gets the BufferID located at the given position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetCurrentDirectory">Notepad:GetCurrentDirectory()</a></td>
+	<td class="summary">Gets the current directory of the document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetBufferIDFromPos">Notepad:GetBufferIDFromPos(view)</a></td>
+	<td class="summary">Gets the BufferID located at the given position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetCurrentDocIndex">Notepad:GetCurrentDocIndex(view)</a></td>
+	<td class="summary">Gets the current document index within the view.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetCurrentWord">Notepad:GetCurrentWord()</a></td>
+	<td class="summary">Selects and returns the word at the cursor's position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetExtPart">Notepad:GetExtPart()</a></td>
+	<td class="summary">Gets the file extension of the current document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetFileName">Notepad:GetFileName()</a></td>
+	<td class="summary">Gets the file name of the current document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetFullCurrentPath">Notepad:GetFullCurrentPath()</a></td>
+	<td class="summary">Gets the full path of the current document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetNamePart">Notepad:GetNamePart()</a></td>
+	<td class="summary">Gets the file name (without extension) of the current document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetNbOpenFiles">Notepad:GetNbOpenFiles(view)</a></td>
+	<td class="summary">Gets the number of open documents.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetNppDirectory">Notepad:GetNppDirectory()</a></td>
+	<td class="summary">Gets the directory of the Notepad++ application.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:GetPluginsConfigDir">Notepad:GetPluginsConfigDir()</a></td>
+	<td class="summary">Gets the plugin configuration directory.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:MenuCommand">Notepad:MenuCommand(command)</a></td>
+	<td class="summary">Executes a menu command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:ReloadFile">Notepad:ReloadFile(withAlert, filename)</a></td>
+	<td class="summary">Reloads the specified file.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:SaveAllFiles">Notepad:SaveAllFiles()</a></td>
+	<td class="summary">Saves all the opened documents.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:SaveCurrentFile">Notepad:SaveCurrentFile()</a></td>
+	<td class="summary">Saves the current document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:SaveCurrentFileAs">Notepad:SaveCurrentFileAs(asCopy, filename)</a></td>
+	<td class="summary">Saves the current document as the specified name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad:SwitchToFile">Notepad:SwitchToFile(filename)</a></td>
+	<td class="summary">Switch to the specified document.</td>
+	</tr>
+</table>
+<h2><a href="#Properties">Properties </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.AppDataPluginsAllowed">Notepad.AppDataPluginsAllowed</a></td>
+	<td class="summary">Whether plugins are allowed to be loaded from the %APPDATA% directory.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.BufferLangType">Notepad.BufferLangType[id]</a></td>
+	<td class="summary">Gets or sets the buffer's language type (one of the <code>L_xxx</code> constants).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.CurrentBufferID">Notepad.CurrentBufferID</a></td>
+	<td class="summary">Gets the current BufferID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.CurrentColumn">Notepad.CurrentColumn</a></td>
+	<td class="summary">Gets the current column of the cursor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.CurrentLine">Notepad.CurrentLine</a></td>
+	<td class="summary">Gets the current line number of the cursor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.CurrentView">Notepad.CurrentView</a></td>
+	<td class="summary">Gets the currently active view, either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.DefaultBackgroundColor">Notepad.DefaultBackgroundColor</a></td>
+	<td class="summary">Gets the default background color used for documents.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.DefaultForegroundColor">Notepad.DefaultForegroundColor</a></td>
+	<td class="summary">Gets the default foreground color used for documents.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.LanguageDescription">Notepad.LanguageDescription[language]</a></td>
+	<td class="summary">Gets the description of a language.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.LanguageName">Notepad.LanguageName[language]</a></td>
+	<td class="summary">Gets the language name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.Version">Notepad.Version</a></td>
+	<td class="summary">Gets the Notepad++ version.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.WindowsVersion">Notepad.WindowsVersion</a></td>
+	<td class="summary">Gets the version of the Windows operating system (one of the <code>WV_xxx</code> constants).</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Helper_Methods"></a>Helper Methods </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Notepad.SendEditor"></a>
+    <strong>Notepad.SendEditor(sci_const[, wparam=0[, lparam=0]])</strong>
+    </dt>
+    <dd>
+    Sends a message to the current editor.
+ This duplicates the functionality of the editor object, providing access to this through an interface that is more familiar to Scintilla C++ developers.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sci_const</span>
+            <span class="types"><span class="type">int</span></span>
+         A <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_xxx">SCI_xxx</a> message constant
+        </li>
+        <li><span class="parameter">wparam</span>
+         optional parameter dependent on the specific message
+         (<em>default 0</em>)
+        </li>
+        <li><span class="parameter">lparam</span>
+         optional parameter dependent on the specific message
+         (<em>default 0</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        optional return value dependent on the specific message
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.ConstantName"></a>
+    <strong>Notepad.ConstantName(const[, hint])</strong>
+    </dt>
+    <dd>
+    Looks up the symbolic name of a constant.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">const</span>
+            <span class="types"><span class="type">int</span></span>
+         number
+        </li>
+        <li><span class="parameter">hint</span>
+            <span class="types"><span class="type">string</span></span>
+         the prefix of the constant to attempt to find
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        The symbolic name of a Scintilla / Notepad++ constant. Raises error if not found.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.AddEventHandler"></a>
+    <strong>Notepad.AddEventHandler(event, callback)</strong>
+    </dt>
+    <dd>
+
+<p>Registers a Lua function to handle a given event.
+ <code>event</code> must be one of the following</p>
+
+<ul>
+    <li><code>&quot;OnReady&quot;</code></li>
+    <li><code>&quot;OnChar&quot;</code></li>
+    <li><code>&quot;OnModification&quot;</code></li>
+    <li><code>&quot;OnUpdateUI&quot;</code></li>
+    <li><code>&quot;OnSavePointReached&quot;</code></li>
+    <li><code>&quot;OnSavePointLeft&quot;</code></li>
+    <li><code>&quot;OnBeforeOpen&quot;</code></li>
+    <li><code>&quot;OnOpen&quot;</code></li>
+    <li><code>&quot;OnSwitchFile&quot;</code></li>
+    <li><code>&quot;OnBeforeSave&quot;</code></li>
+    <li><code>&quot;OnSave&quot;</code></li>
+    <li><code>&quot;OnFileRenamed&quot;</code></li>
+    <li><code>&quot;OnFileDeleted&quot;</code></li>
+    <li><code>&quot;OnBeforeClose&quot;</code></li>
+    <li><code>&quot;OnClose&quot;</code></li>
+    <li><code>&quot;OnLangChange&quot;</code></li>
+    <li><code>&quot;OnBeforeShutdown&quot;</code></li>
+    <li><code>&quot;OnCancelShutdown&quot;</code></li>
+    <li><code>&quot;OnStyle&quot;</code></li>
+    <li><code>&quot;OnDoubleClick&quot;</code></li>
+    <li><code>&quot;OnShutdown&quot;</code>
+    </li>
+</ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">event</span>
+            <span class="types"><span class="type">string</span></span>
+         name of the desired event
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         function to call when the event is triggered
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        always returns <code>true</code> currently
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.RemoveEventHandler"></a>
+    <strong>Notepad.RemoveEventHandler(event, callback)</strong>
+    </dt>
+    <dd>
+    Removes previously registered Lua function for a given event.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">event</span>
+            <span class="types"><span class="type">string</span></span>
+         name of the desired event
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         a previously registered function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        <code>true</code> if the function had been previously registered, else <code>false</code>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../classes/Notepad.html#Notepad.AddEventHandler">AddEventHandler</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.RemoveAllEventHandlers"></a>
+    <strong>Notepad.RemoveAllEventHandlers(event)</strong>
+    </dt>
+    <dd>
+    Removes all registered Lua functions for a given event.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">event</span>
+            <span class="types"><span class="type">string</span></span>
+         name of the desired event
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../classes/Notepad.html#Notepad.AddEventHandler">AddEventHandler</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.AddShortcut"></a>
+    <strong>Notepad.AddShortcut(name, shortcut, callback)</strong>
+    </dt>
+    <dd>
+    Registers a Lua function for a shortcut key.
+ The callback is not passed any parameters.</p>
+
+<p> <strong>Note:</strong> This can only be called during startup.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         the user-friendly name of the shortcut (this is displayed in the menu)
+        </li>
+        <li><span class="parameter">shortcut</span>
+            <span class="types"><span class="type">string</span></span>
+         the modifier and key (e.g. "Ctrl+Alt+Shift+D"). The key must be A-Z, 0-9, or F1-F12
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         function to call when the shortcut is triggered
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.WriteError"></a>
+    <strong>Notepad.WriteError(...)</strong>
+    </dt>
+    <dd>
+    Writes an error message to the console.
+ Calls <code>tostring</code> on each parameter and prints the results in the console in red text.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         variable number of arguments
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.ClearConsole"></a>
+    <strong>Notepad.ClearConsole()</strong>
+    </dt>
+    <dd>
+    Clears the console.
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Notepad:ActivateDoc"></a>
+    <strong>Notepad:ActivateDoc(view, index2Activate)</strong>
+    </dt>
+    <dd>
+    Activates the specified document.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">view</span>
+            <span class="types"><span class="type">int</span></span>
+         either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>
+        </li>
+        <li><span class="parameter">index2Activate</span>
+            <span class="types"><span class="type">int</span></span>
+         index of the view to activate
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:DoOpen"></a>
+    <strong>Notepad:DoOpen(file)</strong>
+    </dt>
+    <dd>
+    Opens a document.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">file</span>
+            <span class="types"><span class="type">string</span></span>
+         name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        <code>true</code> if successful, else <code>false</code>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetBufferIDFromPos"></a>
+    <strong>Notepad:GetBufferIDFromPos(position, view)</strong>
+    </dt>
+    <dd>
+    Gets the BufferID located at the given position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">position</span>
+            <span class="types"><span class="type">int</span></span>
+         position of document
+        </li>
+        <li><span class="parameter">view</span>
+            <span class="types"><span class="type">int</span></span>
+         either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+        BufferID or 0 if invalid
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetCurrentDirectory"></a>
+    <strong>Notepad:GetCurrentDirectory()</strong>
+    </dt>
+    <dd>
+    Gets the current directory of the document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        current directory
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetBufferIDFromPos"></a>
+    <strong>Notepad:GetBufferIDFromPos(view)</strong>
+    </dt>
+    <dd>
+    Gets the BufferID located at the given position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">view</span>
+            <span class="types"><span class="type">int</span></span>
+         either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetCurrentDocIndex"></a>
+    <strong>Notepad:GetCurrentDocIndex(view)</strong>
+    </dt>
+    <dd>
+    Gets the current document index within the view.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">view</span>
+            <span class="types"><span class="type">int</span></span>
+         either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+        index of the current document. -1 if the requested view is not visible.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetCurrentWord"></a>
+    <strong>Notepad:GetCurrentWord()</strong>
+    </dt>
+    <dd>
+    Selects and returns the word at the cursor's position
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        word
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetExtPart"></a>
+    <strong>Notepad:GetExtPart()</strong>
+    </dt>
+    <dd>
+    Gets the file extension of the current document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        file extension
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetFileName"></a>
+    <strong>Notepad:GetFileName()</strong>
+    </dt>
+    <dd>
+    Gets the file name of the current document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        file name
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetFullCurrentPath"></a>
+    <strong>Notepad:GetFullCurrentPath()</strong>
+    </dt>
+    <dd>
+    Gets the full path of the current document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+        full path
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetNamePart"></a>
+    <strong>Notepad:GetNamePart()</strong>
+    </dt>
+    <dd>
+    Gets the file name (without extension) of the current document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetNbOpenFiles"></a>
+    <strong>Notepad:GetNbOpenFiles(view)</strong>
+    </dt>
+    <dd>
+    Gets the number of open documents.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">view</span>
+            <span class="types"><span class="type">int</span></span>
+         either <code>ALL_OPEN_FILES</code>, <code>PRIMARY_VIEW</code>, or <code>SECOND_VIEW</code>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetNppDirectory"></a>
+    <strong>Notepad:GetNppDirectory()</strong>
+    </dt>
+    <dd>
+    Gets the directory of the Notepad++ application.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:GetPluginsConfigDir"></a>
+    <strong>Notepad:GetPluginsConfigDir()</strong>
+    </dt>
+    <dd>
+    Gets the plugin configuration directory.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:MenuCommand"></a>
+    <strong>Notepad:MenuCommand(command)</strong>
+    </dt>
+    <dd>
+    Executes a menu command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">command</span>
+            <span class="types"><span class="type">int</span></span>
+         one of the <a href="https://github.com/dail8859/LuaScript/blob/master/Npp/menuCmdID.h">IDM_xxx</a> constants
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:ReloadFile"></a>
+    <strong>Notepad:ReloadFile(withAlert, filename)</strong>
+    </dt>
+    <dd>
+    Reloads the specified file.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">withAlert</span>
+            <span class="types"><span class="type">bool</span></span>
+         use an alert or not
+        </li>
+        <li><span class="parameter">filename</span>
+            <span class="types"><span class="type">string</span></span>
+         file name to reload
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:SaveAllFiles"></a>
+    <strong>Notepad:SaveAllFiles()</strong>
+    </dt>
+    <dd>
+    Saves all the opened documents.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:SaveCurrentFile"></a>
+    <strong>Notepad:SaveCurrentFile()</strong>
+    </dt>
+    <dd>
+    Saves the current document.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:SaveCurrentFileAs"></a>
+    <strong>Notepad:SaveCurrentFileAs(asCopy, filename)</strong>
+    </dt>
+    <dd>
+    Saves the current document as the specified name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">asCopy</span>
+            <span class="types"><span class="type">bool</span></span>
+         flag to indicate of the file should be saved as a copy
+        </li>
+        <li><span class="parameter">filename</span>
+            <span class="types"><span class="type">string</span></span>
+         file name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad:SwitchToFile"></a>
+    <strong>Notepad:SwitchToFile(filename)</strong>
+    </dt>
+    <dd>
+    Switch to the specified document.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">filename</span>
+            <span class="types"><span class="type">string</span></span>
+         file name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        <code>true</code> if successful, else <code>false</code>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Properties"></a>Properties </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Notepad.AppDataPluginsAllowed"></a>
+    <strong>Notepad.AppDataPluginsAllowed</strong>
+    </dt>
+    <dd>
+    Whether plugins are allowed to be loaded from the %APPDATA% directory.
+
+
+    <ul>
+        <li><span class="parameter">AppDataPluginsAllowed</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.BufferLangType"></a>
+    <strong>Notepad.BufferLangType[id]</strong>
+    </dt>
+    <dd>
+    Gets or sets the buffer's language type (one of the <code>L_xxx</code> constants).
+
+
+    <ul>
+        <li><span class="parameter">id</span>
+            <span class="types"><span class="type">BufferID</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.CurrentBufferID"></a>
+    <strong>Notepad.CurrentBufferID</strong>
+    </dt>
+    <dd>
+    Gets the current BufferID.
+
+
+    <ul>
+        <li><span class="parameter">CurrentBufferID</span>
+            <span class="types"><span class="type">BufferID</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.CurrentColumn"></a>
+    <strong>Notepad.CurrentColumn</strong>
+    </dt>
+    <dd>
+    Gets the current column of the cursor.
+
+
+    <ul>
+        <li><span class="parameter">CurrentColumn</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.CurrentLine"></a>
+    <strong>Notepad.CurrentLine</strong>
+    </dt>
+    <dd>
+    Gets the current line number of the cursor.
+
+
+    <ul>
+        <li><span class="parameter">CurrentLine</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.CurrentView"></a>
+    <strong>Notepad.CurrentView</strong>
+    </dt>
+    <dd>
+    Gets the currently active view, either <code>MAIN_VIEW</code> or <code>SUB_VIEW</code>.
+
+
+    <ul>
+        <li><span class="parameter">CurrentView</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.DefaultBackgroundColor"></a>
+    <strong>Notepad.DefaultBackgroundColor</strong>
+    </dt>
+    <dd>
+    Gets the default background color used for documents.
+
+
+    <ul>
+        <li><span class="parameter">DefaultBackgroundColor</span>
+            <span class="types"><span class="type">colour</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.DefaultForegroundColor"></a>
+    <strong>Notepad.DefaultForegroundColor</strong>
+    </dt>
+    <dd>
+    Gets the default foreground color used for documents.
+
+
+    <ul>
+        <li><span class="parameter">DefaultForegroundColor</span>
+            <span class="types"><span class="type">colour</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.LanguageDescription"></a>
+    <strong>Notepad.LanguageDescription[language]</strong>
+    </dt>
+    <dd>
+    Gets the description of a language.
+
+
+    <ul>
+        <li><span class="parameter">language</span>
+            <span class="types"><span class="type">int</span></span>
+         one of the <code>L_xxx</code> constant
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.LanguageName"></a>
+    <strong>Notepad.LanguageName[language]</strong>
+    </dt>
+    <dd>
+    Gets the language name.
+
+
+    <ul>
+        <li><span class="parameter">language</span>
+            <span class="types"><span class="type">int</span></span>
+         one of the <code>L_xxx</code> constant
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.Version"></a>
+    <strong>Notepad.Version</strong>
+    </dt>
+    <dd>
+    Gets the Notepad++ version.
+ The high 16 bits contain the major version. The low 16 bits contain the minor version.
+
+
+    <ul>
+        <li><span class="parameter">Version</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">print</span>((npp.Version &gt;&gt; <span class="number">16</span>) .. <span class="string">'.'</span> .. (npp.Version &amp; <span class="number">0xff</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Notepad.WindowsVersion"></a>
+    <strong>Notepad.WindowsVersion</strong>
+    </dt>
+    <dd>
+    Gets the version of the Windows operating system (one of the <code>WV_xxx</code> constants).
+
+
+    <ul>
+        <li><span class="parameter">WindowsVersion</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+          (<em>readonly</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-09-09 09:10:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>

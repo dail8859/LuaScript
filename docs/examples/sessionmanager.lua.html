@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.4.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><strong>sessionmanager.lua</strong></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>sessionmanager.lua</h2>
+<pre>
+<span class="comment">-- A very simplistic session manager. It opens previously open files and restores
+</span><span class="comment">-- cursor position and scroll position. It is not perfect, for example it does
+</span><span class="comment">-- not keep track of the order or in which view the files are in. This code must
+</span><span class="comment">-- be ran during startup. This is just a demonstration of how to use the API
+</span><span class="comment">-- and what can be done in a small amount of Lua.
+</span>
+
+<span class="keyword">local</span> opened_files = {}
+<span class="keyword">local</span> is_shutting_down = <span class="keyword">false</span>
+
+<span class="comment">-- If a session is found, load it. Note this cannot be done directly during
+</span><span class="comment">-- startup since N++ hasn't completely initialized yet.
+</span>npp.AddEventHandler(<span class="string">"OnReady"</span>, <span class="keyword">function</span>()
+    <span class="keyword">local</span> files = <span class="global">table</span>.<span class="global">load</span>(npp:GetPluginsConfigDir() .. <span class="string">"\\session.lua"</span>)
+    <span class="keyword">if</span> files ~= <span class="keyword">nil</span> <span class="keyword">then</span>
+        <span class="keyword">for</span> i,v <span class="keyword">in</span> <span class="global">pairs</span>(files) <span class="keyword">do</span>
+            npp:DoOpen(v.name)
+            <span class="keyword">if</span> v.lang <span class="keyword">then</span> npp.BufferLangType[npp.CurrentBufferID] = v.lang <span class="keyword">end</span>
+            editor.FirstVisibleLine = v.top <span class="keyword">or</span> <span class="number">0</span>
+            editor.CurrentPos = v.pos <span class="keyword">or</span> <span class="number">0</span>
+            editor.Anchor = v.anchor <span class="keyword">or</span> <span class="number">0</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- Remove any files that are closed
+</span>npp.AddEventHandler(<span class="string">"OnClose"</span>, <span class="keyword">function</span>(f,i)
+    <span class="comment">-- If N++ is in the middle of shutting down, just ignore it
+</span>    <span class="keyword">if</span> is_shutting_down <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">false</span> <span class="keyword">end</span>
+    opened_files[i] = <span class="keyword">nil</span>
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- This won't be called unless the user manually changes it, else it just
+</span><span class="comment">-- defaults to whatever value N++ decides is best
+</span>npp.AddEventHandler(<span class="string">"OnLangChange"</span>, <span class="keyword">function</span>()
+    <span class="keyword">local</span> i = npp.CurrentBufferID
+    opened_files[i].lang = npp.BufferLangType[i]
+<span class="keyword">end</span>)
+
+<span class="comment">-- Keep track of some of the variables we want to restore in the file
+</span><span class="comment">-- This event will also catch any files being opened for the first time
+</span>npp.AddEventHandler(<span class="string">"OnUpdateUI"</span>, <span class="keyword">function</span>()
+    <span class="keyword">local</span> i = npp.CurrentBufferID
+    <span class="keyword">if</span> opened_files[i] == <span class="keyword">nil</span> <span class="keyword">then</span>
+        opened_files[i] = {}
+        opened_files[i].name = npp:GetFullCurrentPath()
+    <span class="keyword">end</span>
+    opened_files[i].pos = editor.CurrentPos
+    opened_files[i].anchor = editor.Anchor
+    opened_files[i].top = editor.FirstVisibleLine
+<span class="keyword">end</span>)
+
+npp.AddEventHandler(<span class="string">"OnFileRenamed"</span>, <span class="keyword">function</span>(f,i)
+    opened_files[i].name = f <span class="comment">-- update the name
+</span>    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- Set a flag so we know N++ is shutting down
+</span>npp.AddEventHandler(<span class="string">"OnBeforeShutdown"</span>, <span class="keyword">function</span>()
+    is_shutting_down = <span class="keyword">true</span>
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- The user could cancel the shutdown
+</span>npp.AddEventHandler(<span class="string">"OnCancelShutdown"</span>, <span class="keyword">function</span>()
+    is_shutting_down = <span class="keyword">false</span>
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- If it is actually shutting down, save the session file
+</span>npp.AddEventHandler(<span class="string">"OnShutdown"</span>, <span class="keyword">function</span>()
+    <span class="comment">-- Remove any dummy files, e.g. "new 1"
+</span>    <span class="keyword">for</span> id, tab <span class="keyword">in</span> <span class="global">pairs</span>(opened_files) <span class="keyword">do</span>
+        <span class="keyword">if</span> tab.name:find(<span class="string">"^new %d+$"</span>) ~= <span class="keyword">nil</span> <span class="keyword">then</span>
+            opened_files[id] = <span class="keyword">nil</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="global">table</span>.save(opened_files, npp:GetPluginsConfigDir() .. <span class="string">"\\session.lua"</span>)
+<span class="keyword">end</span>)
+
+
+<span class="comment">-- These below are merely helper fuctions to serialize tables. They were found
+</span><span class="comment">-- laying around on the Internet somewhere and worked for this case.
+</span>
+<span class="keyword">function</span> <span class="global">table</span>.save(tbl,filename )
+    <span class="keyword">local</span> <span class="keyword">function</span> exportstring( s )
+        <span class="keyword">return</span> <span class="global">string</span>.format(<span class="string">"%q"</span>, s)
+    <span class="keyword">end</span>
+    <span class="keyword">local</span> charS,charE = <span class="string">"\t"</span>,<span class="string">"\n"</span>
+    <span class="keyword">local</span> file,err = <span class="global">io</span>.open( filename, <span class="string">"wb"</span> )
+    <span class="keyword">if</span> err <span class="keyword">then</span> <span class="keyword">return</span> err <span class="keyword">end</span>
+
+    <span class="comment">-- initiate variables for save procedure
+</span>    <span class="keyword">local</span> tables,lookup = { tbl },{ [tbl] = <span class="number">1</span> }
+    file:write( <span class="string">"return {"</span>..charE )
+
+    <span class="keyword">for</span> idx,t <span class="keyword">in</span> <span class="global">ipairs</span>( tables ) <span class="keyword">do</span>
+        file:write( <span class="string">"-- Table: {"</span>..idx..<span class="string">"}"</span>..charE )
+        file:write( <span class="string">"{"</span>..charE )
+        <span class="keyword">local</span> thandled = {}
+
+        <span class="keyword">for</span> i,v <span class="keyword">in</span> <span class="global">ipairs</span>( t ) <span class="keyword">do</span>
+            thandled[i] = <span class="keyword">true</span>
+            <span class="keyword">local</span> stype = <span class="global">type</span>( v )
+            <span class="comment">-- only handle value
+</span>            <span class="keyword">if</span> stype == <span class="string">"table"</span> <span class="keyword">then</span>
+                <span class="keyword">if</span> <span class="keyword">not</span> lookup[v] <span class="keyword">then</span>
+                    <span class="global">table</span>.insert( tables, v )
+                    lookup[v] = #tables
+                <span class="keyword">end</span>
+                file:write( charS..<span class="string">"{"</span>..lookup[v]..<span class="string">"},"</span>..charE )
+            <span class="keyword">elseif</span> stype == <span class="string">"string"</span> <span class="keyword">then</span>
+                file:write(  charS..exportstring( v )..<span class="string">","</span>..charE )
+            <span class="keyword">elseif</span> stype == <span class="string">"number"</span> <span class="keyword">then</span>
+                file:write(  charS..<span class="global">tostring</span>( v )..<span class="string">","</span>..charE )
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">for</span> i,v <span class="keyword">in</span> <span class="global">pairs</span>( t ) <span class="keyword">do</span>
+            <span class="comment">-- escape handled values
+</span>            <span class="keyword">if</span> (<span class="keyword">not</span> thandled[i]) <span class="keyword">then</span>
+
+                <span class="keyword">local</span> str = <span class="string">""</span>
+                <span class="keyword">local</span> stype = <span class="global">type</span>( i )
+                <span class="comment">-- handle index
+</span>                <span class="keyword">if</span> stype == <span class="string">"table"</span> <span class="keyword">then</span>
+                    <span class="keyword">if</span> <span class="keyword">not</span> lookup[i] <span class="keyword">then</span>
+                        <span class="global">table</span>.insert( tables,i )
+                        lookup[i] = #tables
+                    <span class="keyword">end</span>
+                    str = charS..<span class="string">"[{"</span>..lookup[i]..<span class="string">"}]="</span>
+                <span class="keyword">elseif</span> stype == <span class="string">"string"</span> <span class="keyword">then</span>
+                    str = charS..<span class="string">"["</span>..exportstring( i )..<span class="string">"]="</span>
+                <span class="keyword">elseif</span> stype == <span class="string">"number"</span> <span class="keyword">then</span>
+                    str = charS..<span class="string">"["</span>..<span class="global">tostring</span>( i )..<span class="string">"]="</span>
+                <span class="keyword">end</span>
+
+                <span class="keyword">if</span> str ~= <span class="string">""</span> <span class="keyword">then</span>
+                    stype = <span class="global">type</span>( v )
+                    <span class="comment">-- handle value
+</span>                    <span class="keyword">if</span> stype == <span class="string">"table"</span> <span class="keyword">then</span>
+                        <span class="keyword">if</span> <span class="keyword">not</span> lookup[v] <span class="keyword">then</span>
+                            <span class="global">table</span>.insert( tables,v )
+                            lookup[v] = #tables
+                        <span class="keyword">end</span>
+                        file:write( str..<span class="string">"{"</span>..lookup[v]..<span class="string">"},"</span>..charE )
+                    <span class="keyword">elseif</span> stype == <span class="string">"string"</span> <span class="keyword">then</span>
+                        file:write( str..exportstring( v )..<span class="string">","</span>..charE )
+                    <span class="keyword">elseif</span> stype == <span class="string">"number"</span> <span class="keyword">then</span>
+                        file:write( str..<span class="global">tostring</span>( v )..<span class="string">","</span>..charE )
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        file:write( <span class="string">"},"</span>..charE )
+    <span class="keyword">end</span>
+    file:write( <span class="string">"}"</span> )
+    file:close()
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> <span class="global">table</span>.<span class="global">load</span>( sfile )
+    <span class="keyword">local</span> ftables,err = <span class="global">loadfile</span>( sfile )
+    <span class="keyword">if</span> err <span class="keyword">then</span> <span class="keyword">return</span> _,err <span class="keyword">end</span>
+    <span class="keyword">local</span> tables = ftables()
+    <span class="keyword">for</span> idx = <span class="number">1</span>,#tables <span class="keyword">do</span>
+        <span class="keyword">local</span> tolinki = {}
+        <span class="keyword">for</span> i,v <span class="keyword">in</span> <span class="global">pairs</span>( tables[idx] ) <span class="keyword">do</span>
+            <span class="keyword">if</span> <span class="global">type</span>( v ) == <span class="string">"table"</span> <span class="keyword">then</span>
+                tables[idx][i] = tables[v[<span class="number">1</span>]]
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> <span class="global">type</span>( i ) == <span class="string">"table"</span> <span class="keyword">and</span> tables[i[<span class="number">1</span>]] <span class="keyword">then</span>
+                <span class="global">table</span>.insert( tolinki,{ i,tables[i[<span class="number">1</span>]] } )
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="comment">-- link indices
+</span>        <span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="global">ipairs</span>( tolinki ) <span class="keyword">do</span>
+            tables[idx][v[<span class="number">2</span>]],tables[idx][v[<span class="number">1</span>]] =  tables[idx][v[<span class="number">1</span>]],<span class="keyword">nil</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">return</span> tables[<span class="number">1</span>]
+<span class="keyword">end</span></pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-09-09 09:10:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>

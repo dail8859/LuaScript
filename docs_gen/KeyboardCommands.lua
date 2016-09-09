@@ -1,13 +1,13 @@
 --- Keyboard Commands
 -- @section keyboardcommands
 
---- Start of key messages Move caret down one line.
+--- Move caret down one line.
 -- @function LineDown
 
 --- Move caret down one line extending selection to new caret position.
 -- @function LineDownExtend
 
---- RectExtended rectangular selection moves Move caret down one line, extending rectangular selection to new caret position.
+--- Move caret down one line, extending rectangular selection to new caret position.
 -- @function LineDownRectExtend
 
 --- Scroll the document down, keeping the caret visible.
@@ -256,20 +256,20 @@
 --- Dedent the selected lines.
 -- @function BackTab
 
---- 
+--- Duplicates the current selection.
 -- @function SelectionDuplicate
 
---- 
+--- Scroll the document so that the caret is in the center of the screen.
 -- @function VerticalCentreCaret
 
---- 
+--- Move the selected lines up one line, shifting the line above after the selection.
 -- @function MoveSelectedLinesUp
 
---- 
+--- Move the selected lines down one line, shifting the line below before the selection.
 -- @function MoveSelectedLinesDown
 
---- 
+--- Scroll the document to the start without changing the selection.
 -- @function ScrollToStart
 
---- 
+--- Scroll the document to the end without changing the selection.
 -- @function ScrollToEnd
