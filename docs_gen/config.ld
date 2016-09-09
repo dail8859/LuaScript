@@ -20,7 +20,7 @@ custom_see_handler('^(SCI_[%w_]+)$', function(name)
 	return name, url
 end)
 
-project = 'LuaScript <sub>v0.4.0</sub>'
+project = 'LuaScript <sub>v0.5.0</sub>'
 title = 'LuaScript Reference'
 description = 'Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities.'
 full_description = [[LuaScript allows you to customize Notepad++.
@@ -30,7 +30,7 @@ full_description = [[LuaScript allows you to customize Notepad++.
 * Full Lua 5.3 functionality
 * Interactive console with auto-completion
 
-The startup script is automatically ran when Notepad++ is launched. This is used to register shortcuts and callbacks to extend Notepad++'s functionality
+The startup script is automatically ran when Notepad++ is launched. This is used to register shortcuts and callbacks to extend Notepad++'s functionality.
 
 Issues or feature requests can be made on the GitHub [issue tracker](https://github.com/dail8859/LuaScript/issues).
 

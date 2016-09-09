@@ -1,7 +1,11 @@
 --- 
--- Description
+-- Used for lexing and styling a document. The same functionality can be achieved 
+-- using lower-level Scintilla messages, this is merely to provide a higher-level interface.
+-- Make sure to check the examples.
 -- 
 -- @classmod Styler
+-- @see Notepad.AddEventHandler
+-- 
 
 --- Start setting styles from startPos for length with initial style initStyle.
 -- @function StartStyling

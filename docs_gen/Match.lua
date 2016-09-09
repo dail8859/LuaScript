@@ -5,10 +5,12 @@
 -- place. Also, do not attempt to store the match object for later access outside the loop; it will not 
 -- be usable.
 -- 
--- @usage for m in editor:match("teh") do m:replace("the") end
--- 
 -- @classmod Match
 -- @see Editor:match
+-- 
+-- @usage for m in editor:match("teh") do
+--     m:replace("the")
+-- end
 
 --- Beginning position of the located match.
 -- @tparam[readonly] int pos

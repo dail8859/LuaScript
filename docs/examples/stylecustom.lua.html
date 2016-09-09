@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.5.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
+  <li><strong>stylecustom.lua</strong></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><a href="../classes/Styler.html">Styler</a></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>stylecustom.lua</h2>
+<pre>
+<span class="comment">--[[ An example file
+
+proc clip(int a)
+« Clip into the positive zone »
+if (a &gt; 0) a
+0
+end
+]]</span>
+
+<span class="comment">-- Define style numbers
+</span>S_DEFAULT = <span class="number">0</span>
+S_IDENTIFIER = <span class="number">1</span>
+S_KEYWORD = <span class="number">2</span>
+S_UNICODECOMMENT = <span class="number">3</span>
+
+<span class="comment">-- Anytime a file is switched, check to see if it needs styled
+</span>npp.AddEventHandler(<span class="string">"OnSwitchFile"</span>, <span class="keyword">function</span>(filename, bufferid)
+    <span class="keyword">if</span> npp:GetExtPart() == <span class="string">".abc"</span> <span class="keyword">then</span>
+        <span class="comment">-- Add the event handler for our custom style function
+</span>        npp.AddEventHandler(<span class="string">"OnStyle"</span>, CustomStyle)
+
+        <span class="comment">-- Make sure to set the lexer as a custom container
+</span>        editor.Lexer = SCLEX_CONTAINER
+
+        <span class="comment">-- Set up the styles as appropriate
+</span>        editor.StyleFore[S_DEFAULT] = <span class="number">0x7f007f</span>
+        editor.StyleBold[S_DEFAULT] = <span class="keyword">true</span>
+        editor.StyleFore[S_IDENTIFIER] = <span class="number">0x000000</span>
+        editor.StyleFore[S_KEYWORD] = <span class="number">0x800000</span>
+        editor.StyleBold[S_KEYWORD] = <span class="keyword">true</span>
+        editor.StyleFore[S_UNICODECOMMENT] = <span class="number">0x008000</span>
+        editor.StyleFont[S_UNICODECOMMENT] = <span class="string">"Georgia"</span>
+        editor.StyleItalic[S_UNICODECOMMENT] = <span class="keyword">true</span>
+        editor.StyleSize[S_UNICODECOMMENT] = <span class="number">9</span>
+
+        <span class="comment">-- Clear any style and re-lex the entire document
+</span>        editor:ClearDocumentStyle()
+        editor:Colourise(<span class="number">0</span>, -<span class="number">1</span>)
+    <span class="keyword">else</span>
+        <span class="comment">-- Can remove the handler if it's not needed
+</span>        npp.RemoveEventHandler(<span class="string">"OnStyle"</span>, CustomStyle)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- Style the document. Handles UTF-8 characters
+</span><span class="keyword">function</span> CustomStyle(styler)
+    identifierCharacters = <span class="string">"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"</span>
+
+    styler:StartStyling(styler.startPos, styler.lengthDoc, styler.initStyle)
+    <span class="keyword">while</span> styler:More() <span class="keyword">do</span>
+        <span class="comment">-- Exit state if needed
+</span>        <span class="keyword">if</span> styler:State() == S_IDENTIFIER <span class="keyword">then</span>
+            <span class="keyword">if</span> <span class="keyword">not</span> identifierCharacters:find(styler:Current(), <span class="number">1</span>, <span class="keyword">true</span>) <span class="keyword">then</span>
+                identifier = styler:Token()
+                <span class="keyword">if</span> identifier == <span class="string">"if"</span> <span class="keyword">or</span> identifier == <span class="string">"end"</span> <span class="keyword">then</span>
+                    styler:ChangeState(S_KEYWORD)
+                <span class="keyword">end</span>
+                styler:SetState(S_DEFAULT)
+            <span class="keyword">end</span>
+        <span class="keyword">elseif</span> styler:State() == S_UNICODECOMMENT <span class="keyword">then</span>
+            <span class="keyword">if</span> styler:Match(<span class="string">"»"</span>) <span class="keyword">then</span>
+                styler:ForwardSetState(S_DEFAULT)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">-- Enter state if needed
+</span>        <span class="keyword">if</span> styler:State() == S_DEFAULT <span class="keyword">then</span>
+            <span class="keyword">if</span> styler:Match(<span class="string">"«"</span>) <span class="keyword">then</span>
+                styler:SetState(S_UNICODECOMMENT)
+            <span class="keyword">elseif</span> identifierCharacters:find(styler:Current(), <span class="number">1</span>, <span class="keyword">true</span>) <span class="keyword">then</span>
+                styler:SetState(S_IDENTIFIER)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        styler:Forward()
+    <span class="keyword">end</span>
+    styler:EndStyling()
+<span class="keyword">end</span></pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-09-09 11:11:46 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>
