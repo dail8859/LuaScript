@@ -2174,10 +2174,10 @@ bool LuaExtension::OnShutdown() {
 }
 
 bool LuaExtension::OnModification(const SCNotification *sc) {
-	const std::string text(sc->text, sc->length); // sc->text is not null terminated
 	int modType = sc->modificationType;
 
-	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length, text.c_str(), sc->linesAdded);
+	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length,
+		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
 }
 
 bool LuaExtension::NeedsOnClose() {
