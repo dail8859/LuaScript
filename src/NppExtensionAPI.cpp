@@ -23,28 +23,21 @@
 NppExtensionAPI::~NppExtensionAPI() {
 }
 
-HWND NppExtensionAPI::getScintillaHandle(NppExtensionAPI::Pane p) {
-	if (p == NppExtensionAPI::paneEditor) {// Get the current scintilla
-		int which = -1;
-		SendMessage(m_nppData->_nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-		if (which == -1) return nullptr;
-		return (which == 0) ? m_nppData->_scintillaMainHandle : m_nppData->_scintillaSecondHandle;
-	}
-	else return p;
+NppExtensionAPI::Pane NppExtensionAPI::getCurrentPane() {
+	int which = 0;
+	SendMessage(m_nppData->_nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
 
-	return nullptr;
+	// Luckily Notepad++'s index matches up with the scis array, it will either be 0 or 1
+	return static_cast<NppExtensionAPI::Pane>(which);
 }
 
 sptr_t NppExtensionAPI::Send(NppExtensionAPI::Pane p, unsigned int msg, uptr_t wParam, sptr_t lParam) {
-	HWND sci = getScintillaHandle(p);
-
-	if (sci == nullptr) {
-		// This is bad :(
-		MessageBox(NULL, TEXT("sci == nullptr"), TEXT("sci == nullptr"), MB_OK);
-		return 0;
-	}
-
-	return SendMessage(sci, msg, wParam, lParam);
+	// Just use SendMessage() for Notepad++, for any Scintilla handle use the ScintillaWindow wrapper
+	// that allows for more effecient calls.
+	if (p == NppExtensionAPI::application)
+		return SendMessage(m_nppData->_nppHandle, msg, wParam, lParam);
+	else
+		return scis[p].Call(msg, wParam, lParam);
 }
 
 char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, int start, int end) {

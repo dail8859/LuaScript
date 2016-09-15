@@ -38,22 +38,25 @@ inline uptr_t UptrFromString(const char *cp) {
 
 class NppExtensionAPI final {
 public:
-	typedef HWND  Pane;
-	Pane paneEditor;
-	Pane paneEditorMain;
-	Pane paneEditorSecondary;
-	Pane paneOutput;
-	Pane application;
+	enum Pane {
+		paneEditorMain,
+		paneEditorSecondary,
+		paneOutput,
+		application
+	};
+
+	GUI::ScintillaWindow scis[3];
 
 	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { 
 		m_nppData = nppData;
-		application = m_nppData->_nppHandle;
-		paneEditor = 0;
-		paneEditorMain = m_nppData->_scintillaMainHandle;
-		paneEditorSecondary = m_nppData->_scintillaSecondHandle;
-		paneOutput = cd->getScintillaHwnd();
+
+		scis[paneEditorMain].SetID(m_nppData->_scintillaMainHandle);
+		scis[paneEditorSecondary].SetID(m_nppData->_scintillaSecondHandle);
+		scis[paneOutput].SetID(cd->getScintillaHwnd());
 	}
 	~NppExtensionAPI();
+
+	Pane getCurrentPane();
 
 	sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);
 	char *Range(Pane p, int start, int end);
@@ -74,6 +77,5 @@ public:
 private:
 	ConsoleDialog *cd;
 	const NppData* m_nppData;
-	HWND getScintillaHandle(Pane p);
 };
 

@@ -1415,14 +1415,14 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	lua_register(luaState, "print", cf_global_print);
 
 	// pane objects
-	push_pane_object(luaState, host->paneEditor);
-	lua_setglobal(luaState, "editor");
-
 	push_pane_object(luaState, host->paneEditorMain);
 	lua_setglobal(luaState, "editor1");
 
 	push_pane_object(luaState, host->paneEditorSecondary);
 	lua_setglobal(luaState, "editor2");
+
+	lua_getglobal(luaState, "editor1");
+	lua_setglobal(luaState, "editor");
 
 	push_pane_object(luaState, host->paneOutput);
 	lua_setglobal(luaState, "console");
@@ -1698,6 +1698,16 @@ bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
 }
 
 bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
+	// Switching to a new file also means it could update the current scintilla handle
+	// so update "editor" to point to the right instance
+	if (host->getCurrentPane() == host->paneEditorMain) {
+		lua_getglobal(luaState, "editor1");
+	}
+	else {
+		lua_getglobal(luaState, "editor2");
+	}
+	lua_setglobal(luaState, "editor");
+
 	return CallNamedFunction("OnSwitchFile", "si", filename, bufferid);
 }
 
@@ -2054,7 +2064,7 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 				sc.lengthDoc = lengthDoc;
 				sc.initStyle = initStyle;
 				sc.styler = styler;
-				sc.codePage = static_cast<int>(host->Send(host->paneEditor, SCI_GETCODEPAGE));
+				sc.codePage = static_cast<int>(host->Send(host->getCurrentPane(), SCI_GETCODEPAGE));
 
 				lua_newtable(luaState);
 
