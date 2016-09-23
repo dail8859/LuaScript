@@ -71,8 +71,8 @@ private:
 	void historyEnd();
 
 	tTbData m_data;
-	GUI::ScintillaWindow  m_sciOutput;
-	GUI::ScintillaWindow  m_sciInput;
+	GUI::ScintillaWindow m_sciOutput;
+	GUI::ScintillaWindow m_sciInput;
 
 	LuaConsole *m_console;
 	std::string m_prompt;
