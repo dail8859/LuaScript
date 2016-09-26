@@ -1698,6 +1698,8 @@ bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
 }
 
 bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
+	if (!luaState) return false;
+
 	// Switching to a new file also means it could update the current scintilla handle
 	// so update "editor" to point to the right instance
 	if (host->getCurrentPane() == host->paneEditorMain) {
