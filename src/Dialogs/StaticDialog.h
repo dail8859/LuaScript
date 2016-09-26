@@ -28,11 +28,9 @@
 #include "Notepad_plus_msgs.h"
 #include "Window.h"
 
-
 typedef HRESULT (WINAPI * ETDTProc) (HWND, DWORD);
 
 enum class PosAlign { left, right, top, bottom };
-
 
 struct DLGTEMPLATEEX
 {
@@ -49,8 +47,6 @@ struct DLGTEMPLATEEX
       // The structure has more fields but are variable length
 };
 
-
-
 class StaticDialog : public Window
 {
 public :
@@ -58,8 +54,7 @@ public :
 
 	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
 
-    virtual bool isCreated() const
-	{
+	virtual bool isCreated() const {
 		return (_hSelf != NULL);
 	}
 
@@ -74,14 +69,13 @@ public :
 		return (BST_CHECKED == ::SendMessage(::GetDlgItem(_hSelf, checkControlID), BM_GETCHECK, 0, 0));
 	}
 
-    virtual void destroy() override;
-
+	virtual void destroy() override;
 
 protected:
 	RECT _rc;
 	static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 
-    void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT & point);
+	void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT & point);
 	HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate);
 };

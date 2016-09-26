@@ -27,15 +27,19 @@
 #pragma once
 #include <windows.h>
 
+
+
+
 class Window
 {
 public:
 	//! \name Constructors & Destructor
 	//@{
 	Window() = default;
-	//Window(const Window&) = delete;
+	Window(const Window&) = delete;
 	virtual ~Window() = default;
 	//@}
+
 
 	virtual void init(HINSTANCE hInst, HWND parent)
 	{
@@ -50,11 +54,13 @@ public:
 		::ShowWindow(_hSelf, toShow ? SW_SHOW : SW_HIDE);
 	}
 
+
 	virtual void reSizeTo(RECT & rc) // should NEVER be const !!!
 	{
 		::MoveWindow(_hSelf, rc.left, rc.top, rc.right, rc.bottom, TRUE);
 		redraw();
 	}
+
 
 	virtual void reSizeToWH(RECT& rc) // should NEVER be const !!!
 	{
@@ -62,12 +68,14 @@ public:
 		redraw();
 	}
 
+
 	virtual void redraw(bool forceUpdate = false) const
 	{
 		::InvalidateRect(_hSelf, nullptr, TRUE);
 		if (forceUpdate)
 			::UpdateWindow(_hSelf);
 	}
+
 
 	virtual void getClientRect(RECT & rc) const
 	{
@@ -102,7 +110,6 @@ public:
 
 	HWND getHSelf() const
 	{
-		//assert(_hSelf != 0);
 		return _hSelf;
 	}
 
@@ -120,7 +127,9 @@ public:
 		return _hInst;
 	}
 
+
 	Window& operator = (const Window&) = delete;
+
 
 protected:
 	HINSTANCE _hInst = NULL;

@@ -40,18 +40,6 @@ ConsoleDialog::ConsoleDialog() :
 {
 }
 
-ConsoleDialog::ConsoleDialog(const ConsoleDialog& other) :
-	DockingDlgInterface(other),
-	m_data(other.m_data),
-	m_console(other.m_console),
-	m_prompt(other.m_prompt),
-	m_hTabIcon(NULL),
-	m_history(other.m_history),
-	m_currentHistory(other.m_currentHistory),
-	m_hContext(NULL)
-{
-}
-
 ConsoleDialog::~ConsoleDialog()
 {
 	if (m_sciOutput.GetID())

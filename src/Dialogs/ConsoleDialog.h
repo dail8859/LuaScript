@@ -36,7 +36,7 @@ class ConsoleDialog : public DockingDlgInterface
 {
 public:
 	ConsoleDialog();
-	ConsoleDialog(const ConsoleDialog& other);
+	ConsoleDialog(const ConsoleDialog& other) = delete;
 	~ConsoleDialog();
 
 	void initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole *console);

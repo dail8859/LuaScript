@@ -25,8 +25,7 @@
 // along with this program; if not, write to the Free Software
 
 
-#ifndef DOCKINGDLGINTERFACE_H
-#define DOCKINGDLGINTERFACE_H
+#pragma once
 
 #include "dockingResource.h"
 #include "Docking.h"
@@ -38,21 +37,18 @@
 
 typedef std::basic_string<TCHAR> generic_string;
 
+
 class DockingDlgInterface : public StaticDialog
 {
 public:
 	DockingDlgInterface() = default;
-
-	explicit DockingDlgInterface(int dlgID)
-		: _dlgID(dlgID)
-	{}
-
+	explicit DockingDlgInterface(int dlgID): _dlgID(dlgID) {}
 
 	virtual void init(HINSTANCE hInst, HWND parent)
 	{
 		StaticDialog::init(hInst, parent);
 		TCHAR temp[MAX_PATH];
-		::GetModuleFileName((HMODULE)hInst, temp, MAX_PATH);
+		::GetModuleFileName(reinterpret_cast<HMODULE>(hInst), temp, MAX_PATH);
 		_moduleName = ::PathFindFileName(temp);
 	}
 
@@ -66,7 +62,7 @@ public:
 
 		// user information
 		data->hClient = _hSelf;
-		data->pszName = (TCHAR *)_pluginName.c_str();
+		data->pszName = _pluginName.c_str();
 
 		// supported features by plugin
 		data->uMask = 0;
@@ -77,17 +73,16 @@ public:
 
 	virtual void updateDockingDlg()
 	{
-		::SendMessage(_hParent, NPPM_DMMUPDATEDISPINFO, 0, (LPARAM)_hSelf);
+		::SendMessage(_hParent, NPPM_DMMUPDATEDISPINFO, 0, reinterpret_cast<LPARAM>(_hSelf));
 	}
 
 	virtual void destroy() {}
 
 	virtual void setBackgroundColor(COLORREF) {}
-
 	virtual void setForegroundColor(COLORREF) {}
 
 	virtual void display(bool toShow = true) const {
-		::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, (LPARAM)_hSelf);
+		::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
 	}
 
 	bool isClosed() const {
@@ -105,52 +100,50 @@ public:
 protected:
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 	{
-		switch (message)
+		switch (message) 
 		{
 
-		case WM_NOTIFY:
-		{
-			LPNMHDR	pnmh = (LPNMHDR)lParam;
-
-			if (pnmh->hwndFrom == _hParent)
+			case WM_NOTIFY: 
 			{
-				switch (LOWORD(pnmh->code))
+				LPNMHDR	pnmh = reinterpret_cast<LPNMHDR>(lParam);
+
+				if (pnmh->hwndFrom == _hParent)
 				{
-				case DMN_CLOSE:
-				{
-					break;
+					switch (LOWORD(pnmh->code))
+					{
+						case DMN_CLOSE:
+						{
+							break;
+						}
+						case DMN_FLOAT:
+						{
+							_isFloating = true;
+							break;
+						}
+						case DMN_DOCK:
+						{
+							_iDockedPos = HIWORD(pnmh->code);
+							_isFloating = false;
+							break;
+						}
+						default:
+							break;
+					}
 				}
-				case DMN_FLOAT:
-				{
-					_isFloating = true;
-					break;
-				}
-				case DMN_DOCK:
-				{
-					_iDockedPos = HIWORD(pnmh->code);
-					_isFloating = false;
-					break;
-				}
-				default:
-					break;
-				}
+				break;
 			}
-			break;
-		}
-		default:
-			break;
+			default:
+				break;
 		}
 		return FALSE;
 	};
 
 	// Handles
-	HWND			_HSource = NULL;
-	int				_dlgID = -1;
-	bool            _isFloating = true;
-	int				_iDockedPos = 0;
-	generic_string  _moduleName;
-	generic_string  _pluginName;
-	bool			_isClosed = false;
+	HWND _HSource = NULL;
+	int _dlgID = -1;
+	bool _isFloating = true;
+	int _iDockedPos = 0;
+	generic_string _moduleName;
+	generic_string _pluginName;
+	bool _isClosed = false;
 };
-
-#endif // DOCKINGDLGINTERFACE_H
