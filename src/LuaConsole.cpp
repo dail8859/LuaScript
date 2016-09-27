@@ -148,6 +148,9 @@ void LuaConsole::setupOutput(GUI::ScintillaWindow &sci) {
 }
 
 bool LuaConsole::processNotification(const SCNotification *scn) {
+	enum AutoCFinish { acf_none, acf_brackets, acf_parens };
+	static AutoCFinish acf = acf_none;
+
 	switch (scn->nmhdr.code) {
 		case SCN_CHARADDED: {
 			if ((scn->ch == '.' || scn->ch == ':') && m_sciInput->Call(SCI_GETCURRENTPOS) > 1) {
@@ -160,8 +163,43 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 		}
 		case SCN_UPDATEUI: {
 			braceMatch();
+			if (acf != acf_none) {
+				m_sciInput->CallString(SCI_ADDTEXT, 2, acf == acf_brackets ? "[]" : "()");
+				m_sciInput->Call(SCI_CHARLEFT);
+				acf = acf_none;
+			}
 			break;
 		}
+		case SCN_AUTOCSELECTION: {
+			auto prop = SciIFaceTable.FindProperty(scn->text);
+			if (prop != nullptr && prop->paramType != iface_void) {
+				acf = acf_brackets;
+				break;
+			}
+			else {
+				prop = NppIFaceTable.FindProperty(scn->text);
+				if (prop != nullptr && prop->paramType != iface_void) {
+					acf = acf_brackets;
+					break;
+				}
+			}
+
+			auto func = SciIFaceTable.FindFunction(scn->text);
+			if (func != nullptr) {
+				acf = acf_parens;
+				break;
+			}
+			else {
+				func = NppIFaceTable.FindFunction(scn->text);
+				if (func != nullptr) {
+					acf = acf_parens;
+					break;
+				}
+			}
+
+			break;
+		}
+
 	}
 	return true;
 }
