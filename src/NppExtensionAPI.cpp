@@ -20,8 +20,7 @@
 #include "NppExtensionAPI.h"
 #include "Window.h"
 
-NppExtensionAPI::~NppExtensionAPI() {
-}
+NppExtensionAPI::~NppExtensionAPI() {}
 
 NppExtensionAPI::Pane NppExtensionAPI::getCurrentPane() {
 	int which = 0;

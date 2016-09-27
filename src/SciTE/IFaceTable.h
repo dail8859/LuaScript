@@ -111,13 +111,13 @@ inline bool IFacePropertyIsScriptable(const IFaceProperty &p) {
 
 class IFaceTableInterface {
 public:
-	virtual const IFaceConstant *FindConstant(const char *name) = 0;
-	virtual const IFaceFunction *FindFunction(const char *name) = 0;
-	virtual const IFaceFunction *FindFunctionByConstantName(const char *name) = 0;
-	virtual const IFaceProperty *FindProperty(const char *name) = 0;
-	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) = 0;
-	virtual const IFaceFunction *GetFunctionByMessage(int message) = 0;
-	virtual IFaceFunction GetPropertyFuncByMessage(int message) = 0;
+	virtual const IFaceConstant *FindConstant(const char *name) const = 0;
+	virtual const IFaceFunction *FindFunction(const char *name) const = 0;
+	virtual const IFaceFunction *FindFunctionByConstantName(const char *name) const = 0;
+	virtual const IFaceProperty *FindProperty(const char *name) const = 0;
+	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const = 0;
+	virtual const IFaceFunction *GetFunctionByMessage(int message) const = 0;
+	virtual IFaceFunction GetPropertyFuncByMessage(int message) const = 0;
 };
 
 class IFaceTable : public IFaceTableInterface {
@@ -141,11 +141,15 @@ public:
 	const std::vector<IFaceProperty> &properties;
 
 	// IFaceTableInterface
-	const IFaceConstant *FindConstant(const char *name);
-	const IFaceFunction *FindFunction(const char *name);
-	const IFaceFunction *FindFunctionByConstantName(const char *name);
-	const IFaceProperty *FindProperty(const char *name);
-	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
-	const IFaceFunction *GetFunctionByMessage(int message);
-	IFaceFunction GetPropertyFuncByMessage(int message);
+	const IFaceConstant *FindConstant(const char *name) const;
+	const IFaceFunction *FindFunction(const char *name) const;
+	const IFaceFunction *FindFunctionByConstantName(const char *name) const;
+	const IFaceProperty *FindProperty(const char *name) const;
+	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const;
+	const IFaceFunction *GetFunctionByMessage(int message) const;
+	IFaceFunction GetPropertyFuncByMessage(int message) const;
+
+	std::vector<std::string> GetAllConstantNames() const;
+	std::vector<std::string> GetAllFunctionNames() const;
+	std::vector<std::string> GetAllPropertyNames() const;
 };

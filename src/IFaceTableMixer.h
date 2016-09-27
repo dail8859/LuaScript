@@ -30,13 +30,13 @@ public:
 	void AddIFaceTable(IFaceTableInterface *iface) { ifaces.push_back(iface); }
 
 	// IFaceTableInterface
-	const IFaceConstant *FindConstant(const char *name);
-	const IFaceFunction *FindFunction(const char *name);
-	const IFaceFunction *FindFunctionByConstantName(const char *name);
-	const IFaceProperty *FindProperty(const char *name);
-	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint);
-	const IFaceFunction *GetFunctionByMessage(int message);
-	IFaceFunction GetPropertyFuncByMessage(int message);
+	const IFaceConstant *FindConstant(const char *name) const;
+	const IFaceFunction *FindFunction(const char *name) const;
+	const IFaceFunction *FindFunctionByConstantName(const char *name) const;
+	const IFaceProperty *FindProperty(const char *name) const;
+	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const;
+	const IFaceFunction *GetFunctionByMessage(int message) const;
+	IFaceFunction GetPropertyFuncByMessage(int message) const;
 };
 
 #endif

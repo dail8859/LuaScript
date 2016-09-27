@@ -18,7 +18,7 @@
 
 #include "IFaceTableMixer.h"
 
-const IFaceConstant *IFaceTableMixer::FindConstant(const char *name) {
+const IFaceConstant *IFaceTableMixer::FindConstant(const char *name) const {
 	for (auto const &iface : ifaces) {
 		const IFaceConstant *ret = iface->FindConstant(name);
 		if (ret != nullptr) return ret;
@@ -26,7 +26,7 @@ const IFaceConstant *IFaceTableMixer::FindConstant(const char *name) {
 	return nullptr;
 }
 
-const IFaceFunction *IFaceTableMixer::FindFunction(const char *name) {
+const IFaceFunction *IFaceTableMixer::FindFunction(const char *name) const {
 	for (auto const &iface : ifaces) {
 		const IFaceFunction *ret = iface->FindFunction(name);
 		if (ret != nullptr) return ret;
@@ -34,7 +34,7 @@ const IFaceFunction *IFaceTableMixer::FindFunction(const char *name) {
 	return nullptr;
 }
 
-const IFaceFunction *IFaceTableMixer::FindFunctionByConstantName(const char *name) {
+const IFaceFunction *IFaceTableMixer::FindFunctionByConstantName(const char *name) const {
 	for (auto const &iface : ifaces) {
 		const IFaceFunction *ret = iface->FindFunctionByConstantName(name);
 		if (ret != nullptr) return ret;
@@ -42,7 +42,7 @@ const IFaceFunction *IFaceTableMixer::FindFunctionByConstantName(const char *nam
 	return nullptr;
 }
 
-const IFaceProperty *IFaceTableMixer::FindProperty(const char *name) {
+const IFaceProperty *IFaceTableMixer::FindProperty(const char *name) const {
 	for (auto const &iface : ifaces) {
 		const IFaceProperty *ret = iface->FindProperty(name);
 		if (ret != nullptr) return ret;
@@ -50,7 +50,7 @@ const IFaceProperty *IFaceTableMixer::FindProperty(const char *name) {
 	return nullptr;
 }
 
-int IFaceTableMixer::GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) {
+int IFaceTableMixer::GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const {
 	for (auto const &iface : ifaces) {
 		int ret = iface->GetConstantName(value, nameOut, nameBufferLen, hint);
 		if (ret != 0) return ret;
@@ -58,7 +58,7 @@ int IFaceTableMixer::GetConstantName(int value, char *nameOut, unsigned nameBuff
 	return 0;
 }
 
-const IFaceFunction *IFaceTableMixer::GetFunctionByMessage(int message) {
+const IFaceFunction *IFaceTableMixer::GetFunctionByMessage(int message) const {
 	for (auto const &iface : ifaces) {
 		const IFaceFunction *ret = iface->GetFunctionByMessage(message);
 		if (ret != nullptr) return ret;
@@ -66,7 +66,7 @@ const IFaceFunction *IFaceTableMixer::GetFunctionByMessage(int message) {
 	return nullptr;
 }
 
-IFaceFunction IFaceTableMixer::GetPropertyFuncByMessage(int message) {
+IFaceFunction IFaceTableMixer::GetPropertyFuncByMessage(int message) const {
 	for (auto const &iface : ifaces) {
 		IFaceFunction ret = iface->GetPropertyFuncByMessage(message);
 		if (ret.value != -1) return ret;
