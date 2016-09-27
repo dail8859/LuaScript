@@ -84,7 +84,6 @@ ConsoleDialog::~ConsoleDialog()
 void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole* console)
 {
 	DockingDlgInterface::init(hInst, nppData._nppHandle);
-	Window::init(hInst, nppData._nppHandle);
 
 	m_console = console;
 

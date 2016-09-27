@@ -156,60 +156,6 @@ inline int absolute_index(lua_State *L, int index) {
 	return ((index < 0) && (index != LUA_REGISTRYINDEX)) ? (lua_gettop(L) + index + 1) : index;
 }
 
-// copy the contents of one table into another returning the size
-static int merge_table(lua_State *L, int destTableIdx, int srcTableIdx, bool copyMetatable = false) {
-	int count = 0;
-	if (lua_istable(L, destTableIdx) && lua_istable(L, srcTableIdx)) {
-		srcTableIdx = absolute_index(L, srcTableIdx);
-		destTableIdx = absolute_index(L, destTableIdx);
-		if (copyMetatable) {
-			lua_getmetatable(L, srcTableIdx);
-			lua_setmetatable(L, destTableIdx);
-		}
-		lua_pushnil(L); // first key
-		while (lua_next(L, srcTableIdx) != 0) {
-			// key is at index -2 and value at index -1
-			lua_pushvalue(L, -2); // the key
-			lua_insert(L, -2); // leaving value (-1), key (-2), key (-3)
-			lua_rawset(L, destTableIdx);
-			++count;
-		}
-	}
-	return count;
-}
-
-// make a copy of a table (not deep), leaving it at the top of the stack
-static bool clone_table(lua_State *L, int srcTableIdx, bool copyMetatable = false) {
-	if (lua_istable(L, srcTableIdx)) {
-		srcTableIdx = absolute_index(L, srcTableIdx);
-		lua_newtable(L);
-		merge_table(L, -1, srcTableIdx, copyMetatable);
-		return true;
-	} else {
-		lua_pushnil(L);
-		return false;
-	}
-}
-
-// loop through each key in the table and set its value to nil
-static void clear_table(lua_State *L, int tableIdx, bool clearMetatable = true) {
-	if (lua_istable(L, tableIdx)) {
-		tableIdx = absolute_index(L, tableIdx);
-		if (clearMetatable) {
-			lua_pushnil(L);
-			lua_setmetatable(L, tableIdx);
-		}
-		lua_pushnil(L); // first key
-		while (lua_next(L, tableIdx) != 0) {
-			// key is at index -2 and value at index -1
-			lua_pop(L, 1); // discard value
-			lua_pushnil(L);
-			lua_rawset(L, tableIdx); // table[key] = nil
-			lua_pushnil(L); // get 'new' first key
-		}
-	}
-}
-
 // Lua 5.1's checkudata throws an error on failure, we don't want that, we want NULL
 static void *checkudata(lua_State *L, int ud, const char *tname) {
 	void *p = lua_touserdata(L, ud);
@@ -1336,63 +1282,10 @@ static int LuaPanicFunction(lua_State *L) {
 	return 1;
 }
 
-static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
-	bool reload = forceReload;
-	if (checkProperties) {
-		int resetMode = GetPropertyInt("ext.lua.reset");
-		if (resetMode >= 1) {
-			reload = true;
-		}
-	}
-
+static bool InitGlobalScope() {
 	tracebackEnabled = (GetPropertyInt("ext.lua.debug.traceback") == 1);
 
-	if (luaState) {
-		// The Clear / Load used to use metatables to setup without having to re-run the scripts,
-		// but this was unreliable e.g. a few library functions and some third-party code use
-		// rawget to access functions in the global scope.  So the new method makes a shallow
-		// copy of the initialized global environment, and uses that to re-init the scope.
-
-		if (!reload) {
-			lua_getfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
-			if (lua_istable(luaState, -1)) {
-				lua_pushglobaltable(luaState);
-				clear_table(luaState, -1, true);
-				merge_table(luaState, -1, -2, true);
-				lua_pop(luaState, 2);
-
-				// restore initial package.loaded state
-				lua_getfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialPackageState");
-				lua_getfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
-				clear_table(luaState, -1, false);
-				merge_table(luaState, -1, -2, false);
-				lua_pop(luaState, 2);
-
-				return true;
-			} else {
-				lua_pop(luaState, 1);
-			}
-		}
-
-		// reload mode is enabled, or else the initial state has been broken.
-		// either way, we're going to need a "new" initial state.
-
-		lua_pushnil(luaState);
-		lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
-
-		// Don't replace global scope using new_table, because then startup script is
-		// bound to a different copy of the globals than the extension script.
-		lua_pushglobaltable(luaState);
-		clear_table(luaState, -1, true);
-		lua_pop(luaState, 1);
-
-		// Lua 5.1: _LOADED is in LUA_REGISTRYINDEX, so it must be cleared before
-		// loading libraries or they will not load because Lua's package system
-		// thinks they are already loaded
-		lua_pushnil(luaState);
-		lua_setfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
-
-	} else if (!luaDisabled) {
+	if (!luaDisabled) {
 		luaState = luaL_newstate();
 		if (!luaState) {
 			luaDisabled = true;
@@ -1401,7 +1294,8 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 		}
 		lua_atpanic(luaState, LuaPanicFunction);
 
-	} else {
+	}
+	else {
 		return false;
 	}
 
@@ -1487,20 +1381,6 @@ static bool InitGlobalScope(bool checkProperties, bool forceReload = false) {
 	// remove the global environment table from the stack
 	lua_pop(luaState, 1);
 
-	// Clone the initial state (including metatable) in the registry so that it can be restored.
-	// (If reset==1 this will not be used, but this is a shallow copy, not very expensive, and
-	// who knows what the value of reset will be the next time InitGlobalScope runs.)
-	lua_pushglobaltable(luaState);
-	clone_table(luaState, -1, true);
-	lua_remove(luaState, -2); // remove the global table under the newly cloned table
-	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialState");
-
-	// Clone loaded packages (package.loaded) state in the registry so that it can be restored.
-	lua_getfield(luaState, LUA_REGISTRYINDEX, "_LOADED");
-	clone_table(luaState, -1);
-	lua_setfield(luaState, LUA_REGISTRYINDEX, "Npp_InitialPackageState");
-	lua_pop(luaState, 1);
-
 	return true;
 }
 
@@ -1530,40 +1410,8 @@ bool LuaExtension::Finalise() {
 	return false;
 }
 
-bool LuaExtension::Clear() {
-	if (luaState) {
-		CallNamedFunction("OnClear", NULL);
-	}
-	if (luaState) {
-		InitGlobalScope(true);
-		extensionScript.clear();
-	} else if ((GetPropertyInt("ext.lua.reset") >= 1)) {
-		InitGlobalScope(false);
-	}
-	return false;
-}
-
-bool LuaExtension::Load(const char *filename) {
-	bool loaded = false;
-
-	if (!luaDisabled) {
-		size_t sl = strlen(filename);
-		if (sl >= 4 && strcmp(filename+sl-4, ".lua")==0) {
-			if (luaState || InitGlobalScope(false)) {
-				extensionScript = filename;
-				luaL_loadfile(luaState, filename);
-				if (!call_function(luaState, 0, true)) {
-					host->TraceError("Error occurred while loading extension script\r\n");
-				}
-				loaded = true;
-			}
-		}
-	}
-	return loaded;
-}
-
 bool LuaExtension::RunString(const char *s) {
-	if (luaState || InitGlobalScope(false)) {
+	if (luaState || InitGlobalScope()) {
 		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
 
 		if (status == LUA_OK) {
@@ -1609,7 +1457,7 @@ bool LuaExtension::OnExecute(const char *s) {
 	static std::string chunk;
 	int status = 0;
 
-	if (luaState || InitGlobalScope(false)) {
+	if (luaState || InitGlobalScope()) {
 		if (isFirstLine) {
 			// First try to compile the chunk as a return statement
 			const char *retline = lua_pushfstring(luaState, "return %s;", s);
@@ -1718,27 +1566,7 @@ bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
 }
 
 bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
-	bool result = CallNamedFunction("OnSave", "si", filename, bufferid);
-
-#if 0
-	FilePath fpSaving = FilePath(GUI::StringFromUTF8(filename)).NormalizePath();
-	if (startupScript.length() && fpSaving == FilePath(GUI::StringFromUTF8(startupScript)).NormalizePath()) {
-		if (GetPropertyInt("ext.lua.auto.reload") > 0) {
-			InitGlobalScope(false, true);
-			if (extensionScript.length()) {
-				Load(extensionScript.c_str());
-			}
-		}
-	}
-	else if (extensionScript.length() && 0 == strcmp(filename, extensionScript.c_str())) {
-		if (GetPropertyInt("ext.lua.auto.reload") > 0) {
-			InitGlobalScope(false, false);
-			Load(extensionScript.c_str());
-		}
-	}
-#endif // 0
-
-	return result;
+	return CallNamedFunction("OnSave", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
@@ -2190,10 +2018,6 @@ bool LuaExtension::OnModification(const SCNotification *sc) {
 
 	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length,
 		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
-}
-
-bool LuaExtension::NeedsOnClose() {
-	return HasNamedFunction("OnClose");
 }
 
 void LuaExtension::CallShortcut(int id) {

@@ -79,11 +79,13 @@ static bool updateScintilla() {
 	return true;
 }
 
-void getStartupScriptFilePath(wchar_t *buff, size_t size) {
-	SendNpp(NPPM_GETPLUGINSCONFIGDIR, size, (LPARAM)buff);
-	wcscat_s(buff, size, TEXT("\\"));
-	wcscat_s(buff, size, TEXT("startup"));
-	wcscat_s(buff, size, TEXT(".lua"));
+const wchar_t *getStartupScriptFilePath() {
+	static wchar_t iniPath[MAX_PATH];
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniPath);
+	wcscat_s(iniPath, MAX_PATH, TEXT("\\"));
+	wcscat_s(iniPath, MAX_PATH, TEXT("startup"));
+	wcscat_s(iniPath, MAX_PATH, TEXT(".lua"));
+	return iniPath;
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
@@ -117,8 +119,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	funcItems.emplace_back(FuncItem{ TEXT("Run Current File"), runCurrentFile, 0, false, NULL });
 
 	// Run the startup script
-	wchar_t buff[MAX_PATH];
-	getStartupScriptFilePath(buff, MAX_PATH);
+	const wchar_t *buff = getStartupScriptFilePath();
 
 	if (LuaExtension::Instance().RunFile(buff) == true) {
 		if (luaShortcuts.size() > 0) funcItems.emplace_back(FuncItem{ TEXT(""), NULL, 0, false, NULL });
@@ -282,8 +283,8 @@ void showConsole() {
 }
 
 void editStartupScript() {
-	wchar_t buff[MAX_PATH];
-	getStartupScriptFilePath(buff, MAX_PATH);
+	const wchar_t *buff = getStartupScriptFilePath();
+
 	if (PathFileExists(buff) == 0) {
 		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
 		DWORD dwBytesWritten;

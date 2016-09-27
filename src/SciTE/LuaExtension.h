@@ -43,8 +43,6 @@ public:
 
 	bool Initialise(NppExtensionAPI *host_);
 	bool Finalise();
-	bool Clear();
-	bool Load(const char *filename);
 
 	bool RunString(const char *s);
 	bool RunFile(const wchar_t *filename);
@@ -75,7 +73,6 @@ public:
 	bool OnCancelShutdown();
 	bool OnShutdown();
 	bool OnModification(const SCNotification *sc);
-	bool NeedsOnClose();
 
 	void CallShortcut(int id);
 };
