@@ -17,6 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <sstream>
+#include <algorithm>
 #include "LuaConsole.h"
 #include "SciIFaceTable.h"
 #include "NppIFaceTable.h"
@@ -57,6 +58,16 @@ static std::string join(const std::vector<T> &v, const U &delim) {
 		ss << v[i];
 	}
 	return ss.str();
+}
+
+bool icompare (const std::string& a, const std::string& b) {
+	return stricmp(a.c_str(), b.c_str()) < 0;
+}
+
+template<typename T, typename Pred>
+void insert_sorted(std::vector<T> &vec, const T &item, Pred pred) {
+	auto it = std::upper_bound(vec.begin(), vec.end(), item, pred);
+	vec.insert(it, item);
 }
 
 static void setStyles(GUI::ScintillaWindow &sci) {
@@ -100,6 +111,27 @@ static void setStyles(GUI::ScintillaWindow &sci) {
 	sci.Call(SCI_STYLESETBOLD, SCE_LUA_WORD6, 1);
 }
 
+LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hNotepad(hNotepad), m_nppData(new NppData) {
+	// Scintilla properties
+	sciProperties = join(SciIFaceTable.GetAllPropertyNames(), ' ');
+
+	// Scintilla methods
+	std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "textrange" };
+	auto sciFuncNames = SciIFaceTable.GetAllFunctionNames();
+	for (const auto &func : moreSciFuncs)
+		insert_sorted(sciFuncNames, func, icompare);
+	sciFunctions = join(sciFuncNames, ' ');
+
+	// Notepad++ properties
+	std::vector<std::string> moreNppProps = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
+	auto nppPropNames = NppIFaceTable.GetAllPropertyNames();
+	for (const auto &func : moreNppProps)
+		insert_sorted(nppPropNames, func, icompare);
+	nppProperties = join(nppPropNames, ' ');
+
+	// Notepad++ functions
+	nppFunctions = join(NppIFaceTable.GetAllFunctionNames(), ' ');
+}
 
 void LuaConsole::setupInput(GUI::ScintillaWindow &sci) {
 	// Have it actually do the lexing
@@ -234,8 +266,9 @@ void LuaConsole::braceMatch() {
 	}
 }
 
-
 void LuaConsole::showAutoCompletion() {
+	static const std::vector<std::string> editors = { "console", "editor", "editor1", "editor2" };
+
 	std::string partialWord;
 	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
 	int prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1);
@@ -252,21 +285,20 @@ void LuaConsole::showAutoCompletion() {
 	if (prevCh == '.' || prevCh == ':') {
 		std::string prev = getWordAt(m_sciInput, curPos - 1);
 
-		// TODO: all these are hard coded but they could either be pulled from the IFaceTable or some generated from Lua: for i, v in pairs(npp) do print(i, v) end
 		if (prev.compare("npp") == 0) {
 			if (prevCh == '.') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), "AddEventHandler AddShortcut AppDataPluginsAllowed BufferLangType ClearConsole ConstantName CurrentBufferID CurrentColumn CurrentLine CurrentView DefaultBackgroundColor DefaultForegroundColor LanguageDescription LanguageName RemoveAllEventHandlers RemoveEventHandler SendEditor Version WindowsVersion WriteError");
+				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppProperties.c_str());
 			}
 			else if (prevCh == ':') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), "ActivateDoc DoOpen GetBufferIDFromPos GetCurrentDirectory GetCurrentDocIndex GetCurrentWord GetExtPart GetFileName GetFullCurrentPath GetNamePart GetNbOpenFiles GetNppDirectory GetPluginsConfigDir MenuCommand ReloadFile SaveAllFiles SaveCurrentFile SaveCurrentFileAs SwitchToFile");
+				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppFunctions.c_str());
 			}
 		}
-		else if (prev.compare("editor") == 0 || prev.compare("editor1") == 0 || prev.compare("editor2") == 0 || prev.compare("console") == 0) {
+		else if (std::binary_search(editors.begin(), editors.end(), prev)) {
 			if (prevCh == '.') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), "AdditionalCaretFore AdditionalCaretsBlink AdditionalCaretsVisible AdditionalSelAlpha AdditionalSelBack AdditionalSelectionTyping AdditionalSelFore AllLinesVisible Anchor AnnotationLines AnnotationStyle AnnotationStyleOffset AnnotationStyles AnnotationText AnnotationVisible AutoCAutoHide AutoCCancelAtStart AutoCCaseInsensitiveBehaviour AutoCChooseSingle AutoCCurrent AutoCCurrentText AutoCDropRestOfWord AutoCFillUps AutoCIgnoreCase AutoCMaxHeight AutoCMaxWidth AutoCMulti AutoCOrder AutoCSeparator AutoCTypeSeparator AutomaticFold BackSpaceUnIndents BufferedDraw CallTipBack CallTipFore CallTipForeHlt CallTipPosition CallTipPosStart CallTipUseStyle CaretFore CaretLineBack CaretLineBackAlpha CaretLineVisible CaretLineVisibleAlways CaretPeriod CaretSticky CaretStyle CaretWidth CharacterPointer CharAt CodePage Column ControlCharSymbol CurrentPos Cursor DirectFunction DirectPointer DistanceToSecondaryStyles DocPointer EdgeColour EdgeColumn EdgeMode EndAtLastLine EndStyled EOLMode ExtraAscent ExtraDescent FirstVisibleLine Focus FoldExpanded FoldFlags FoldLevel FoldParent FontQuality GapPosition HighlightGuide HotspotActiveUnderline HotspotSingleLine HScrollBar Identifier Identifiers IdleStyling IMEInteraction Indent IndentationGuides IndicAlpha IndicatorCurrent IndicatorValue IndicFlags IndicFore IndicHoverFore IndicHoverStyle IndicOutlineAlpha IndicStyle IndicUnder KeyWords LayoutCache Length Lexer LexerLanguage LineCount LineEndPosition LineEndTypesActive LineEndTypesAllowed LineEndTypesSupported LineIndentation LineIndentPosition LinesOnScreen LineState LineVisible MainSelection MarginCursorN MarginLeft MarginMaskN MarginOptions MarginRight MarginSensitiveN MarginStyle MarginStyleOffset MarginStyles MarginText MarginTypeN MarginWidthN MarkerAlpha MarkerBack MarkerBackSelected MarkerFore MaxLineState ModEventMask Modify MouseDownCaptures MouseDwellTime MouseSelectionRectangularSwitch MultiPaste MultipleSelection Overtype PasteConvertEndings PhasesDraw PositionCache PrimaryStyleFromStyle PrintColourMode PrintMagnification PrintWrapMode Property PropertyExpanded PropertyInt PunctuationChars ReadOnly RectangularSelectionAnchor RectangularSelectionAnchorVirtualSpace RectangularSelectionCaret RectangularSelectionCaretVirtualSpace RectangularSelectionModifier Representation RGBAImageHeight RGBAImageScale RGBAImageWidth ScrollWidth ScrollWidthTracking SearchFlags SelAlpha SelectionEmpty SelectionEnd SelectionIsRectangle SelectionMode SelectionNAnchor SelectionNAnchorVirtualSpace SelectionNCaret SelectionNCaretVirtualSpace SelectionNEnd SelectionNStart Selections SelectionStart SelEOLFilled Status StyleAt StyleBack StyleBits StyleBitsNeeded StyleBold StyleCase StyleChangeable StyleCharacterSet StyleEOLFilled StyleFont StyleFore StyleFromSubStyle StyleHotSpot StyleItalic StyleSize StyleSizeFractional StyleUnderline StyleVisible StyleWeight SubStyleBases SubStylesLength SubStylesStart TabIndents TabWidth Tag TargetEnd TargetStart TargetText Technology TextLength TwoPhaseDraw UndoCollection UseTabs ViewEOL ViewWS VirtualSpaceOptions VScrollBar WhitespaceChars WhitespaceSize WordChars WrapIndentMode WrapMode WrapStartIndent WrapVisualFlags WrapVisualFlagsLocation XOffset Zoom");
+				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciProperties.c_str());
 			}
 			else if (prevCh == ':') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), "AddRefDocument AddSelection AddStyledText AddTabStop AddText AddUndoAction Allocate AllocateExtendedStyles AllocateSubStyles AnnotationClearAll append AppendText AssignCmdKey AutoCActive AutoCCancel AutoCComplete AutoCPosStart AutoCSelect AutoCShow AutoCStops BackTab BeginUndoAction BraceBadLight BraceBadLightIndicator BraceHighlight BraceHighlightIndicator BraceMatch CallTipActive CallTipCancel CallTipPosStart CallTipSetHlt CallTipShow Cancel CanPaste CanRedo CanUndo ChangeInsertion ChangeLexerState CharLeft CharLeftExtend CharLeftRectExtend CharPositionFromPoint CharPositionFromPointClose CharRight CharRightExtend CharRightRectExtend ChooseCaretX Clear ClearAll ClearAllCmdKeys ClearCmdKey ClearDocumentStyle ClearRegisteredImages ClearRepresentation ClearSelections ClearTabStops Colourise ContractedFoldNext ConvertEOLs Copy CopyAllowLine CopyRange CopyText CountCharacters CreateDocument CreateLoader Cut DeleteBack DeleteBackNotLine DeleteRange DelLineLeft DelLineRight DelWordLeft DelWordRight DelWordRightEnd DescribeKeyWordSets DescribeProperty DocLineFromVisible DocumentEnd DocumentEndExtend DocumentStart DocumentStartExtend DropSelectionN EditToggleOvertype EmptyUndoBuffer EncodedFromUTF8 EndUndoAction EnsureVisible EnsureVisibleEnforcePolicy ExpandChildren FindColumn FindIndicatorFlash FindIndicatorHide FindIndicatorShow FindText findtext FoldAll FoldChildren FoldLine FormatRange FormFeed FreeSubStyles GetCurLine GetHotspotActiveBack GetHotspotActiveFore GetLastChild GetLine GetLineSelEndPosition GetLineSelStartPosition GetNextTabStop GetRangePointer GetSelText GetStyledText GetText GetTextRange GotoLine GotoPos GrabFocus HideLines HideSelection Home HomeDisplay HomeDisplayExtend HomeExtend HomeRectExtend HomeWrap HomeWrapExtend IndicatorAllOnFor IndicatorClearRange IndicatorEnd IndicatorFillRange IndicatorStart IndicatorValueAt insert InsertText IsRangeWord LineCopy LineCut LineDelete LineDown LineDownExtend LineDownRectExtend LineDuplicate LineEnd LineEndDisplay LineEndDisplayExtend LineEndExtend LineEndRectExtend LineEndWrap LineEndWrapExtend LineFromPosition LineLength LineScroll LineScrollDown LineScrollUp LinesJoin LinesSplit LineTranspose LineUp LineUpExtend LineUpRectExtend LoadLexerLibrary LowerCase MarginTextClearAll MarkerAdd MarkerAddSet MarkerDefine MarkerDefinePixmap MarkerDefineRGBAImage MarkerDelete MarkerDeleteAll MarkerDeleteHandle MarkerEnableHighlight MarkerGet MarkerLineFromHandle MarkerNext MarkerPrevious MarkerSymbolDefined match MoveCaretInsideView MoveSelectedLinesDown MoveSelectedLinesUp MultipleSelectAddEach MultipleSelectAddNext NewLine Null PageDown PageDownExtend PageDownRectExtend PageUp PageUpExtend PageUpRectExtend ParaDown ParaDownExtend ParaUp ParaUpExtend Paste PointXFromPosition PointYFromPosition PositionAfter PositionBefore PositionFromLine PositionFromPoint PositionFromPointClose PositionRelative PrivateLexerCall PropertyNames PropertyType Redo RegisterImage RegisterRGBAImage ReleaseAllExtendedStyles ReleaseDocument remove ReplaceSel ReplaceTarget ReplaceTargetRE RotateSelection ScrollCaret ScrollRange ScrollToEnd ScrollToStart SearchAnchor SearchInTarget SearchNext SearchPrev SelectAll SelectionDuplicate SetCharsDefault SetEmptySelection SetFoldMarginColour SetFoldMarginHiColour SetHotspotActiveBack SetHotspotActiveFore SetLengthForEncode SetSavePoint SetSel SetSelBack SetSelection SetSelFore SetStyling SetStylingEx SetTargetRange SetText SetVisiblePolicy SetWhitespaceBack SetWhitespaceFore SetXCaretPolicy SetYCaretPolicy ShowLines StartRecord StartStyling StopRecord StutteredPageDown StutteredPageDownExtend StutteredPageUp StutteredPageUpExtend StyleClearAll StyleResetDefault SwapMainAnchorCaret Tab TargetAsUTF8 TargetFromSelection TargetWholeDocument TextHeight textrange TextWidth ToggleCaretSticky ToggleFold Undo UpperCase UsePopUp UserListShow VCHome VCHomeDisplay VCHomeDisplayExtend VCHomeExtend VCHomeRectExtend VCHomeWrap VCHomeWrapExtend VerticalCentreCaret VisibleFromDocLine WordEndPosition WordLeft WordLeftEnd WordLeftEndExtend WordLeftExtend WordPartLeft WordPartLeftExtend WordPartRight WordPartRightExtend WordRight WordRightEnd WordRightEndExtend WordRightExtend WordStartPosition WrapCount ZoomIn ZoomOut");
+				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciFunctions.c_str());
 			}
 		}
 	}

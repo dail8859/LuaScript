@@ -27,12 +27,7 @@
 class LuaConsole final
 {
 public:
-	explicit LuaConsole(HWND hNotepad) :
-		mp_consoleDlg(new ConsoleDialog()),
-		m_hNotepad(hNotepad),
-		m_nppData(new NppData)
-	{
-	}
+	explicit LuaConsole(HWND hNotepad);
 
 	~LuaConsole() {
 		delete mp_consoleDlg;
@@ -59,6 +54,12 @@ public:
 private:
 	NppData* m_nppData;
 	HWND m_hNotepad;
+
+	// Autocomplete lists
+	std::string sciProperties;
+	std::string sciFunctions;
+	std::string nppProperties;
+	std::string nppFunctions;
 
 	GUI::ScintillaWindow *m_sciInput;
 
