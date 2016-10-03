@@ -26,6 +26,11 @@
 #define INDIC_BRACEHIGHLIGHT INDIC_CONTAINER
 #define INDIC_BRACEBADLIGHT INDIC_CONTAINER + 1
 
+static std::vector<std::string> &sortCaseInsensitive(std::vector<std::string> &strings) {
+	std::sort(strings.begin(), strings.end(), [](const std::string& a, const std::string& b) {return stricmp(a.c_str(), b.c_str()) < 0; });
+	return strings;
+}
+
 static bool inline isBrace(int ch) {
 	return strchr("[]{}()", ch) != NULL;
 }
@@ -60,15 +65,6 @@ static std::string join(const std::vector<T> &v, const U &delim) {
 	return ss.str();
 }
 
-bool icompare (const std::string& a, const std::string& b) {
-	return stricmp(a.c_str(), b.c_str()) < 0;
-}
-
-template<typename T, typename Pred>
-void insert_sorted(std::vector<T> &vec, const T &item, Pred pred) {
-	auto it = std::upper_bound(vec.begin(), vec.end(), item, pred);
-	vec.insert(it, item);
-}
 
 static void setStyles(GUI::ScintillaWindow &sci) {
 	sci.Call(SCI_SETEOLMODE, SC_EOL_CRLF, 0);
@@ -113,24 +109,22 @@ static void setStyles(GUI::ScintillaWindow &sci) {
 
 LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hNotepad(hNotepad), m_nppData(new NppData) {
 	// Scintilla properties
-	sciProperties = join(SciIFaceTable.GetAllPropertyNames(), ' ');
+	sciProperties = join(sortCaseInsensitive(SciIFaceTable.GetAllPropertyNames()), ' ');
 
 	// Scintilla methods
 	std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "textrange" };
 	auto sciFuncNames = SciIFaceTable.GetAllFunctionNames();
-	for (const auto &func : moreSciFuncs)
-		insert_sorted(sciFuncNames, func, icompare);
-	sciFunctions = join(sciFuncNames, ' ');
+	sciFuncNames.insert(sciFuncNames.end(), moreSciFuncs.begin(), moreSciFuncs.end());
+	sciFunctions = join(sortCaseInsensitive(sciFuncNames), ' ');
 
 	// Notepad++ properties
 	std::vector<std::string> moreNppProps = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
 	auto nppPropNames = NppIFaceTable.GetAllPropertyNames();
-	for (const auto &func : moreNppProps)
-		insert_sorted(nppPropNames, func, icompare);
-	nppProperties = join(nppPropNames, ' ');
+	nppPropNames.insert(nppPropNames.end(), moreNppProps.begin(), moreNppProps.end());
+	nppProperties = join(sortCaseInsensitive(nppPropNames), ' ');
 
 	// Notepad++ functions
-	nppFunctions = join(NppIFaceTable.GetAllFunctionNames(), ' ');
+	nppFunctions = join(sortCaseInsensitive(NppIFaceTable.GetAllFunctionNames()), ' ');
 }
 
 void LuaConsole::setupInput(GUI::ScintillaWindow &sci) {
