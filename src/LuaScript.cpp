@@ -45,6 +45,7 @@ static HANDLE _hModule;				// For dialog initialization
 static LuaConsole *g_console;
 static bool isReady = false;
 static std::vector<FuncItem> funcItems;
+static toolbarIcons tbiConsoleButton;
 static PFUNCPLUGINCMD LuaShortcutWrappers[] = {
 	[](){ LuaExtension::Instance().CallShortcut(1); },
 	[](){ LuaExtension::Instance().CallShortcut(2); },
@@ -114,6 +115,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
 		_hModule = hModule;
 		break;
 	case DLL_PROCESS_DETACH:
+		if (tbiConsoleButton.hToolbarBmp) ::DeleteObject(tbiConsoleButton.hToolbarBmp);
 		break;
 	case DLL_THREAD_ATTACH:
 		break;
@@ -315,6 +317,11 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			break;
 		}
 		case NPPN_TBMODIFICATION:
+			tbiConsoleButton.hToolbarIcon = NULL;
+			tbiConsoleButton.hToolbarBmp = (HBITMAP)::LoadImage((HINSTANCE)_hModule, MAKEINTRESOURCE(IDI_LUABMP), IMAGE_BITMAP, 0, 0, (LR_SHARED | LR_LOADTRANSPARENT | LR_DEFAULTSIZE | LR_LOADMAP3DCOLORS));
+			//                             (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_SETFIRST), IMAGE_BITMAP, 0, 0, style);
+			SendNpp(NPPM_ADDTOOLBARICON, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiConsoleButton);
+
 			LuaExtension::Instance().OnToolBarModification();
 			break;
 		case NPPN_FILEBEFORECLOSE:

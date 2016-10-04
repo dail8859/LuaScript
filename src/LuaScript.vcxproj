@@ -160,6 +160,7 @@
     <ResourceCompile Include="Dialogs\Version.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Dialogs\lua.bmp" />
     <Image Include="Dialogs\lua.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

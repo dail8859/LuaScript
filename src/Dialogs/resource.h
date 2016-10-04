@@ -4,6 +4,7 @@
 
 #define IDD_ABOUTDLG                    101
 #define IDI_LUA                         102
+#define IDI_LUABMP                      103
 #define IDC_GITHUB                      104
 #define IDC_VERSION                     105
 #define IDC_README                      106

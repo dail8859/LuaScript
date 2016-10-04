@@ -8,6 +8,7 @@
 #include "resource.h"
 
 IDI_LUA ICON "lua.ico"
+IDI_LUABMP BITMAP "lua.bmp"
 
 //
 // Dialog resources

@@ -141,5 +141,8 @@
     <Image Include="Dialogs\lua.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Dialogs\lua.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
