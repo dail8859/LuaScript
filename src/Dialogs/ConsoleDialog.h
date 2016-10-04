@@ -19,11 +19,13 @@
 
 #pragma once
 
-#include "DockingDlgInterface.h"
+#include <string>
+#include <vector>
+
+#include "Docking.h"
+#include "StaticDialog.h"
 #include "Scintilla.h"
 #include "GUI.h"
-
-#include <vector>
 
 struct SCNotification;
 struct NppData;
@@ -32,8 +34,7 @@ typedef std::basic_string<TCHAR> tstring;
 
 class LuaConsole;
 
-class ConsoleDialog : public DockingDlgInterface
-{
+class ConsoleDialog : public StaticDialog {
 public:
 	ConsoleDialog();
 	ConsoleDialog(const ConsoleDialog& other) = delete;
@@ -51,6 +52,8 @@ public:
 	HWND getScintillaHwnd() { return (HWND)m_sciOutput.GetID(); }
 
 	void giveInputFocus() { SetFocus((HWND)m_sciInput.GetID()); }
+
+	virtual void display(bool toShow = true) const;
 
 protected:
 	BOOL CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
@@ -84,4 +87,3 @@ private:
 
 	HMENU m_hContext;
 };
-

@@ -18,10 +18,11 @@
 
 #include <Windows.h>
 #include <Shellapi.h>
+#include <shlwapi.h>
 #include <vector>
+
 #include "PluginInterface.h"
 #include "AboutDialog.h"
-
 #include "LuaConsole.h"
 #include "LuaExtension.h"
 #include "NppExtensionAPI.h"
@@ -278,6 +279,7 @@ extern "C" __declspec(dllexport) BOOL isUnicode() {
 
 void showConsole() {
 	g_console->showDialog();
+
 	// If the console is shown automatically at startup, don't give it focus
 	if (isReady) g_console->mp_consoleDlg->giveInputFocus();
 }
@@ -312,18 +314,18 @@ static void showAbout() {
 
 	// Go to center
 	RECT rc;
-	::GetClientRect(nppData._nppHandle, &rc);
+	GetClientRect(nppData._nppHandle, &rc);
 	POINT center;
 	int w = rc.right - rc.left;
 	int h = rc.bottom - rc.top;
 	center.x = rc.left + w / 2;
 	center.y = rc.top + h / 2;
-	::ClientToScreen(nppData._nppHandle, &center);
+	ClientToScreen(nppData._nppHandle, &center);
 
 	RECT dlgRect;
-	::GetClientRect(hSelf, &dlgRect);
+	GetClientRect(hSelf, &dlgRect);
 	int x = center.x - (dlgRect.right - dlgRect.left) / 2;
 	int y = center.y - (dlgRect.bottom - dlgRect.top) / 2;
 
-	::SetWindowPos(hSelf, HWND_TOP, x, y, (dlgRect.right - dlgRect.left), (dlgRect.bottom - dlgRect.top), SWP_SHOWWINDOW);
+	SetWindowPos(hSelf, HWND_TOP, x, y, (dlgRect.right - dlgRect.left), (dlgRect.bottom - dlgRect.top), SWP_SHOWWINDOW);
 }

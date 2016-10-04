@@ -142,7 +142,6 @@
     <ClInclude Include="NppExtensionAPI.h" />
     <ClInclude Include="NppIFaceTable.h" />
     <ClInclude Include="Npp\Docking.h" />
-    <ClInclude Include="Npp\DockingDlgInterface.h" />
     <ClInclude Include="Npp\dockingResource.h" />
     <ClInclude Include="Npp\menuCmdID.h" />
     <ClInclude Include="Npp\Notepad_plus_msgs.h" />

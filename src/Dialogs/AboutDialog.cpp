@@ -18,38 +18,33 @@
 
 #include <Windows.h>
 #include <Shellapi.h>
-#include "PluginInterface.h"
 #include "AboutDialog.h"
 #include "resource.h"
 #include "Hyperlinks.h"
 #include "Version.h"
 
-INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	DECLARE_HANDLE(HDROP);
-	switch(uMsg)
-	{
-	case WM_INITDIALOG:
-		ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
-		ConvertStaticToHyperlink(hwndDlg, IDC_README);
-		SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("LuaScript v") VERSION_TEXT TEXT(" ") VERSION_STAGE);
-		return true;
-	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-		case IDOK:
+INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	switch(uMsg) {
+		case WM_INITDIALOG:
+			ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
+			ConvertStaticToHyperlink(hwndDlg, IDC_README);
+			SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("LuaScript v") VERSION_TEXT TEXT(" ") VERSION_STAGE);
+			return true;
+		case WM_COMMAND:
+			switch(LOWORD(wParam)) {
+				case IDOK:
+					DestroyWindow(hwndDlg);
+					return true;
+				case IDC_GITHUB:
+					ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
+					return true;
+				case IDC_README:
+					ShellExecute(hwndDlg, TEXT("open"), TEXT("https://dail8859.github.io/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
+					return true;
+			}
+		case WM_DESTROY:
 			DestroyWindow(hwndDlg);
 			return true;
-		case IDC_GITHUB:
-			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://github.com/dail8859/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
-			return true;
-		case IDC_README:
-			ShellExecute(hwndDlg, TEXT("open"), TEXT("https://dail8859.github.io/LuaScript/"), NULL, NULL, SW_SHOWNORMAL);
-			return true;
-		}
-	case WM_DESTROY:
-		DestroyWindow(hwndDlg);
-		return true;
 	}
 	return false;
 }

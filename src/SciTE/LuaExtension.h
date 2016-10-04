@@ -23,11 +23,11 @@
 
 #include <vector>
 
-struct LuaFuncItem
-{
+struct LuaFuncItem {
 	char _itemName[nbChar];
 	ShortcutKey *_pShKey;
 };
+
 extern std::vector<LuaFuncItem> luaShortcuts;
 
 class LuaExtension final {

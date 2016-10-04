@@ -18,7 +18,6 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "ConsoleDialog.h"
-#include "PluginInterface.h"
 #include "resource.h"
 #include "LuaConsole.h"
 
@@ -31,17 +30,13 @@
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
 ConsoleDialog::ConsoleDialog() :
-	DockingDlgInterface(IDD_CONSOLE),
 	m_console(NULL),
 	m_prompt("> "),
 	m_hTabIcon(NULL),
 	m_currentHistory(0),
-	m_hContext(NULL)
-{
-}
+	m_hContext(NULL) {}
 
-ConsoleDialog::~ConsoleDialog()
-{
+ConsoleDialog::~ConsoleDialog() {
 	if (m_sciOutput.GetID())
 	{
 		::SendMessage(_hParent, NPPM_DESTROYSCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(m_sciOutput.GetID()));
@@ -69,9 +64,8 @@ ConsoleDialog::~ConsoleDialog()
 	m_console = NULL;
 }
 
-void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole* console)
-{
-	DockingDlgInterface::init(hInst, nppData._nppHandle);
+void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole* console) {
+	StaticDialog::init(hInst, nppData._nppHandle);
 
 	m_console = console;
 
@@ -101,8 +95,7 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole* co
 	InsertMenuItem(m_hContext, 3, TRUE, &mi);
 }
 
-BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
+BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	switch(message) {
 		case WM_INITDIALOG:
 			SetParent((HWND)m_sciOutput.GetID(), _hSelf);
@@ -158,8 +151,7 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 			}
 			break;
 		case WM_COMMAND:
-			if (LOWORD(wParam) == IDC_RUN)
-			{
+			if (LOWORD(wParam) == IDC_RUN) {
 				runStatement();
 				giveInputFocus();
 				return FALSE;
@@ -202,7 +194,7 @@ BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lPa
 			break;
 	}
 
-	return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
+	return FALSE;
 }
 
 void ConsoleDialog::historyPrevious() {
@@ -235,24 +227,21 @@ void ConsoleDialog::historyNext() {
 	m_sciInput.Call(SCI_SCROLLTOEND);
 }
 
-void ConsoleDialog::historyAdd(const TCHAR *line)
-{
+void ConsoleDialog::historyAdd(const TCHAR *line) {
 	if (line && line[0] && (m_history.empty() || line != m_history.back()))
 		m_history.emplace_back(line);
 	m_currentHistory = m_history.size();
 	m_curLine.clear();
 }
 
-void ConsoleDialog::historyEnd()
-{
+void ConsoleDialog::historyEnd() {
 	m_currentHistory = m_history.size();
 	m_curLine.clear();
 	m_sciInput.Call(SCI_CLEARALL);
 	m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
 }
 
-LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
+LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
 	ConsoleDialog *cd = reinterpret_cast<ConsoleDialog *>(dwRefData);
 	switch (uMsg) {
 		case WM_GETDLGCODE:
@@ -298,54 +287,47 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-void ConsoleDialog::runStatement()
-{
-	assert(m_console != NULL);
-	if (m_console)
-	{
-		int prevLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
-		int newLastLine = 0;
+void ConsoleDialog::runStatement() {
+	int prevLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
+	int newLastLine = 0;
 
-		Sci_TextRange tr;
-		tr.chrg.cpMin = 0;
-		tr.chrg.cpMax = m_sciInput.Call(SCI_GETLENGTH);
-		tr.lpstrText = new char[2 * (tr.chrg.cpMax - tr.chrg.cpMin) + 2]; // See documentation
-		m_sciInput.CallPointer(SCI_GETSTYLEDTEXT, 0, &tr);
+	Sci_TextRange tr;
+	tr.chrg.cpMin = 0;
+	tr.chrg.cpMax = m_sciInput.Call(SCI_GETLENGTH);
+	tr.lpstrText = new char[2 * (tr.chrg.cpMax - tr.chrg.cpMin) + 2]; // See documentation
+	m_sciInput.CallPointer(SCI_GETSTYLEDTEXT, 0, &tr);
 
-		m_sciOutput.Call(SCI_DOCUMENTEND);
-		m_sciOutput.Call(SCI_SETREADONLY, 0);
-		m_sciOutput.CallString(SCI_ADDSTYLEDTEXT, 2 * (tr.chrg.cpMax - tr.chrg.cpMin), tr.lpstrText);
-		writeText(2, "\r\n");
-		m_sciOutput.Call(SCI_SETREADONLY, 1);
+	m_sciOutput.Call(SCI_DOCUMENTEND);
+	m_sciOutput.Call(SCI_SETREADONLY, 0);
+	m_sciOutput.CallString(SCI_ADDSTYLEDTEXT, 2 * (tr.chrg.cpMax - tr.chrg.cpMin), tr.lpstrText);
+	writeText(2, "\r\n");
+	m_sciOutput.Call(SCI_SETREADONLY, 1);
 
-		delete[] tr.lpstrText;
+	delete[] tr.lpstrText;
 
-		newLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
+	newLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
 
-		for (int i = prevLastLine; i < newLastLine; ++i) {
-			m_sciOutput.CallString(SCI_MARGINSETTEXT, i - 1, ">");
-			m_sciOutput.Call(SCI_MARGINSETSTYLE, i - 1, STYLE_LINENUMBER);
-		}
-
-		const char *text = (const char *)m_sciInput.CallReturnPointer(SCI_GETCHARACTERPOINTER);
-		historyAdd(GUI::StringFromUTF8(text).c_str());
-		m_console->runStatement(text);
-		m_sciInput.Call(SCI_CLEARALL);
-		m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
-		m_sciInput.CallString(SCI_MARGINSETTEXT, 0, ">");
-		m_sciInput.Call(SCI_MARGINSETSTYLE, 0, STYLE_LINENUMBER);
+	for (int i = prevLastLine; i < newLastLine; ++i) {
+		m_sciOutput.CallString(SCI_MARGINSETTEXT, i - 1, ">");
+		m_sciOutput.Call(SCI_MARGINSETSTYLE, i - 1, STYLE_LINENUMBER);
 	}
+
+	const char *text = (const char *)m_sciInput.CallReturnPointer(SCI_GETCHARACTERPOINTER);
+	historyAdd(GUI::StringFromUTF8(text).c_str());
+	m_console->runStatement(text);
+	m_sciInput.Call(SCI_CLEARALL);
+	m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
+	m_sciInput.CallString(SCI_MARGINSETTEXT, 0, ">");
+	m_sciInput.Call(SCI_MARGINSETSTYLE, 0, STYLE_LINENUMBER);
 }
 
-void ConsoleDialog::setPrompt(const char *prompt)
-{
+void ConsoleDialog::setPrompt(const char *prompt) {
 	m_prompt = prompt;
 	// NOTE: This doesn't seem to work at all
 	//::SetWindowTextA(::GetDlgItem(_hSelf, IDC_PROMPT), prompt);
 }
 
-void ConsoleDialog::createOutputWindow(HWND hParentWindow)
-{
+void ConsoleDialog::createOutputWindow(HWND hParentWindow) {
 	HWND sci = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
 	LONG currentStyle = GetWindowLong(sci, GWL_STYLE);
 	SetWindowLong(sci, GWL_STYLE, currentStyle | WS_TABSTOP);
@@ -412,23 +394,20 @@ void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	m_sciInput.Call(SCI_MARGINSETSTYLE, 0, STYLE_LINENUMBER);
 }
 
-LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
+LRESULT CALLBACK ConsoleDialog::scintillaWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
 	// No idea what this does, but it seems to help a bit.
 	if (uMsg == WM_GETDLGCODE) return DLGC_WANTARROWS | DLGC_WANTCHARS;
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-void ConsoleDialog::writeText(size_t length, const char *text)
-{
+void ConsoleDialog::writeText(size_t length, const char *text) {
 	m_sciOutput.Call(SCI_SETREADONLY, 0);
 	m_sciOutput.CallString(SCI_APPENDTEXT, length, text);
 	m_sciOutput.Call(SCI_SETREADONLY, 1);
 	m_sciOutput.Call(SCI_DOCUMENTEND);
 }
 
-void ConsoleDialog::writeError(size_t length, const char *text)
-{
+void ConsoleDialog::writeError(size_t length, const char *text) {
 	typedef struct {
 		unsigned char c;
 		unsigned char style;
@@ -450,11 +429,13 @@ void ConsoleDialog::writeError(size_t length, const char *text)
 	m_sciOutput.Call(SCI_DOCUMENTEND);
 }
 
-void ConsoleDialog::doDialog()
-{
-	if (!isCreated())
-	{
-		StaticDialog::create(_dlgID);
+void ConsoleDialog::display(bool toShow) const {
+	SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
+}
+
+void ConsoleDialog::doDialog() {
+	if (!isCreated()) {
+		StaticDialog::create(IDD_CONSOLE);
 
 		m_hTabIcon = (HICON)::LoadImage(_hInst, MAKEINTRESOURCE(IDI_LUA), IMAGE_ICON, 16, 16, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
 		m_data.hIconTab = m_hTabIcon;
@@ -472,13 +453,11 @@ void ConsoleDialog::doDialog()
 	display(true);
 }
 
-void ConsoleDialog::hide()
-{
+void ConsoleDialog::hide() {
 	display(false);
 }
 
-void ConsoleDialog::clearText()
-{
+void ConsoleDialog::clearText() {
 	m_sciOutput.Call(SCI_SETREADONLY, 0);
 	m_sciOutput.Call(SCI_CLEARALL);
 	m_sciOutput.Call(SCI_SETSCROLLWIDTH, 1);

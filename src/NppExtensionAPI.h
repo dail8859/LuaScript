@@ -35,7 +35,6 @@ inline uptr_t UptrFromString(const char *cp) {
 	return reinterpret_cast<uptr_t>(cp);
 }
 
-
 class NppExtensionAPI final {
 public:
 	enum Pane {
@@ -54,6 +53,7 @@ public:
 		scis[paneEditorSecondary].SetID(m_nppData->_scintillaSecondHandle);
 		scis[paneOutput].SetID(cd->getScintillaHwnd());
 	}
+
 	~NppExtensionAPI();
 
 	Pane getCurrentPane();
@@ -78,4 +78,3 @@ private:
 	ConsoleDialog *cd;
 	const NppData* m_nppData;
 };
-

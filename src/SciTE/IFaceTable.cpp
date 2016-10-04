@@ -163,12 +163,13 @@ IFaceFunction IFaceTable::GetPropertyFuncByMessage(int message) const {
 
 std::vector<std::string> IFaceTable::GetAllConstantNames() const {
 	std::vector<std::string> kws;
+	std::string prefix_str(prefix);
 
 	kws.reserve(constants.size() + functions.size());
 
 	std::transform(constants.begin(), constants.end(), std::back_inserter(kws), [](const IFaceConstant &ifc) { return ifc.name; });
 	std::transform(functions.begin(), functions.end(), std::back_inserter(kws), [&](const IFaceFunction &iff) {
-		std::string s = std::string(prefix) + std::string(iff.name);
+		std::string s = prefix_str + std::string(iff.name);
 		std::transform(s.begin(), s.end(), s.begin(), ::toupper);
 		return s;
 	});

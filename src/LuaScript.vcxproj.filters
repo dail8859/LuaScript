@@ -95,9 +95,6 @@
     <ClInclude Include="Npp\Docking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Npp\DockingDlgInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Npp\dockingResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>

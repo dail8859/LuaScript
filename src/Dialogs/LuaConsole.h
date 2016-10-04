@@ -24,8 +24,7 @@
 
 #include "lua.hpp"
 
-class LuaConsole final
-{
+class LuaConsole final {
 public:
 	explicit LuaConsole(HWND hNotepad);
 

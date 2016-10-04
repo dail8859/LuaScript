@@ -58,6 +58,7 @@ void NppExtensionAPI::Remove(NppExtensionAPI::Pane p, int start, int end) {
 	int deleteLength = end - start;
 	this->Send(p, SCI_DELETERANGE, start, deleteLength);
 }
+
 void NppExtensionAPI::Insert(NppExtensionAPI::Pane p, int pos, const char *s) {
 	this->Send(p, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
