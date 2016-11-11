@@ -54,20 +54,13 @@ public :
 
 	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
 
-	virtual bool isCreated() const {
-		return (_hSelf != NULL);
-	}
+	virtual bool isCreated() const { return (_hSelf != NULL); }
 
 	void goToCenter();
 
 	void display(bool toShow = true) const;
 
 	POINT getTopPoint(HWND hwnd, bool isLeft = true) const;
-
-	bool isCheckedOrNot(int checkControlID) const
-	{
-		return (BST_CHECKED == ::SendMessage(::GetDlgItem(_hSelf, checkControlID), BM_GETCHECK, 0, 0));
-	}
 
 	virtual void destroy() override;
 

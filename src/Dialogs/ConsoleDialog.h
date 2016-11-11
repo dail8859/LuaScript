@@ -27,9 +27,7 @@
 #include "Scintilla.h"
 #include "GUI.h"
 
-struct SCNotification;
 struct NppData;
-struct LineDetails;
 typedef std::basic_string<TCHAR> tstring;
 
 class LuaConsole;

@@ -152,6 +152,14 @@ inline void raise_error(lua_State *L, const char *errMsg=NULL) {
 	lua_error(L);
 }
 
+inline void raise_ferror(lua_State *L, const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	lua_pushvfstring(L, fmt, args);
+	va_end(args);
+	raise_error(L);
+}
+
 inline int absolute_index(lua_State *L, int index) {
 	return ((index < 0) && (index != LUA_REGISTRYINDEX)) ? (lua_gettop(L) + index + 1) : index;
 }
@@ -347,46 +355,83 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 static int cf_npp_add_shortcut(lua_State *L) {
 	ShortcutKey *sk = NULL;
 	const char *name = luaL_checkstring(L, 1);
-	const char *shortcut = luaL_checkstring(L, 2);
+	const char *shortcut = luaL_optstring(L, 2, NULL);
 	luaL_checktype(L, 3, LUA_TFUNCTION);
 
 	// Try to parse the string into a shortcut structure
-	if (shortcut[0] != '\0') {
+	if (shortcut && shortcut[0] != '\0') {
 		const char *cur = shortcut;
 		sk = new ShortcutKey({ false, false, false, 0 });
 		do {
-			if (strncmp(cur, "Ctrl+", 5) == 0) {
-				if (sk->_isCtrl) raise_error(L, "Invalid shortcut key");
+			if (_strnicmp(cur, "Ctrl+", 5) == 0) {
+				if (sk->_isCtrl) raise_ferror(L, "Invalid shortcut key \"%s\"", shortcut);
 				cur += 5;
 				sk->_isCtrl = true;
 			}
-			else if (strncmp(cur, "Alt+", 4) == 0) {
-				if (sk->_isAlt) raise_error(L, "Invalid shortcut key");
+			else if (_strnicmp(cur, "Alt+", 4) == 0) {
+				if (sk->_isAlt) raise_ferror(L, "Invalid shortcut key \"%s\"", shortcut);
 				cur += 4;
 				sk->_isAlt = true;
 			}
-			else if (strncmp(cur, "Shift+", 6) == 0) {
-				if (sk->_isShift) raise_error(L, "Invalid shortcut key");
+			else if (_strnicmp(cur, "Shift+", 6) == 0) {
+				if (sk->_isShift) raise_ferror(L, "Invalid shortcut key \"%s\"", shortcut);
 				cur += 6;
 				sk->_isShift = true;
 			}
 			else {
-				// Only allow A-Z, 0-9, F1-F12
-				if (strlen(cur) == 1) {
-					if (isalnum(toupper(cur[0]))) sk->_key = toupper(*cur++);
-					else raise_error(L, "Cannot parse shortcut key");
+				// A - Z, 0 - 9
+				if (isalnum(toupper(cur[0])) && cur[1] == NULL) {
+					sk->_key = toupper(*cur++);
 				}
-				else if (strlen(cur) <= 3 && toupper(cur[0]) == 'F') {
+				// F1 - F12
+				else if (toupper(cur[0]) == 'F' && strlen(cur) <= 3) {
+					char *endptr;
 					cur++;
-					// Make sure the rest of the string is a valid number
-					if (isdigit(cur[0]) && cur[0] != '0' && (cur[1] == NULL || isdigit(cur[1]))) {
-						sk->_key = 0x6F + atoi(cur);
-						break;
-					}
-					else
-						raise_error(L, "Cannot parse shortcut key");
+					long int num = strtol(cur, &endptr, 10);
+
+					// Make Sure it was:
+					//  An actual number
+					//  Didn't start with 0 (e.g. 05)
+					//  Is between 1 and 12
+					if (endptr != cur && cur[0] != '0' && num >= 1 && num <= 12) sk->_key = 0x6F + static_cast<UCHAR>(num);
+					else raise_ferror(L, "Invalid shortcut key \"%s\"", shortcut);;
 				}
-				else raise_error(L, "Cannot parse shortcut key");
+				// Other keys
+				else if (_stricmp(cur, ";") == 0) sk->_key = VK_OEM_1;
+				else if (_stricmp(cur, "/") == 0) sk->_key = VK_OEM_2;
+				else if (_stricmp(cur, "~") == 0) sk->_key = VK_OEM_3;
+				else if (_stricmp(cur, "[") == 0) sk->_key = VK_OEM_4;
+				else if (_stricmp(cur, "\\") == 0) sk->_key = VK_OEM_5;
+				else if (_stricmp(cur, "]") == 0) sk->_key = VK_OEM_6;
+				else if (_stricmp(cur, "\'") == 0) sk->_key = VK_OEM_7;
+				else if (_stricmp(cur, ",") == 0) sk->_key = VK_OEM_COMMA;
+				else if (_stricmp(cur, "-") == 0) sk->_key = VK_OEM_MINUS;
+				else if (_stricmp(cur, ".") == 0) sk->_key = VK_OEM_PERIOD;
+				else if (_stricmp(cur, "=") == 0) sk->_key = VK_OEM_PLUS;
+				else if (_stricmp(cur, "up") == 0) sk->_key = VK_UP;
+				else if (_stricmp(cur, "down") == 0) sk->_key = VK_DOWN;
+				else if (_stricmp(cur, "left") == 0) sk->_key = VK_LEFT;
+				else if (_stricmp(cur, "right") == 0) sk->_key = VK_RIGHT;
+				else if (_stricmp(cur, "space") == 0) sk->_key = VK_SPACE;
+				else if (_stricmp(cur, "pageup") == 0) sk->_key = VK_PRIOR;
+				else if (_stricmp(cur, "pagedown") == 0) sk->_key = VK_NEXT;
+				else if (_stricmp(cur, "backspace") == 0) sk->_key = VK_BACK;
+				else if (_stricmp(cur, "delete") == 0) sk->_key = VK_DELETE;
+				else if (_stricmp(cur, "escape") == 0) sk->_key = VK_ESCAPE;
+				// These appear to get registered but can't be called from N++
+				//else if (_stricmp(cur, "enter") == 0) sk->_key = VK_RETURN;
+				//else if (_stricmp(cur, "insert") == 0) sk->_key = VK_INSERT;
+				// Numpad numbers
+				//else if (_strnicmp(cur, "Numpad", 6) == 0) {
+				//	cur += 6;
+				//	if (isdigit(cur[0]) && cur[1] == NULL) sk->_key = VK_NUMPAD0 + atoi(cur);
+				//	else raise_error(L, "Cannot parse shortcut key");
+				//}
+				else raise_ferror(L, "Invalid shortcut key \"%s\"", shortcut);
+
+				// Each if block makes sure the string has been completely consumed, else an 
+				// error will be raised by this point so we can go ahead and stop.
+				break;
 			}
 		} while (*cur != NULL);
 		// Do a quick sanity check?
