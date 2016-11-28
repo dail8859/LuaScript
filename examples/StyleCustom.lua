@@ -40,6 +40,8 @@ npp.AddEventHandler("OnSwitchFile", function(filename, bufferid)
         -- Can remove the handler if it's not needed
         npp.RemoveEventHandler("OnStyle", CustomStyle)
     end
+
+    return false
 end)
 
 -- Style the document. Handles UTF-8 characters

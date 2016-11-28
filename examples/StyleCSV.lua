@@ -24,6 +24,8 @@ npp.AddEventHandler("OnSwitchFile", function(filename, bufferid)
         npp.RemoveEventHandler("OnStyle", StyleCSV)
         editor.CaretLineVisible = true
     end
+
+    return false
 end)
 
 -- A simplified lexer - style the line according to the line number

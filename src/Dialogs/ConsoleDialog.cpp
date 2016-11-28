@@ -32,7 +32,6 @@
 ConsoleDialog::ConsoleDialog() :
 	m_console(NULL),
 	m_prompt("> "),
-	m_hTabIcon(NULL),
 	m_currentHistory(0),
 	m_hContext(NULL) {}
 
@@ -49,10 +48,10 @@ ConsoleDialog::~ConsoleDialog() {
 		m_sciInput.SetID(NULL);
 	}
 
-	if (m_hTabIcon)
+	if (m_data.hIconTab)
 	{
-		::DestroyIcon(m_hTabIcon);
-		m_hTabIcon = NULL;
+		::DestroyIcon(m_data.hIconTab);
+		m_data.hIconTab = NULL;
 	}
 
 	if (m_hContext)
@@ -95,13 +94,13 @@ void ConsoleDialog::initDialog(HINSTANCE hInst, NppData& nppData, LuaConsole* co
 	InsertMenuItem(m_hContext, 3, TRUE, &mi);
 }
 
-BOOL CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) {
 	switch(message) {
 		case WM_INITDIALOG:
-			SetParent((HWND)m_sciOutput.GetID(), _hSelf);
-			ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
 			SetParent((HWND)m_sciInput.GetID(), _hSelf);
 			ShowWindow((HWND)m_sciInput.GetID(), SW_SHOW);
+			SetParent((HWND)m_sciOutput.GetID(), _hSelf);
+			ShowWindow((HWND)m_sciOutput.GetID(), SW_SHOW);
 
 			// Subclass some stuff
 			SetWindowSubclass((HWND)m_sciInput.GetID(), ConsoleDialog::inputWndProc, 0, reinterpret_cast<DWORD_PTR>(this));
@@ -329,8 +328,7 @@ void ConsoleDialog::setPrompt(const char *prompt) {
 
 void ConsoleDialog::createOutputWindow(HWND hParentWindow) {
 	HWND sci = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
-	LONG currentStyle = GetWindowLong(sci, GWL_STYLE);
-	SetWindowLong(sci, GWL_STYLE, currentStyle | WS_TABSTOP);
+	SetWindowLongPtr(sci, GWL_STYLE, GetWindowLongPtr(sci, GWL_STYLE) | WS_TABSTOP);
 
 	m_sciOutput.SetID(sci);
 
@@ -350,8 +348,7 @@ void ConsoleDialog::createOutputWindow(HWND hParentWindow) {
 
 void ConsoleDialog::createInputWindow(HWND hParentWindow) {
 	HWND sci = (HWND)::SendMessage(_hParent, NPPM_CREATESCINTILLAHANDLE, 0, reinterpret_cast<LPARAM>(hParentWindow));
-	LONG currentStyle = GetWindowLong(sci, GWL_STYLE);
-	SetWindowLong(sci, GWL_STYLE, currentStyle | WS_TABSTOP);
+	SetWindowLongPtr(sci, GWL_STYLE, GetWindowLongPtr(sci, GWL_STYLE) | WS_TABSTOP);
 
 	m_sciInput.SetID(sci);
 
@@ -437,8 +434,7 @@ void ConsoleDialog::doDialog() {
 	if (!isCreated()) {
 		StaticDialog::create(IDD_CONSOLE);
 
-		m_hTabIcon = (HICON)::LoadImage(_hInst, MAKEINTRESOURCE(IDI_LUA), IMAGE_ICON, 16, 16, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
-		m_data.hIconTab = m_hTabIcon;
+		m_data.hIconTab = (HICON)::LoadImage(_hInst, MAKEINTRESOURCE(IDI_LUA), IMAGE_ICON, 16, 16, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
 		m_data.hClient = _hSelf;
 		m_data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
 		m_data.pszName = TEXT("LuaScript");

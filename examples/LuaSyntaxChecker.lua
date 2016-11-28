@@ -8,7 +8,7 @@ npp.AddEventHandler("OnSave", function(filename, bufferid)
     if npp:GetExtPart() ~= ".lua" then return false end
 
     editor:AnnotationClearAll()
-    
+
     -- Try to compile the lua code
     local f, err = load(editor:GetText(0, editor.Length), npp:GetFileName(), "t")
 
@@ -17,4 +17,6 @@ npp.AddEventHandler("OnSave", function(filename, bufferid)
 
     print(err)
     editor.AnnotationText[tonumber(err:match(":(%d+):")) - 1] = err
+
+    return false
 end)

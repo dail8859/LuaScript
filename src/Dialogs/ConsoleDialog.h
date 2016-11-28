@@ -54,7 +54,7 @@ public:
 	virtual void display(bool toShow = true) const;
 
 protected:
-	BOOL CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
+	INT_PTR CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
 
 private:
 	ConsoleDialog& operator = (const ConsoleDialog&); // assignment operator disabled
@@ -77,7 +77,6 @@ private:
 
 	LuaConsole *m_console;
 	std::string m_prompt;
-	HICON m_hTabIcon;
 
 	std::vector<tstring> m_history;
 	tstring m_curLine;

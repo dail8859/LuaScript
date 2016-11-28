@@ -50,6 +50,8 @@ npp.AddEventHandler("OnUpdateUI", function()
     opened_files[i].pos = editor.CurrentPos
     opened_files[i].anchor = editor.Anchor
     opened_files[i].top = editor.FirstVisibleLine
+
+    return false
 end)
 
 npp.AddEventHandler("OnFileRenamed", function(f,i)
@@ -78,6 +80,8 @@ npp.AddEventHandler("OnShutdown", function()
         end
     end
     table.save(opened_files, npp:GetPluginsConfigDir() .. "\\session.lua")
+
+    return false
 end)
 
 

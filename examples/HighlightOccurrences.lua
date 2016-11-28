@@ -50,4 +50,6 @@ npp.AddEventHandler("OnUpdateUI", function()
         editor:IndicatorFillRange(s, e - s)
         s, e = editor:findtext(word, SCFIND_WHOLEWORD | SCFIND_MATCHCASE, e, endPos)
     end
+
+    return false
 end)
