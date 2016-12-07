@@ -70,7 +70,7 @@
 
 --- Executes a menu command.
 -- @function MenuCommand
--- @tparam int command one of the [IDM_xxx](https://github.com/dail8859/LuaScript/blob/master/Npp/menuCmdID.h) constants
+-- @tparam int command one of the [IDM_xxx](https://github.com/dail8859/LuaScript/blob/master/src/Npp/menuCmdID.h) constants
 
 --- Reloads the specified file.
 -- @function ReloadFile

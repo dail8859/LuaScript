@@ -55,7 +55,17 @@ static PFUNCPLUGINCMD LuaShortcutWrappers[] = {
 	[](){ LuaExtension::Instance().CallShortcut(7); },
 	[](){ LuaExtension::Instance().CallShortcut(8); },
 	[](){ LuaExtension::Instance().CallShortcut(9); },
-	[](){ LuaExtension::Instance().CallShortcut(10);},
+	[](){ LuaExtension::Instance().CallShortcut(10); },
+	[](){ LuaExtension::Instance().CallShortcut(11); },
+	[](){ LuaExtension::Instance().CallShortcut(12); },
+	[](){ LuaExtension::Instance().CallShortcut(13); },
+	[](){ LuaExtension::Instance().CallShortcut(14); },
+	[](){ LuaExtension::Instance().CallShortcut(15); },
+	[](){ LuaExtension::Instance().CallShortcut(16); },
+	[](){ LuaExtension::Instance().CallShortcut(17); },
+	[](){ LuaExtension::Instance().CallShortcut(18); },
+	[](){ LuaExtension::Instance().CallShortcut(19); },
+	[](){ LuaExtension::Instance().CallShortcut(20); },
 };
 
 static inline LRESULT SendScintilla(UINT Msg, WPARAM wParam = SCI_UNUSED, LPARAM lParam = SCI_UNUSED) {
@@ -169,6 +179,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	NotifyHeader nh = notifyCode->nmhdr;
 
 	// We only want notifications from Notepad++ and it's 2 scintilla handles
+	// NOTE: nh.hwndFrom != nppData._nppHandle needs refined since some NPPN_XXX messages use this for something else
 	if (nh.hwndFrom != nppData._nppHandle && nh.hwndFrom != nppData._scintillaMainHandle && nh.hwndFrom != nppData._scintillaSecondHandle)
 		return;
 

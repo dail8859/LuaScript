@@ -26,8 +26,21 @@
 #define INDIC_BRACEHIGHLIGHT INDIC_CONTAINER
 #define INDIC_BRACEBADLIGHT INDIC_CONTAINER + 1
 
+// Sorter copied from Scintilla
+struct Sorter {
+	inline bool operator()(const std::string& a, const std::string& b) {
+		int lenA = a.length();
+		int lenB = b.length();
+		int len = min(lenA, lenB);
+		int cmp = strncmp(a.c_str(), b.c_str(), len);
+		if (cmp == 0)
+			cmp = lenA - lenB;
+		return cmp < 0;
+	}
+};
+
 static std::vector<std::string> &sortCaseInsensitive(std::vector<std::string> &strings) {
-	std::sort(strings.begin(), strings.end(), [](const std::string& a, const std::string& b) {return stricmp(a.c_str(), b.c_str()) < 0; });
+	std::sort(strings.begin(), strings.end(), Sorter());
 	return strings;
 }
 
@@ -125,6 +138,11 @@ LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hN
 
 	// Notepad++ functions
 	nppFunctions = join(sortCaseInsensitive(NppIFaceTable.GetAllFunctionNames()), ' ');
+
+	auto nppConsts = NppIFaceTable.GetAllConstantNames();
+	auto sciConsts = SciIFaceTable.GetAllConstantNames();
+	nppConsts.insert(nppConsts.end(), sciConsts.begin(), sciConsts.end());
+	globalConsts = join(sortCaseInsensitive(nppConsts), ' ');
 }
 
 void LuaConsole::setupInput(GUI::ScintillaWindow &sci) {
@@ -268,7 +286,7 @@ void LuaConsole::showAutoCompletion() {
 	int prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1);
 
 	// The cursor could be at the end of a partial word e.g. editor.Sty|
-	if (isalpha(prevCh)) {
+	if (isalpha(prevCh) || prevCh == '_') {
 		partialWord = getWordAt(m_sciInput, curPos - 1);
 
 		// Back up past the partial word
@@ -295,5 +313,8 @@ void LuaConsole::showAutoCompletion() {
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciFunctions.c_str());
 			}
 		}
+	}
+	else if (m_sciInput->Call(SCI_AUTOCACTIVE) == false) {
+		m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), globalConsts.c_str());
 	}
 }

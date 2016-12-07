@@ -59,6 +59,7 @@ private:
 	std::string sciFunctions;
 	std::string nppProperties;
 	std::string nppFunctions;
+	std::string globalConsts;
 
 	GUI::ScintillaWindow *m_sciInput;
 
