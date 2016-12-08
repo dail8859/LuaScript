@@ -26,13 +26,49 @@
 #define INDIC_BRACEHIGHLIGHT INDIC_CONTAINER
 #define INDIC_BRACEBADLIGHT INDIC_CONTAINER + 1
 
-// Sorter copied from Scintilla
+// Copied from Scintilla
+inline int MakeUpperCase(int ch) {
+	if (ch < 'a' || ch > 'z')
+		return ch;
+	else
+		return static_cast<char>(ch - 'a' + 'A');
+}
+
+// Copied from Scintilla
+int CompareNCaseInsensitive(const char *a, const char *b, size_t len) {
+	while (*a && *b && len) {
+		if (*a != *b) {
+			char upperA = static_cast<char>(MakeUpperCase(*a));
+			char upperB = static_cast<char>(MakeUpperCase(*b));
+			if (upperA != upperB)
+				return upperA - upperB;
+		}
+		a++;
+		b++;
+		len--;
+	}
+	if (len == 0)
+		return 0;
+	else
+		// Either *a or *b is nul
+		return *a - *b;
+}
+
+// Copied (and modified) from Scintilla
 struct Sorter {
+	bool ignoreCase;
+
+	Sorter(bool ignoreCase_) : ignoreCase(ignoreCase_) {}
+
 	inline bool operator()(const std::string& a, const std::string& b) {
 		int lenA = a.length();
 		int lenB = b.length();
 		int len = min(lenA, lenB);
-		int cmp = strncmp(a.c_str(), b.c_str(), len);
+		int cmp;
+		if (ignoreCase)
+			cmp = CompareNCaseInsensitive(a.c_str(), b.c_str(), len);
+		else
+			cmp = strncmp(a.c_str(), b.c_str(), len);
 		if (cmp == 0)
 			cmp = lenA - lenB;
 		return cmp < 0;
@@ -40,7 +76,7 @@ struct Sorter {
 };
 
 static std::vector<std::string> &sortCaseInsensitive(std::vector<std::string> &strings) {
-	std::sort(strings.begin(), strings.end(), Sorter());
+	std::sort(strings.begin(), strings.end(), Sorter(true));
 	return strings;
 }
 
