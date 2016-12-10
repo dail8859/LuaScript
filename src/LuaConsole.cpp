@@ -26,6 +26,10 @@
 #define INDIC_BRACEHIGHLIGHT INDIC_CONTAINER
 #define INDIC_BRACEBADLIGHT INDIC_CONTAINER + 1
 
+// Extra helper functions not from the IFace tables
+static const std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "textrange" };
+static const std::vector<std::string> moreNppFuncs = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
+
 // Copied from Scintilla
 inline int MakeUpperCase(int ch) {
 	if (ch < 'a' || ch > 'z')
@@ -161,15 +165,13 @@ LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hN
 	sciProperties = join(sortCaseInsensitive(SciIFaceTable.GetAllPropertyNames()), ' ');
 
 	// Scintilla methods
-	std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "textrange" };
 	auto sciFuncNames = SciIFaceTable.GetAllFunctionNames();
 	sciFuncNames.insert(sciFuncNames.end(), moreSciFuncs.begin(), moreSciFuncs.end());
 	sciFunctions = join(sortCaseInsensitive(sciFuncNames), ' ');
 
 	// Notepad++ properties
-	std::vector<std::string> moreNppProps = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
 	auto nppPropNames = NppIFaceTable.GetAllPropertyNames();
-	nppPropNames.insert(nppPropNames.end(), moreNppProps.begin(), moreNppProps.end());
+	nppPropNames.insert(nppPropNames.end(), moreNppFuncs.begin(), moreNppFuncs.end());
 	nppProperties = join(sortCaseInsensitive(nppPropNames), ' ');
 
 	// Notepad++ functions
@@ -245,6 +247,7 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 			break;
 		}
 		case SCN_AUTOCSELECTION: {
+			// See if it's a Sci or Npp property
 			auto prop = SciIFaceTable.FindProperty(scn->text);
 			if (prop != nullptr && prop->paramType != iface_void) {
 				acf = acf_brackets;
@@ -258,17 +261,17 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 				}
 			}
 
-			auto func = SciIFaceTable.FindFunction(scn->text);
-			if (func != nullptr) {
+			// See if it's a Sci or Npp function
+			if (SciIFaceTable.FindFunction(scn->text) != nullptr || NppIFaceTable.FindFunction(scn->text) != nullptr) {
 				acf = acf_parens;
 				break;
 			}
-			else {
-				func = NppIFaceTable.FindFunction(scn->text);
-				if (func != nullptr) {
-					acf = acf_parens;
-					break;
-				}
+
+			// May be one of the extra functions
+			if (std::binary_search(moreNppFuncs.begin(), moreNppFuncs.end(), scn->text) ||
+				std::binary_search(moreSciFuncs.begin(), moreSciFuncs.end(), scn->text)) {
+				acf = acf_parens;
+				break;
 			}
 
 			break;
