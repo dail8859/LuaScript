@@ -69,13 +69,13 @@ public:
 	bool OnZoom(const SCNotification *sc);
 	bool OnHotSpotClick(const SCNotification *sc);
 	bool OnHotSpotDoubleClick(const SCNotification *sc);
-	bool OnCallTipClick(const SCNotification *sc);
-	bool OnAutoCSelection(const SCNotification *sc);
+	bool OnHotSpotReleaseClick(const SCNotification *sc);
 	bool OnIndicatorClick(const SCNotification *sc);
 	bool OnIndicatorRelease(const SCNotification *sc);
+	bool OnCallTipClick(const SCNotification *sc);
+	bool OnAutoCSelection(const SCNotification *sc);
 	bool OnAutoCCancelled(const SCNotification *sc);
 	bool OnAutoCCharDeleted(const SCNotification *sc);
-	bool OnHotSpotReleaseClick(const SCNotification *sc);
 	bool OnFocusIn(const SCNotification *sc);
 	bool OnFocusOut(const SCNotification *sc);
 

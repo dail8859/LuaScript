@@ -2049,7 +2049,7 @@ bool LuaExtension::OnMacroRecord(const SCNotification *sc) {
 }
 
 bool LuaExtension::OnMarginClick(const SCNotification *sc) {
-	return CallNamedFunction("OnMarginClick", "iii", sc->modifiers, sc->position, sc->margin);
+	return CallNamedFunction("OnMarginClick", "iii", sc->position, sc->margin, sc->modifiers);
 }
 
 bool LuaExtension::OnNeedShown(const SCNotification *sc) {
@@ -2061,7 +2061,7 @@ bool LuaExtension::OnPainted(const SCNotification *sc) {
 }
 
 bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
-	return CallNamedFunction("OnUserListSelection", "isi", sc->listType, sc->text, sc->position);
+	return CallNamedFunction("OnUserListSelection", "iis", sc->listType, sc->position, sc->text);
 }
 
 bool LuaExtension::OnDwellStart(const SCNotification *sc) {
