@@ -2033,6 +2033,18 @@ bool LuaExtension::OnZoom(const SCNotification *sc) {
 	return CallNamedFunction("OnZoom", NULL);
 }
 
+bool LuaExtension::OnHotSpotClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnHotSpotDoubleClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotDoubleClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnHotSpotReleaseClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotReleaseClick", "ii", sc->position, sc->modifiers);
+}
+
 
 bool LuaExtension::OnReady() {
 	return CallNamedFunction("OnReady", NULL);
