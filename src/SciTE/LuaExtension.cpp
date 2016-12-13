@@ -2053,6 +2053,10 @@ bool LuaExtension::OnIndicatorRelease(const SCNotification *sc) {
 	return CallNamedFunction("OnIndicatorRelease", "ii", sc->position, sc->modifiers);
 }
 
+bool LuaExtension::OnCallTipClick(const SCNotification *sc) {
+	return CallNamedFunction("OnCallTipClick", "i", sc->position);
+}
+
 
 bool LuaExtension::OnReady() {
 	return CallNamedFunction("OnReady", NULL);

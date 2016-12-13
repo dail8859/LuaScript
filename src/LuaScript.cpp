@@ -257,6 +257,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case SCN_INDICATORRELEASE:
 			LuaExtension::Instance().OnIndicatorRelease(notifyCode);
 			break;
+		case SCN_CALLTIPCLICK:
+			LuaExtension::Instance().OnCallTipClick(notifyCode);
+			break;
 
 		// Notepad++ messages
 
