@@ -2060,13 +2060,22 @@ bool LuaExtension::OnCallTipClick(const SCNotification *sc) {
 bool LuaExtension::OnAutoCSelection(const SCNotification *sc) {
 	return CallNamedFunction("OnAutoCSelection", "is", sc->position, sc->text);
 }
+
 bool LuaExtension::OnAutoCCancelled(const SCNotification *sc) {
 	return CallNamedFunction("OnAutoCCancelled", NULL);
 }
+
 bool LuaExtension::OnAutoCCharDeleted(const SCNotification *sc) {
 	return CallNamedFunction("OnAutoCCharDeleted", NULL);
 }
 
+bool LuaExtension::OnFocusIn(const SCNotification *sc) {
+	return CallNamedFunction("OnFocusIn", NULL);
+}
+
+bool LuaExtension::OnFocusOut(const SCNotification *sc) {
+	return CallNamedFunction("OnFocusOut", NULL);
+}
 
 
 

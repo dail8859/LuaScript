@@ -269,6 +269,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case SCN_AUTOCCHARDELETED:
 			LuaExtension::Instance().OnAutoCCharDeleted(notifyCode);
 			break;
+		case SCN_FOCUSIN:
+			LuaExtension::Instance().OnFocusIn(notifyCode);
+			break;
+		case SCN_FOCUSOUT:
+			LuaExtension::Instance().OnFocusOut(notifyCode);
+			break;
 
 		// Notepad++ messages
 
