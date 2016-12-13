@@ -2013,6 +2013,10 @@ bool LuaExtension::OnNeedShown(const SCNotification *sc) {
 	return CallNamedFunction("OnNeedShown", "ii", sc->position, sc->length);
 }
 
+bool LuaExtension::OnPainted(const SCNotification *sc) {
+	return CallNamedFunction("OnPainted", NULL);
+}
+
 bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
 	return CallNamedFunction("OnUserListSelection", "isi", sc->listType, sc->text, sc->position);
 }

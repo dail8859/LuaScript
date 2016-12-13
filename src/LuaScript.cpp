@@ -217,6 +217,9 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case SCN_NEEDSHOWN:
 			LuaExtension::Instance().OnNeedShown(notifyCode);
 			break;
+		case SCN_PAINTED:
+			LuaExtension::Instance().OnPainted(notifyCode);
+			break;
 		case SCN_DOUBLECLICK:
 			LuaExtension::Instance().OnDoubleClick(notifyCode);
 			break;
