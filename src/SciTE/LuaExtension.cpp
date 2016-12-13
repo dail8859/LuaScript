@@ -2006,7 +2006,7 @@ bool LuaExtension::OnModification(const SCNotification *sc) {
 }
 
 bool LuaExtension::OnMarginClick(const SCNotification *sc) {
-	return CallNamedFunction("OnMarginClick", NULL);
+	return CallNamedFunction("OnMarginClick", "iii", sc->modifiers, sc->position, sc->margin);
 }
 
 bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
