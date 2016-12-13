@@ -33,6 +33,7 @@ public:
 	const IFaceConstant *FindConstant(const char *name) const;
 	const IFaceFunction *FindFunction(const char *name) const;
 	const IFaceFunction *FindFunctionByConstantName(const char *name) const;
+	const IFaceFunction *FindFunctionByValue(int value) const;
 	const IFaceProperty *FindProperty(const char *name) const;
 	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const;
 	const IFaceFunction *GetFunctionByMessage(int message) const;

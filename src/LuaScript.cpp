@@ -184,25 +184,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		return;
 
 	switch (nh.code) {
-		case SCN_CHARADDED:
-			LuaExtension::Instance().OnChar(notifyCode->ch);
-			break;
-		case SCN_MODIFIED:
-			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
-				LuaExtension::Instance().OnModification(notifyCode);
-			break;
-		case SCN_DOUBLECLICK:
-			LuaExtension::Instance().OnDoubleClick(notifyCode);
-			break;
-		case SCN_SAVEPOINTREACHED:
-			LuaExtension::Instance().OnSavePointReached();
-			break;
-		case SCN_UPDATEUI:
-			LuaExtension::Instance().OnUpdateUI(notifyCode);
-			break;
-		case SCN_SAVEPOINTLEFT:
-			LuaExtension::Instance().OnSavePointLeft();
-			break;
 		case SCN_STYLENEEDED: {
 			updateScintilla();
 			// Copied from SciTE
@@ -218,6 +199,89 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			styler.Flush();
 			break;
 		}
+		case SCN_CHARADDED:
+			LuaExtension::Instance().OnChar(notifyCode);
+			break;
+		case SCN_SAVEPOINTREACHED:
+			LuaExtension::Instance().OnSavePointReached(notifyCode);
+			break;
+		case SCN_SAVEPOINTLEFT:
+			LuaExtension::Instance().OnSavePointLeft(notifyCode);
+			break;
+		case SCN_MODIFYATTEMPTRO:
+			LuaExtension::Instance().OnModifyAttemptRO(notifyCode);
+			break;
+		case SCN_DOUBLECLICK:
+			LuaExtension::Instance().OnDoubleClick(notifyCode);
+			break;
+		case SCN_UPDATEUI:
+			LuaExtension::Instance().OnUpdateUI(notifyCode);
+			break;
+		case SCN_MODIFIED:
+			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
+				LuaExtension::Instance().OnModification(notifyCode);
+			break;
+		case SCN_MACRORECORD:
+			// NOTE: do not call!
+			//LuaExtension::Instance().OnMacroRecord(notifyCode);
+			break;
+		case SCN_MARGINCLICK:
+			LuaExtension::Instance().OnMarginClick(notifyCode);
+			break;
+		case SCN_NEEDSHOWN:
+			LuaExtension::Instance().OnNeedShown(notifyCode);
+			break;
+		case SCN_PAINTED:
+			LuaExtension::Instance().OnPainted(notifyCode);
+			break;
+		case SCN_USERLISTSELECTION:
+			LuaExtension::Instance().OnUserListSelection(notifyCode);
+			break;
+		case SCN_DWELLSTART:
+			LuaExtension::Instance().OnDwellStart(notifyCode);
+			break;
+		case SCN_DWELLEND:
+			LuaExtension::Instance().OnDwellEnd(notifyCode);
+			break;
+		case SCN_ZOOM:
+			LuaExtension::Instance().OnZoom(notifyCode);
+			break;
+		case SCN_HOTSPOTCLICK:
+			LuaExtension::Instance().OnHotSpotClick(notifyCode);
+			break;
+		case SCN_HOTSPOTDOUBLECLICK:
+			LuaExtension::Instance().OnHotSpotDoubleClick(notifyCode);
+			break;
+		case SCN_HOTSPOTRELEASECLICK:
+			LuaExtension::Instance().OnHotSpotReleaseClick(notifyCode);
+			break;
+		case SCN_INDICATORCLICK:
+			LuaExtension::Instance().OnIndicatorClick(notifyCode);
+			break;
+		case SCN_INDICATORRELEASE:
+			LuaExtension::Instance().OnIndicatorRelease(notifyCode);
+			break;
+		case SCN_CALLTIPCLICK:
+			LuaExtension::Instance().OnCallTipClick(notifyCode);
+			break;
+		case SCN_AUTOCSELECTION:
+			LuaExtension::Instance().OnAutoCSelection(notifyCode);
+			break;
+		case SCN_AUTOCCANCELLED:
+			LuaExtension::Instance().OnAutoCCancelled(notifyCode);
+			break;
+		case SCN_AUTOCCHARDELETED:
+			LuaExtension::Instance().OnAutoCCharDeleted(notifyCode);
+			break;
+		case SCN_FOCUSIN:
+			LuaExtension::Instance().OnFocusIn(notifyCode);
+			break;
+		case SCN_FOCUSOUT:
+			LuaExtension::Instance().OnFocusOut(notifyCode);
+			break;
+
+		// Notepad++ messages
+
 		case NPPN_READY: {
 			const char *msg = LUA_COPYRIGHT "\r\n\r\n";
 			g_console->mp_consoleDlg->writeText(strlen(msg), msg);

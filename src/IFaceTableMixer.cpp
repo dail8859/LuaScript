@@ -42,6 +42,14 @@ const IFaceFunction *IFaceTableMixer::FindFunctionByConstantName(const char *nam
 	return nullptr;
 }
 
+const IFaceFunction *IFaceTableMixer::FindFunctionByValue(int value) const {
+	for (auto const &iface : ifaces) {
+		const IFaceFunction *ret = iface->FindFunctionByValue(value);
+		if (ret != nullptr) return ret;
+	}
+	return nullptr;
+}
+
 const IFaceProperty *IFaceTableMixer::FindProperty(const char *name) const {
 	for (auto const &iface : ifaces) {
 		const IFaceProperty *ret = iface->FindProperty(name);

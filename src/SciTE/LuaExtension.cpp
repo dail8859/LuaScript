@@ -48,6 +48,34 @@ IFaceTableMixer ifacemixer;
 std::vector<LuaFuncItem> luaShortcuts;
 
 const char *callbacks[] = {
+	"OnStyle",
+	"OnChar",
+	"OnSavePointReached",
+	"OnSavePointLeft",
+	"OnModifyAttemptRO",
+	"OnDoubleClick",
+	"OnUpdateUI",
+	"OnModification", // Slightly Npp specific (text has been modified; added or deleted)
+	"OnMacroRecord",
+	"OnMarginClick",
+	"OnNeedShown",
+	"OnPainted",
+	"OnUserListSelection",
+	"OnDwellStart",
+	"OnDwellEnd",
+	"OnZoom",
+	"OnHotSpotClick",
+	"OnHotSpotDoubleClick",
+	"OnCallTipClick",
+	"OnAutoCSelection",
+	"OnIndicatorClick",
+	"OnIndicatorRelease",
+	"OnAutoCCancelled",
+	"OnAutoCCharDeleted",
+	"OnHotSpotReleaseClick",
+	"OnFocusIn",
+	"OnFocusOut",
+
 	"OnReady", // Npp specific
 	"OnBeforeOpen", // Npp specific
 	"OnOpen",
@@ -56,24 +84,12 @@ const char *callbacks[] = {
 	"OnSave",
 	"OnFileRenamed", // Npp specific
 	"OnFileDeleted", // Npp specific
-	"OnChar",
-	"OnSavePointReached",
-	"OnSavePointLeft",
-	"OnStyle",
-	"OnDoubleClick",
-	"OnUpdateUI",
-	//"OnMarginClick",
-	//"OnUserListSelection",
-	//"OnKey",
-	//"OnDwellStart",
 	"OnLangChange", // Npp specific
 	"OnBeforeClose", // Npp specific
 	"OnClose",
-	//"OnUserStrip",
 	"OnBeforeShutdown", // Npp specific
 	"OnCancelShutdown", // Npp specific
 	"OnShutdown", // Npp specific
-	"OnModification", // Npp specific (text has been modified; added or deleted)
 };
 
 
@@ -933,6 +949,7 @@ static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 						switch (*type++) {
 						case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
 						case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
+						case 'b': lua_pushboolean(luaState, va_arg(vl, int)); break;
 						default: raise_error(luaState, varfmt);
 						}
 					}
@@ -1579,60 +1596,18 @@ bool LuaExtension::OnExecute(const char *s) {
 	return true;
 }
 
-bool LuaExtension::OnReady() {
-	return CallNamedFunction("OnReady", NULL);
-}
-bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnOpen", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
-	if (!luaState) return false;
-
-	// Switching to a new file also means it could update the current scintilla handle
-	// so update "editor" to point to the right instance
-	if (host->getCurrentPane() == host->paneEditorMain) {
-		lua_getglobal(luaState, "editor1");
+void LuaExtension::CallShortcut(int id) {
+	lua_pushliteral(luaState, "Npp_Shortcuts");
+	lua_gettable(luaState, LUA_REGISTRYINDEX);
+	if (lua_isnil(luaState, -1)) {
+		raise_error(luaState, "Attempting to call unregistered shortcut");
 	}
-	else {
-		lua_getglobal(luaState, "editor2");
-	}
-	lua_setglobal(luaState, "editor");
 
-	return CallNamedFunction("OnSwitchFile", "si", filename, bufferid);
-}
+	lua_geti(luaState, -1, id);
+	call_function(luaState, 0, true);
+	lua_settop(luaState, 0); // Make sure it is cleared
 
-bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnBeforeSave", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnSave", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnFileRenamed", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnFileDeleted(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnFileDeleted", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnChar(char ch) {
-	char chs[2] = {ch, '\0'};
-	return CallNamedFunction("OnChar", "s", chs);
-}
-
-bool LuaExtension::OnSavePointReached() {
-	return CallNamedFunction("OnSavePointReached", NULL);
-}
-
-bool LuaExtension::OnSavePointLeft() {
-	return CallNamedFunction("OnSavePointLeft", NULL);
+	return;
 }
 
 // Similar to StyleContext class in Scintilla
@@ -1730,21 +1705,22 @@ struct StylingContext {
 		if (codePage) {
 			if (codePage == SC_CP_UTF8) {
 				if (byteNext >= 0x80) {
-					cursor[nextSlot][1] = styler->SafeGetCharAt(nextPos+1);
+					cursor[nextSlot][1] = styler->SafeGetCharAt(nextPos + 1);
 					lenNext = 2;
 					if (byteNext >= 0x80 + 0x40 + 0x20) {
 						lenNext = 3;
-						cursor[nextSlot][2] = styler->SafeGetCharAt(nextPos+2);
+						cursor[nextSlot][2] = styler->SafeGetCharAt(nextPos + 2);
 						if (byteNext >= 0x80 + 0x40 + 0x20 + 0x10) {
 							lenNext = 4;
-							cursor[nextSlot][3] = styler->SafeGetCharAt(nextPos+3);
+							cursor[nextSlot][3] = styler->SafeGetCharAt(nextPos + 3);
 						}
 					}
 				}
-			} else {
+			}
+			else {
 				if (styler->IsLeadByte(byteNext)) {
 					lenNext = 2;
-					cursor[nextSlot][1] = styler->SafeGetCharAt(nextPos+1);
+					cursor[nextSlot][1] = styler->SafeGetCharAt(nextPos + 1);
 				}
 			}
 		}
@@ -1754,8 +1730,8 @@ struct StylingContext {
 		// or on LF alone (Unix). Avoid triggering two times on Dos/Win.
 		char ch = cursor[(cursorPos) % 3][0];
 		atLineEnd = (ch == '\r' && cursor[nextSlot][0] != '\n') ||
-		        (ch == '\n') ||
-		        (currentPos >= endPos);
+			(ch == '\n') ||
+			(currentPos >= endPos);
 	}
 
 	void StartStyling(unsigned int startPos_, unsigned int length, int initStyle_) {
@@ -1808,7 +1784,8 @@ struct StylingContext {
 			currentPos += lenCurrent;
 			cursorPos++;
 			GetNextChar();
-		} else {
+		}
+		else {
 			atLineStart = false;
 			memcpy(cursor[0], "\0\0\0\0\0\0\0\0", 8);
 			memcpy(cursor[1], "\0\0\0\0\0\0\0\0", 8);
@@ -1893,19 +1870,19 @@ struct StylingContext {
 		int len = end - start + 1;
 		if (len <= 0)
 			len = 1;
-		char *sReturn = new char[len+1];
+		char *sReturn = new char[len + 1];
 		for (int i = 0; i < len; i++) {
 			sReturn[i] = context->styler->SafeGetCharAt(start + i);
 		}
 		sReturn[len] = '\0';
 		lua_pushstring(L, sReturn);
-		delete []sReturn;
+		delete[]sReturn;
 		return 1;
 	}
 
 	bool Match(const char *s) {
-		for (int n=0; *s; n++) {
-			if (*s != styler->SafeGetCharAt(currentPos+n))
+		for (int n = 0; *s; n++) {
+			if (*s != styler->SafeGetCharAt(currentPos + n))
 				return false;
 			s++;
 		}
@@ -1997,6 +1974,23 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 	return false;
 }
 
+bool LuaExtension::OnChar(const SCNotification *sc) {
+	char chs[2] = { static_cast<char>(sc->ch), '\0' };
+	return CallNamedFunction("OnChar", "s", chs);
+}
+
+bool LuaExtension::OnSavePointReached(const SCNotification *sc) {
+	return CallNamedFunction("OnSavePointReached", NULL);
+}
+
+bool LuaExtension::OnSavePointLeft(const SCNotification *sc) {
+	return CallNamedFunction("OnSavePointLeft", NULL);
+}
+
+bool LuaExtension::OnModifyAttemptRO(const SCNotification *sc) {
+	return CallNamedFunction("OnModifyAttemptRO", NULL);
+}
+
 bool LuaExtension::OnDoubleClick(const SCNotification *sc) {
 	return CallNamedFunction("OnDoubleClick", "iii", sc->position, sc->line, sc->modifiers);
 }
@@ -2005,33 +1999,170 @@ bool LuaExtension::OnUpdateUI(const SCNotification *sc) {
 	return CallNamedFunction("OnUpdateUI", "i", sc->updated);
 }
 
-bool LuaExtension::OnMarginClick() {
-	return CallNamedFunction("OnMarginClick", NULL);
+bool LuaExtension::OnModification(const SCNotification *sc) {
+	int modType = sc->modificationType;
+
+	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length,
+		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
 }
 
-bool LuaExtension::OnUserListSelection(int listType, const char *selection) {
-	return CallNamedFunction("OnUserListSelection", "is", listType, selection);
-}
-
-bool LuaExtension::OnKey(int keyval, int modifiers) {
-	bool handled = false;
-	if (luaState) {
-		lua_getglobal(luaState, "OnKey");
-		if (lua_isfunction(luaState, -1)) {
-			lua_pushinteger(luaState, keyval);
-			lua_pushboolean(luaState, (SCMOD_SHIFT & modifiers) != 0 ? 1 : 0); // shift/lock
-			lua_pushboolean(luaState, (SCMOD_CTRL  & modifiers) != 0 ? 1 : 0); // control
-			lua_pushboolean(luaState, (SCMOD_ALT   & modifiers) != 0 ? 1 : 0); // alt
-			handled = call_function(luaState, 4);
-		} else {
-			lua_pop(luaState, 1);
-		}
+static char IFaceTypeToChar(IFaceType ift) {
+	switch (ift) {
+		case iface_void:
+		case iface_int:
+		case iface_length:
+		case iface_position:
+		case iface_colour:
+			return 'i';
+		case iface_bool:
+			return 'b';
+		case iface_string:
+			return 's';
 	}
-	return handled;
+	return '~'; // Meaningless character
 }
 
-bool LuaExtension::OnDwellStart(int pos, const char *word) {
-	return CallNamedFunction("OnDwellStart", "is", pos, word);
+// NOTE: There appears to be a bug with Scintilla v3.5.6 (Notepad++'s current version) where the
+// lParam is incorrect. Simply typing a character in N++ fires SCI_REPLACESEL with a string of 1
+// character, however it is not null terminated, thus getting garbage. Strings with more than one character
+// appear to be working correctly. N++ bypasses this by *only* using the first char (which is probably
+// a bug if it receives longer strings).
+//
+// This function should not be called until it is fixed or a work around is found.
+// 
+// Lua test case:
+// npp.AddEventHandler("OnMacroRecord", function(m, w, l) print(npp.ConstantName(m, "SCI_"), w, l) end)
+bool LuaExtension::OnMacroRecord(const SCNotification *sc) {
+	auto func = SciIFaceTable.FindFunctionByValue(sc->message);
+
+	if (!func)
+		raise_ferror(luaState, "OnMacroRecord(): Unrecognized message %d", sc->message);
+
+	std::string params("i");
+	params += IFaceTypeToChar(func->paramType[0]);
+	params += IFaceTypeToChar(func->paramType[1]);
+
+	if (func->paramType[1] == iface_string)
+		return CallNamedFunction("OnMacroRecord", params.c_str(), sc->message, sc->wParam, reinterpret_cast<const char *>(sc->lParam));
+	else
+		return CallNamedFunction("OnMacroRecord", params.c_str(), sc->message, sc->wParam, sc->lParam);
+}
+
+bool LuaExtension::OnMarginClick(const SCNotification *sc) {
+	return CallNamedFunction("OnMarginClick", "iii", sc->position, sc->margin, sc->modifiers);
+}
+
+bool LuaExtension::OnNeedShown(const SCNotification *sc) {
+	return CallNamedFunction("OnNeedShown", "ii", sc->position, sc->length);
+}
+
+bool LuaExtension::OnPainted(const SCNotification *sc) {
+	return CallNamedFunction("OnPainted", NULL);
+}
+
+bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
+	return CallNamedFunction("OnUserListSelection", "iis", sc->listType, sc->position, sc->text);
+}
+
+bool LuaExtension::OnDwellStart(const SCNotification *sc) {
+	return CallNamedFunction("OnDwellStart", "iii", sc->position, sc->x, sc->y);
+}
+
+bool LuaExtension::OnDwellEnd(const SCNotification *sc) {
+	return CallNamedFunction("OnDwellEnd", "iii", sc->position, sc->x, sc->y);
+}
+
+bool LuaExtension::OnZoom(const SCNotification *sc) {
+	return CallNamedFunction("OnZoom", NULL);
+}
+
+bool LuaExtension::OnHotSpotClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnHotSpotDoubleClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotDoubleClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnHotSpotReleaseClick(const SCNotification *sc) {
+	return CallNamedFunction("OnHotSpotReleaseClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnIndicatorClick(const SCNotification *sc) {
+	return CallNamedFunction("OnIndicatorClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnIndicatorRelease(const SCNotification *sc) {
+	return CallNamedFunction("OnIndicatorRelease", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnCallTipClick(const SCNotification *sc) {
+	return CallNamedFunction("OnCallTipClick", "i", sc->position);
+}
+
+bool LuaExtension::OnAutoCSelection(const SCNotification *sc) {
+	return CallNamedFunction("OnAutoCSelection", "is", sc->position, sc->text);
+}
+
+bool LuaExtension::OnAutoCCancelled(const SCNotification *sc) {
+	return CallNamedFunction("OnAutoCCancelled", NULL);
+}
+
+bool LuaExtension::OnAutoCCharDeleted(const SCNotification *sc) {
+	return CallNamedFunction("OnAutoCCharDeleted", NULL);
+}
+
+bool LuaExtension::OnFocusIn(const SCNotification *sc) {
+	return CallNamedFunction("OnFocusIn", NULL);
+}
+
+bool LuaExtension::OnFocusOut(const SCNotification *sc) {
+	return CallNamedFunction("OnFocusOut", NULL);
+}
+
+
+
+bool LuaExtension::OnReady() {
+	return CallNamedFunction("OnReady", NULL);
+}
+bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnOpen", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
+	if (!luaState) return false;
+
+	// Switching to a new file also means it could update the current scintilla handle
+	// so update "editor" to point to the right instance
+	if (host->getCurrentPane() == host->paneEditorMain) {
+		lua_getglobal(luaState, "editor1");
+	}
+	else {
+		lua_getglobal(luaState, "editor2");
+	}
+	lua_setglobal(luaState, "editor");
+
+	return CallNamedFunction("OnSwitchFile", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeSave", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnSave", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileRenamed", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileDeleted(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileDeleted", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnLangChange() {
@@ -2056,25 +2187,4 @@ bool LuaExtension::OnCancelShutdown() {
 
 bool LuaExtension::OnShutdown() {
 	return CallNamedFunction("OnShutdown", NULL);
-}
-
-bool LuaExtension::OnModification(const SCNotification *sc) {
-	int modType = sc->modificationType;
-
-	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length,
-		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
-}
-
-void LuaExtension::CallShortcut(int id) {
-	lua_pushliteral(luaState, "Npp_Shortcuts");
-	lua_gettable(luaState, LUA_REGISTRYINDEX);
-	if (lua_isnil(luaState, -1)) {
-		raise_error(luaState, "Attempting to call unregistered shortcut");
-	}
-
-	lua_geti(luaState, -1, id);
-	call_function(luaState, 0, true);
-	lua_settop(luaState, 0); // Make sure it is cleared
-
-	return;
 }

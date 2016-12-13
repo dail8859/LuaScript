@@ -44,9 +44,42 @@ public:
 	bool Initialise(NppExtensionAPI *host_);
 	bool Finalise();
 
+	// Helper methods
 	bool RunString(const char *s);
 	bool RunFile(const wchar_t *filename);
+	bool OnExecute(const char *s);
+	void CallShortcut(int id);
 
+	// Scintilla callbacks
+	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
+	bool OnChar(const SCNotification *sc);
+	bool OnSavePointReached(const SCNotification *sc);
+	bool OnSavePointLeft(const SCNotification *sc);
+	bool OnModifyAttemptRO(const SCNotification *sc);
+	bool OnDoubleClick(const SCNotification *sc);
+	bool OnUpdateUI(const SCNotification *sc);
+	bool OnModification(const SCNotification *sc);
+	bool OnMacroRecord(const SCNotification *sc);
+	bool OnMarginClick(const SCNotification *sc);
+	bool OnNeedShown(const SCNotification *sc);
+	bool OnPainted(const SCNotification *sc);
+	bool OnUserListSelection(const SCNotification *sc);
+	bool OnDwellStart(const SCNotification *sc);
+	bool OnDwellEnd(const SCNotification *sc);
+	bool OnZoom(const SCNotification *sc);
+	bool OnHotSpotClick(const SCNotification *sc);
+	bool OnHotSpotDoubleClick(const SCNotification *sc);
+	bool OnHotSpotReleaseClick(const SCNotification *sc);
+	bool OnIndicatorClick(const SCNotification *sc);
+	bool OnIndicatorRelease(const SCNotification *sc);
+	bool OnCallTipClick(const SCNotification *sc);
+	bool OnAutoCSelection(const SCNotification *sc);
+	bool OnAutoCCancelled(const SCNotification *sc);
+	bool OnAutoCCharDeleted(const SCNotification *sc);
+	bool OnFocusIn(const SCNotification *sc);
+	bool OnFocusOut(const SCNotification *sc);
+
+	// Notepad++ callbacks
 	bool OnReady();
 	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
 	bool OnOpen(const char *filename, uptr_t bufferid);
@@ -55,24 +88,10 @@ public:
 	bool OnSave(const char *filename, uptr_t bufferid);
 	bool OnFileRenamed(const char *filename, uptr_t bufferid);
 	bool OnFileDeleted(const char *filename, uptr_t bufferid);
-	bool OnChar(char ch);
-	bool OnExecute(const char *s);
-	bool OnSavePointReached();
-	bool OnSavePointLeft();
-	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
-	bool OnDoubleClick(const SCNotification *sc);
-	bool OnUpdateUI(const SCNotification *sc);
-	bool OnMarginClick();
-	bool OnUserListSelection(int listType, const char *selection);
-	bool OnKey(int keyval, int modifiers);
-	bool OnDwellStart(int pos, const char *word);
 	bool OnLangChange();
 	bool OnBeforeClose(const char *filename, uptr_t bufferid);
 	bool OnClose(const char *filename, uptr_t bufferid);
 	bool OnBeforeShutdown();
 	bool OnCancelShutdown();
 	bool OnShutdown();
-	bool OnModification(const SCNotification *sc);
-
-	void CallShortcut(int id);
 };

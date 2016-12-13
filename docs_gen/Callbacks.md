@@ -1,12 +1,38 @@
 # Callbacks
-Scripts can register Lua functions as a callback when certain events take place. Each event type can have multiple callbacks registered. Supported events include:
+Scripts can register Lua functions as a callback when certain events take place. Each event type can have multiple callbacks registered.
 
-- `OnReady()`
+Scintilla related callbacks:
+
+- `OnStyle(styler)`
 - `OnChar(character)`
-- `OnModification(modType, position, length, text, linesAdded)`
-- `OnUpdateUI(flags)`
 - `OnSavePointReached()`
 - `OnSavePointLeft()`
+- `OnModifyAttemptRO()`
+- `OnDoubleClick(position, line, modifiers)`
+- `OnUpdateUI(flags)`
+- `OnModification(modType, position, length, text, linesAdded)`
+- `OnMarginClick(position, margin, modifiers)`
+- `OnNeedShown(position, length)`
+- `OnPainted(listType, position, text)`
+- `OnUserListSelection(listType, position, text)`
+- `OnDwellStart(position, x, y)`
+- `OnDwellEnd(position, x, y)`
+- `OnZoom()`
+- `OnHotSpotClick(position, modifiers)`
+- `OnHotSpotDoubleClick(position, modifiers)`
+- `OnHotSpotReleaseClick(position, modifiers)`
+- `OnIndicatorClick(position, modifiers)`
+- `OnIndicatorRelease(position, modifiers)`
+- `OnCallTipClick(flag)`
+- `OnAutoCSelection(position, text)`
+- `OnAutoCCancelled()`
+- `OnAutoCCharDeleted()`
+- `OnFocusIn()`
+- `OnFocusOut()`
+
+Notepad++ related callbacks:
+
+- `OnReady()`
 - `OnBeforeOpen(filename, bufferid)`
 - `OnOpen(filename, bufferid)`
 - `OnSwitchFile(filename, bufferid)`
@@ -19,8 +45,6 @@ Scripts can register Lua functions as a callback when certain events take place.
 - `OnLangChange()`
 - `OnBeforeShutdown()`
 - `OnCancelShutdown()`
-- `OnStyle(styler)`
-- `OnDoubleClick(position, line, modifiers)`
 - `OnShutdown()`
 
 The Notepad++ object allows adding, removing, and clearing callback functions for the events. 

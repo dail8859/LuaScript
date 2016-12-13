@@ -81,6 +81,14 @@ const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) co
 	return nullptr;
 }
 
+const IFaceFunction *IFaceTable::FindFunctionByValue(int value) const {
+	for (const auto &func : functions) {
+		if (func.value == value)
+			return &func;
+	}
+	return nullptr;
+}
+
 const IFaceProperty *IFaceTable::FindProperty(const char *name) const {
 	int lo = 0;
 	int hi = properties.size() - 1;
