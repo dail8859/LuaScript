@@ -184,25 +184,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		return;
 
 	switch (nh.code) {
-		case SCN_CHARADDED:
-			LuaExtension::Instance().OnChar(notifyCode->ch);
-			break;
-		case SCN_MODIFIED:
-			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
-				LuaExtension::Instance().OnModification(notifyCode);
-			break;
-		case SCN_DOUBLECLICK:
-			LuaExtension::Instance().OnDoubleClick(notifyCode);
-			break;
-		case SCN_SAVEPOINTREACHED:
-			LuaExtension::Instance().OnSavePointReached();
-			break;
-		case SCN_UPDATEUI:
-			LuaExtension::Instance().OnUpdateUI(notifyCode);
-			break;
-		case SCN_SAVEPOINTLEFT:
-			LuaExtension::Instance().OnSavePointLeft();
-			break;
 		case SCN_STYLENEEDED: {
 			updateScintilla();
 			// Copied from SciTE
@@ -218,6 +199,28 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			styler.Flush();
 			break;
 		}
+		case SCN_CHARADDED:
+			LuaExtension::Instance().OnChar(notifyCode->ch);
+			break;
+		case SCN_SAVEPOINTREACHED:
+			LuaExtension::Instance().OnSavePointReached();
+			break;
+		case SCN_SAVEPOINTLEFT:
+			LuaExtension::Instance().OnSavePointLeft();
+			break;
+		case SCN_DOUBLECLICK:
+			LuaExtension::Instance().OnDoubleClick(notifyCode);
+			break;
+		case SCN_UPDATEUI:
+			LuaExtension::Instance().OnUpdateUI(notifyCode);
+			break;
+		case SCN_MODIFIED:
+			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
+				LuaExtension::Instance().OnModification(notifyCode);
+			break;
+
+		// Notepad++ messages
+
 		case NPPN_READY: {
 			const char *msg = LUA_COPYRIGHT "\r\n\r\n";
 			g_console->mp_consoleDlg->writeText(strlen(msg), msg);
