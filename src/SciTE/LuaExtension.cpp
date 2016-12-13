@@ -2045,6 +2045,14 @@ bool LuaExtension::OnHotSpotReleaseClick(const SCNotification *sc) {
 	return CallNamedFunction("OnHotSpotReleaseClick", "ii", sc->position, sc->modifiers);
 }
 
+bool LuaExtension::OnIndicatorClick(const SCNotification *sc) {
+	return CallNamedFunction("OnIndicatorClick", "ii", sc->position, sc->modifiers);
+}
+
+bool LuaExtension::OnIndicatorRelease(const SCNotification *sc) {
+	return CallNamedFunction("OnIndicatorRelease", "ii", sc->position, sc->modifiers);
+}
+
 
 bool LuaExtension::OnReady() {
 	return CallNamedFunction("OnReady", NULL);
