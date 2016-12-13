@@ -52,15 +52,32 @@ public:
 
 	// Scintilla callbacks
 	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
-	bool OnChar(char ch);
-	bool OnSavePointReached();
-	bool OnSavePointLeft();
+	bool OnChar(const SCNotification *sc);
+	bool OnSavePointReached(const SCNotification *sc);
+	bool OnSavePointLeft(const SCNotification *sc);
+	bool OnModifyAttemptRO(const SCNotification *sc);
 	bool OnDoubleClick(const SCNotification *sc);
 	bool OnUpdateUI(const SCNotification *sc);
 	bool OnModification(const SCNotification *sc);
-	bool OnMarginClick();
-	bool OnUserListSelection(int listType, const char *selection);
-	bool OnDwellStart(int pos, const char *word);
+	bool OnMacroRecord(const SCNotification *sc);
+	bool OnMarginClick(const SCNotification *sc);
+	bool OnNeedShown(const SCNotification *sc);
+	bool OnPainted(const SCNotification *sc);
+	bool OnUserListSelection(const SCNotification *sc);
+	bool OnDwellStart(const SCNotification *sc);
+	bool OnDwellEnd(const SCNotification *sc);
+	bool OnZoom(const SCNotification *sc);
+	bool OnHotSpotClick(const SCNotification *sc);
+	bool OnHotSpotDoubleClick(const SCNotification *sc);
+	bool OnCallTipClick(const SCNotification *sc);
+	bool OnAutoCSelection(const SCNotification *sc);
+	bool OnIndicatorClick(const SCNotification *sc);
+	bool OnIndicatorRelease(const SCNotification *sc);
+	bool OnAutoCCancelled(const SCNotification *sc);
+	bool OnAutoCCharDeleted(const SCNotification *sc);
+	bool OnHotSpotReleaseClick(const SCNotification *sc);
+	bool OnFocusIn(const SCNotification *sc);
+	bool OnFocusOut(const SCNotification *sc);
 
 	// Notepad++ callbacks
 	bool OnReady();

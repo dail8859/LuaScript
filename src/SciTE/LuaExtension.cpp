@@ -52,12 +52,29 @@ const char *callbacks[] = {
 	"OnChar",
 	"OnSavePointReached",
 	"OnSavePointLeft",
+	"OnModifyAttemptRO",
 	"OnDoubleClick",
 	"OnUpdateUI",
-	"OnModification", // Npp specific (text has been modified; added or deleted)
-	//"OnMarginClick",
-	//"OnUserListSelection",
-	//"OnDwellStart",
+	"OnModification", // Slightly Npp specific (text has been modified; added or deleted)
+	"OnMacroRecord",
+	"OnMarginClick",
+	"OnNeedShown",
+	"OnPainted",
+	"OnUserListSelection",
+	"OnDwellStart",
+	"OnDwellEnd",
+	"OnZoom",
+	"OnHotSpotClick",
+	"OnHotSpotDoubleClick",
+	"OnCallTipClick",
+	"OnAutoCSelection",
+	"OnIndicatorClick",
+	"OnIndicatorRelease",
+	"OnAutoCCancelled",
+	"OnAutoCCharDeleted",
+	"OnHotSpotReleaseClick",
+	"OnFocusIn",
+	"OnFocusOut",
 
 	"OnReady", // Npp specific
 	"OnBeforeOpen", // Npp specific
@@ -1956,16 +1973,16 @@ bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, 
 	return false;
 }
 
-bool LuaExtension::OnChar(char ch) {
-	char chs[2] = { ch, '\0' };
+bool LuaExtension::OnChar(const SCNotification *sc) {
+	char chs[2] = { static_cast<char>(sc->ch), '\0' };
 	return CallNamedFunction("OnChar", "s", chs);
 }
 
-bool LuaExtension::OnSavePointReached() {
+bool LuaExtension::OnSavePointReached(const SCNotification *sc) {
 	return CallNamedFunction("OnSavePointReached", NULL);
 }
 
-bool LuaExtension::OnSavePointLeft() {
+bool LuaExtension::OnSavePointLeft(const SCNotification *sc) {
 	return CallNamedFunction("OnSavePointLeft", NULL);
 }
 
@@ -1984,16 +2001,16 @@ bool LuaExtension::OnModification(const SCNotification *sc) {
 		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
 }
 
-bool LuaExtension::OnMarginClick() {
+bool LuaExtension::OnMarginClick(const SCNotification *sc) {
 	return CallNamedFunction("OnMarginClick", NULL);
 }
 
-bool LuaExtension::OnUserListSelection(int listType, const char *selection) {
-	return CallNamedFunction("OnUserListSelection", "is", listType, selection);
+bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
+	return CallNamedFunction("OnUserListSelection", "isi", sc->listType, sc->text, sc->position);
 }
 
-bool LuaExtension::OnDwellStart(int pos, const char *word) {
-	return CallNamedFunction("OnDwellStart", "is", pos, word);
+bool LuaExtension::OnDwellStart(const SCNotification *sc) {
+	return CallNamedFunction("OnDwellStart", "iii", sc->position, sc->x, sc->y);
 }
 
 

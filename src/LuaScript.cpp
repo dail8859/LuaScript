@@ -200,13 +200,13 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			break;
 		}
 		case SCN_CHARADDED:
-			LuaExtension::Instance().OnChar(notifyCode->ch);
+			LuaExtension::Instance().OnChar(notifyCode);
 			break;
 		case SCN_SAVEPOINTREACHED:
-			LuaExtension::Instance().OnSavePointReached();
+			LuaExtension::Instance().OnSavePointReached(notifyCode);
 			break;
 		case SCN_SAVEPOINTLEFT:
-			LuaExtension::Instance().OnSavePointLeft();
+			LuaExtension::Instance().OnSavePointLeft(notifyCode);
 			break;
 		case SCN_DOUBLECLICK:
 			LuaExtension::Instance().OnDoubleClick(notifyCode);
