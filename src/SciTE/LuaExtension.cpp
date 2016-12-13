@@ -2025,6 +2025,10 @@ bool LuaExtension::OnDwellStart(const SCNotification *sc) {
 	return CallNamedFunction("OnDwellStart", "iii", sc->position, sc->x, sc->y);
 }
 
+bool LuaExtension::OnDwellEnd(const SCNotification *sc) {
+	return CallNamedFunction("OnDwellEnd", "iii", sc->position, sc->x, sc->y);
+}
+
 
 
 bool LuaExtension::OnReady() {
