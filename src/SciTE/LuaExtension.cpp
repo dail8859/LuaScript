@@ -1986,6 +1986,10 @@ bool LuaExtension::OnSavePointLeft(const SCNotification *sc) {
 	return CallNamedFunction("OnSavePointLeft", NULL);
 }
 
+bool LuaExtension::OnModifyAttemptRO(const SCNotification *sc) {
+	return CallNamedFunction("OnModifyAttemptRO", NULL);
+}
+
 bool LuaExtension::OnDoubleClick(const SCNotification *sc) {
 	return CallNamedFunction("OnDoubleClick", "iii", sc->position, sc->line, sc->modifiers);
 }
