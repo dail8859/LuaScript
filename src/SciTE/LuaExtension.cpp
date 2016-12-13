@@ -949,6 +949,7 @@ static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 						switch (*type++) {
 						case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
 						case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
+						case 'b': lua_pushboolean(luaState, va_arg(vl, int)); break;
 						default: raise_error(luaState, varfmt);
 						}
 					}
@@ -2003,6 +2004,48 @@ bool LuaExtension::OnModification(const SCNotification *sc) {
 
 	return CallNamedFunction("OnModification", "iiisi", modType, sc->position, sc->length,
 		sc->text != NULL ? std::string(sc->text, sc->length).c_str() : "", sc->linesAdded);
+}
+
+static char IFaceTypeToChar(IFaceType ift) {
+	switch (ift) {
+		case iface_void:
+		case iface_int:
+		case iface_length:
+		case iface_position:
+		case iface_colour:
+			return 'i';
+		case iface_bool:
+			return 'b';
+		case iface_string:
+			return 's';
+	}
+	return '~'; // Meaningless character
+}
+
+// NOTE: There appears to be a bug with Scintilla v3.5.6 (Notepad++'s current version) where the
+// lParam is incorrect. Simply typing a character in N++ fires SCI_REPLACESEL with a string of 1
+// character, however it is not null terminated, thus getting garbage. Strings with more than one character
+// appear to be working correctly. N++ bypasses this by *only* using the first char (which is probably
+// a bug if it receives longer strings).
+//
+// This function should not be called until it is fixed or a work around is found.
+// 
+// Lua test case:
+// npp.AddEventHandler("OnMacroRecord", function(m, w, l) print(npp.ConstantName(m, "SCI_"), w, l) end)
+bool LuaExtension::OnMacroRecord(const SCNotification *sc) {
+	auto func = SciIFaceTable.FindFunctionByValue(sc->message);
+
+	if (!func)
+		raise_ferror(luaState, "OnMacroRecord(): Unrecognized message %d", sc->message);
+
+	std::string params("i");
+	params += IFaceTypeToChar(func->paramType[0]);
+	params += IFaceTypeToChar(func->paramType[1]);
+
+	if (func->paramType[1] == iface_string)
+		return CallNamedFunction("OnMacroRecord", params.c_str(), sc->message, sc->wParam, reinterpret_cast<const char *>(sc->lParam));
+	else
+		return CallNamedFunction("OnMacroRecord", params.c_str(), sc->message, sc->wParam, sc->lParam);
 }
 
 bool LuaExtension::OnMarginClick(const SCNotification *sc) {

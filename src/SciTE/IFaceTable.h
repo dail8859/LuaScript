@@ -114,6 +114,7 @@ public:
 	virtual const IFaceConstant *FindConstant(const char *name) const = 0;
 	virtual const IFaceFunction *FindFunction(const char *name) const = 0;
 	virtual const IFaceFunction *FindFunctionByConstantName(const char *name) const = 0;
+	virtual const IFaceFunction *FindFunctionByValue(int value) const = 0;
 	virtual const IFaceProperty *FindProperty(const char *name) const = 0;
 	virtual int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const = 0;
 	virtual const IFaceFunction *GetFunctionByMessage(int message) const = 0;
@@ -144,6 +145,7 @@ public:
 	const IFaceConstant *FindConstant(const char *name) const;
 	const IFaceFunction *FindFunction(const char *name) const;
 	const IFaceFunction *FindFunctionByConstantName(const char *name) const;
+	const IFaceFunction *FindFunctionByValue(int value) const;
 	const IFaceProperty *FindProperty(const char *name) const;
 	int GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const;
 	const IFaceFunction *GetFunctionByMessage(int message) const;
