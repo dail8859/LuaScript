@@ -2029,6 +2029,9 @@ bool LuaExtension::OnDwellEnd(const SCNotification *sc) {
 	return CallNamedFunction("OnDwellEnd", "iii", sc->position, sc->x, sc->y);
 }
 
+bool LuaExtension::OnZoom(const SCNotification *sc) {
+	return CallNamedFunction("OnZoom", NULL);
+}
 
 
 bool LuaExtension::OnReady() {

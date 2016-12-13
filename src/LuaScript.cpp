@@ -211,6 +211,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case SCN_MODIFYATTEMPTRO:
 			LuaExtension::Instance().OnModifyAttemptRO(notifyCode);
 			break;
+		case SCN_DOUBLECLICK:
+			LuaExtension::Instance().OnDoubleClick(notifyCode);
+			break;
+		case SCN_UPDATEUI:
+			LuaExtension::Instance().OnUpdateUI(notifyCode);
+			break;
+		case SCN_MODIFIED:
+			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
+				LuaExtension::Instance().OnModification(notifyCode);
+			break;
 		case SCN_MARGINCLICK:
 			LuaExtension::Instance().OnMarginClick(notifyCode);
 			break;
@@ -229,15 +239,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case SCN_DWELLEND:
 			LuaExtension::Instance().OnDwellEnd(notifyCode);
 			break;
-		case SCN_DOUBLECLICK:
-			LuaExtension::Instance().OnDoubleClick(notifyCode);
-			break;
-		case SCN_UPDATEUI:
-			LuaExtension::Instance().OnUpdateUI(notifyCode);
-			break;
-		case SCN_MODIFIED:
-			if (notifyCode->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
-				LuaExtension::Instance().OnModification(notifyCode);
+		case SCN_ZOOM:
+			LuaExtension::Instance().OnZoom(notifyCode);
 			break;
 
 		// Notepad++ messages
