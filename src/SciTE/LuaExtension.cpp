@@ -2009,6 +2009,10 @@ bool LuaExtension::OnMarginClick(const SCNotification *sc) {
 	return CallNamedFunction("OnMarginClick", "iii", sc->modifiers, sc->position, sc->margin);
 }
 
+bool LuaExtension::OnNeedShown(const SCNotification *sc) {
+	return CallNamedFunction("OnNeedShown", "ii", sc->position, sc->length);
+}
+
 bool LuaExtension::OnUserListSelection(const SCNotification *sc) {
 	return CallNamedFunction("OnUserListSelection", "isi", sc->listType, sc->text, sc->position);
 }
