@@ -331,14 +331,22 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_SHORTCUTREMAPPED:
 			break;
 		case NPPN_FILEBEFORELOAD:
+			LuaExtension::Instance().OnFileBeforeLoad();
 			break;
 		case NPPN_FILELOADFAILED:
+			LuaExtension::Instance().OnFileLoadFailed();
 			break;
 		case NPPN_READONLYCHANGED:
+			// TODO: hwndFrom is the buffer ID. The above if statement throws it away
+			//LuaExtension::Instance().OnReadOnlyChanged(bufferID, status);
 			break;
 		case NPPN_DOCORDERCHANGED:
+			// TODO: hwndFrom is the buffer ID. The above if statement throws it away
+			//LuaExtension::Instance().OnDocOrderChanged(bufferID, newIndex);
 			break;
 		case NPPN_SNAPSHOTDIRTYFILELOADED:
+			// TODO: hwndFrom is NULL. The above if statement throws it away
+			//LuaExtension::Instance().OnSnapshotDirtyFileLoaded(bufferID);
 			break;
 		case NPPN_BEFORESHUTDOWN:
 			LuaExtension::Instance().OnBeforeShutdown();
@@ -347,16 +355,24 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			LuaExtension::Instance().OnCancelShutdown();
 			break;
 		case NPPN_FILEBEFORERENAME:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileBeforeRename(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILERENAMECANCEL:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileRenameCancel(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILERENAMED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 			LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEBEFOREDELETE:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileBeforeDelete(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEDELETEFAILED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileDeleteFailed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEDELETED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
