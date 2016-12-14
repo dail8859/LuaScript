@@ -76,20 +76,32 @@ const char *callbacks[] = {
 	"OnFocusIn",
 	"OnFocusOut",
 
-	"OnReady", // Npp specific
-	"OnBeforeOpen", // Npp specific
+	"OnReady",
+	//"OnToolBarModification",
+	"OnBeforeClose",
 	"OnOpen",
-	"OnSwitchFile",
+	"OnClose",
+	"OnBeforeOpen",
 	"OnBeforeSave",
 	"OnSave",
-	"OnFileRenamed", // Npp specific
-	"OnFileDeleted", // Npp specific
-	"OnLangChange", // Npp specific
-	"OnBeforeClose", // Npp specific
-	"OnClose",
-	"OnBeforeShutdown", // Npp specific
-	"OnCancelShutdown", // Npp specific
-	"OnShutdown", // Npp specific
+	"OnShutdown",
+	"OnSwitchFile",
+	"OnLangChange",
+	//"OnWordStylesUpdated",
+	//"OnShortcutRemapped",
+	"OnFileBeforeLoad",
+	"OnFileLoadFailed",
+	"OnReadOnlyChanged",
+	"OnDocOrderChanged",
+	"OnSnapshotDirtyFileLoaded",
+	"OnBeforeShutdown",
+	"OnCancelShutdown",
+	"OnFileBeforeRename",
+	"OnFileRenameCancel",
+	"OnFileRenamed",
+	"OnFileBeforeDelete",
+	"OnFileDeleteFailed",
+	"OnFileDeleted",
 };
 
 
