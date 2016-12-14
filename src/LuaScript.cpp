@@ -174,7 +174,6 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) {
 }
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
-	static TCHAR static_fname[MAX_PATH];
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
@@ -292,16 +291,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_TBMODIFICATION:
 			break;
 		case NPPN_FILEBEFORECLOSE:
-			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
-			LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEOPENED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 			LuaExtension::Instance().OnOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILECLOSED:
-			// NOTE: cannot use idFrom to get the path since it is no longer valid
-			LuaExtension::Instance().OnClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+			// Note: a valid BufferID is technically provided but it is not able to be used at all
+			LuaExtension::Instance().OnClose();
 			break;
 		case NPPN_FILEBEFOREOPEN:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
@@ -375,8 +374,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			LuaExtension::Instance().OnFileDeleteFailed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEDELETED:
-			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnFileDeleted(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			LuaExtension::Instance().OnFileDeleted();
 			break;
 	}
 	return;

@@ -87,13 +87,13 @@ const char *callbacks[] = {
 	"OnShutdown",
 	"OnSwitchFile",
 	"OnLangChange",
+	//"OnReadOnlyChanged",
 	//"OnWordStylesUpdated",
 	//"OnShortcutRemapped",
 	"OnFileBeforeLoad",
 	"OnFileLoadFailed",
-	"OnReadOnlyChanged",
-	"OnDocOrderChanged",
-	"OnSnapshotDirtyFileLoaded",
+	//"OnDocOrderChanged",
+	//"OnSnapshotDirtyFileLoaded",
 	"OnBeforeShutdown",
 	"OnCancelShutdown",
 	"OnFileBeforeRename",
@@ -2226,6 +2226,6 @@ bool LuaExtension::OnFileDeleteFailed(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnFileDeleteFailed", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnFileDeleted(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnFileDeleted", "si", filename, bufferid);
+bool LuaExtension::OnFileDeleted() {
+	return CallNamedFunction("OnFileDeleted", NULL);
 }

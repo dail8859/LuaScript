@@ -83,7 +83,7 @@ public:
 	bool OnReady();
 	bool OnBeforeClose(const char *filename, uptr_t bufferid);
 	bool OnOpen(const char *filename, uptr_t bufferid);
-	bool OnClose(const char *filename, uptr_t bufferid);
+	bool OnClose();
 	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
 	bool OnBeforeSave(const char *filename, uptr_t bufferid);
 	bool OnSave(const char *filename, uptr_t bufferid);
@@ -102,5 +102,5 @@ public:
 	bool OnFileRenamed(const char *filename, uptr_t bufferid);
 	bool OnFileBeforeDelete(const char *filename, uptr_t bufferid);
 	bool OnFileDeleteFailed(const char *filename, uptr_t bufferid);
-	bool OnFileDeleted(const char *filename, uptr_t bufferid);
+	bool OnFileDeleted();
 };
