@@ -81,17 +81,27 @@ public:
 
 	// Notepad++ callbacks
 	bool OnReady();
-	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
+	bool OnToolBarModification();
+	bool OnBeforeClose(const char *filename, uptr_t bufferid);
 	bool OnOpen(const char *filename, uptr_t bufferid);
-	bool OnSwitchFile(const char *filename, uptr_t bufferid);
+	bool OnClose();
+	bool OnBeforeOpen(const char *filename, uptr_t bufferid);
 	bool OnBeforeSave(const char *filename, uptr_t bufferid);
 	bool OnSave(const char *filename, uptr_t bufferid);
-	bool OnFileRenamed(const char *filename, uptr_t bufferid);
-	bool OnFileDeleted(const char *filename, uptr_t bufferid);
+	bool OnShutdown();
+	bool OnSwitchFile(const char *filename, uptr_t bufferid);
 	bool OnLangChange();
-	bool OnBeforeClose(const char *filename, uptr_t bufferid);
-	bool OnClose(const char *filename, uptr_t bufferid);
+	bool OnFileBeforeLoad();
+	bool OnFileLoadFailed();
+	bool OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status);
+	bool OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex);
+	bool OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid);
 	bool OnBeforeShutdown();
 	bool OnCancelShutdown();
-	bool OnShutdown();
+	bool OnFileBeforeRename(const char *filename, uptr_t bufferid);
+	bool OnFileRenameCancel(const char *filename, uptr_t bufferid);
+	bool OnFileRenamed(const char *filename, uptr_t bufferid);
+	bool OnFileBeforeDelete(const char *filename, uptr_t bufferid);
+	bool OnFileDeleteFailed(const char *filename, uptr_t bufferid);
+	bool OnFileDeleted();
 };

@@ -174,12 +174,29 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) {
 }
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
-	static TCHAR static_fname[MAX_PATH];
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
+	// Handle these specific codes since nh.hwndFrom comes from unknown hwnds
+	// and *hope* these only come from the 2 "real" scintilla instances
+	switch (nh.code) {
+		case NPPN_READONLYCHANGED:
+			// Note: hwndFrom is the bufferID
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)nh.hwndFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnReadOnlyChanged(GUI::UTF8FromString(fname).c_str(), (uptr_t)nh.hwndFrom, nh.idFrom);
+			return;
+		case NPPN_DOCORDERCHANGED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnDocOrderChanged(GUI::UTF8FromString(fname).c_str(), nh.idFrom, (int)nh.hwndFrom);
+			return;
+		case NPPN_SNAPSHOTDIRTYFILELOADED:
+			// Note: hwndFrom is NULL
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnSnapshotDirtyFileLoaded(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			return;
+	}
+
 	// We only want notifications from Notepad++ and it's 2 scintilla handles
-	// NOTE: nh.hwndFrom != nppData._nppHandle needs refined since some NPPN_XXX messages use this for something else
 	if (nh.hwndFrom != nppData._nppHandle && nh.hwndFrom != nppData._scintillaMainHandle && nh.hwndFrom != nppData._scintillaSecondHandle)
 		return;
 
@@ -289,20 +306,24 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			LuaExtension::Instance().OnReady();
 			break;
 		}
-		case NPPN_LANGCHANGED:
-			LuaExtension::Instance().OnLangChange();
+		case NPPN_TBMODIFICATION:
+			LuaExtension::Instance().OnToolBarModification();
 			break;
-		case NPPN_FILEBEFOREOPEN:
+		case NPPN_FILEBEFORECLOSE:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnBeforeOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEOPENED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 			LuaExtension::Instance().OnOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
-		case NPPN_BUFFERACTIVATED:
+		case NPPN_FILECLOSED:
+			// Note: a valid BufferID is technically provided but it is not able to be used at all
+			LuaExtension::Instance().OnClose();
+			break;
+		case NPPN_FILEBEFOREOPEN:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			LuaExtension::Instance().OnBeforeOpen(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
 		case NPPN_FILEBEFORESAVE:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
@@ -312,21 +333,26 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 			LuaExtension::Instance().OnSave(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
-		case NPPN_FILERENAMED:
+		case NPPN_SHUTDOWN:
+			LuaExtension::Instance().OnShutdown();
+			LuaExtension::Instance().Finalise();
+			break;
+		case NPPN_BUFFERACTIVATED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
-		case NPPN_FILEDELETED:
-			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnFileDeleted(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+		case NPPN_LANGCHANGED:
+			LuaExtension::Instance().OnLangChange();
 			break;
-		case NPPN_FILEBEFORECLOSE:
-			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)static_fname);
-			LuaExtension::Instance().OnBeforeClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+		case NPPN_WORDSTYLESUPDATED:
 			break;
-		case NPPN_FILECLOSED:
-			// NOTE: cannot use idFrom to get the path since it is no longer valid
-			LuaExtension::Instance().OnClose(GUI::UTF8FromString(static_fname).c_str(), nh.idFrom);
+		case NPPN_SHORTCUTREMAPPED:
+			break;
+		case NPPN_FILEBEFORELOAD:
+			LuaExtension::Instance().OnFileBeforeLoad();
+			break;
+		case NPPN_FILELOADFAILED:
+			LuaExtension::Instance().OnFileLoadFailed();
 			break;
 		case NPPN_BEFORESHUTDOWN:
 			LuaExtension::Instance().OnBeforeShutdown();
@@ -334,9 +360,28 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_CANCELSHUTDOWN:
 			LuaExtension::Instance().OnCancelShutdown();
 			break;
-		case NPPN_SHUTDOWN:
-			LuaExtension::Instance().OnShutdown();
-			LuaExtension::Instance().Finalise();
+		case NPPN_FILEBEFORERENAME:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileBeforeRename(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILERENAMECANCEL:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileRenameCancel(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILERENAMED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileRenamed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEBEFOREDELETE:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileBeforeDelete(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEDELETEFAILED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnFileDeleteFailed(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			break;
+		case NPPN_FILEDELETED:
+			LuaExtension::Instance().OnFileDeleted();
 			break;
 	}
 	return;

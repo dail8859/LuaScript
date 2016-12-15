@@ -33,16 +33,26 @@ Scintilla related callbacks:
 Notepad++ related callbacks:
 
 - `OnReady()`
+- `OnToolBarModification()`
+- `OnFileBeforeLoad()`
+- `OnFileLoadFailed()`
 - `OnBeforeOpen(filename, bufferid)`
 - `OnOpen(filename, bufferid)`
-- `OnSwitchFile(filename, bufferid)`
 - `OnBeforeSave(filename, bufferid)`
 - `OnSave(filename, bufferid)`
-- `OnFileRenamed(filename, bufferid)`
-- `OnFileDeleted(filename, bufferid)`
 - `OnBeforeClose(filename, bufferid)`
-- `OnClose(filename, bufferid)`
+- `OnClose()`
+- `OnSwitchFile(filename, bufferid)`
 - `OnLangChange()`
+- `OnReadOnlyChanged(filename, bufferid, status)`
+- `OnDocOrderChanged(filename, bufferid, index)`
+- `OnSnapshotDirtyFileLoaded(filename, bufferid)`
+- `OnFileBeforeRename(filename, bufferid)`
+- `OnFileRenameCancel(filename, bufferid)`
+- `OnFileRenamed(filename, bufferid)`
+- `OnFileBeforeDelete(filename, bufferid)`
+- `OnFileDeleteFailed(filename, bufferid)`
+- `OnFileDeleted()`
 - `OnBeforeShutdown()`
 - `OnCancelShutdown()`
 - `OnShutdown()`

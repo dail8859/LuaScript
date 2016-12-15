@@ -76,20 +76,32 @@ const char *callbacks[] = {
 	"OnFocusIn",
 	"OnFocusOut",
 
-	"OnReady", // Npp specific
-	"OnBeforeOpen", // Npp specific
+	"OnReady",
+	"OnToolBarModification",
+	"OnBeforeClose",
 	"OnOpen",
-	"OnSwitchFile",
+	"OnClose",
+	"OnBeforeOpen",
 	"OnBeforeSave",
 	"OnSave",
-	"OnFileRenamed", // Npp specific
-	"OnFileDeleted", // Npp specific
-	"OnLangChange", // Npp specific
-	"OnBeforeClose", // Npp specific
-	"OnClose",
-	"OnBeforeShutdown", // Npp specific
-	"OnCancelShutdown", // Npp specific
-	"OnShutdown", // Npp specific
+	"OnShutdown",
+	"OnSwitchFile",
+	"OnLangChange",
+	"OnReadOnlyChanged",
+	//"OnWordStylesUpdated",
+	//"OnShortcutRemapped",
+	"OnFileBeforeLoad",
+	"OnFileLoadFailed",
+	"OnDocOrderChanged",
+	"OnSnapshotDirtyFileLoaded",
+	"OnBeforeShutdown",
+	"OnCancelShutdown",
+	"OnFileBeforeRename",
+	"OnFileRenameCancel",
+	"OnFileRenamed",
+	"OnFileBeforeDelete",
+	"OnFileDeleteFailed",
+	"OnFileDeleted",
 };
 
 
@@ -2125,12 +2137,37 @@ bool LuaExtension::OnFocusOut(const SCNotification *sc) {
 bool LuaExtension::OnReady() {
 	return CallNamedFunction("OnReady", NULL);
 }
-bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
+
+bool LuaExtension::OnToolBarModification() {
+	return CallNamedFunction("OnToolBarModification", NULL);
+}
+
+bool LuaExtension::OnBeforeClose(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeClose", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnOpen", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnClose() {
+	return CallNamedFunction("OnClose", NULL);
+}
+
+bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeOpen", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnBeforeSave", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnSave", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnShutdown() {
+	return CallNamedFunction("OnShutdown", NULL);
 }
 
 bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
@@ -2149,32 +2186,28 @@ bool LuaExtension::OnSwitchFile(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnSwitchFile", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnBeforeSave(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnBeforeSave", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnSave(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnSave", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnFileRenamed", "si", filename, bufferid);
-}
-
-bool LuaExtension::OnFileDeleted(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnFileDeleted", "si", filename, bufferid);
-}
-
 bool LuaExtension::OnLangChange() {
 	return CallNamedFunction("OnLangChange", NULL);
 }
 
-bool LuaExtension::OnBeforeClose(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnBeforeClose", "si", filename, bufferid);
+bool LuaExtension::OnFileBeforeLoad() {
+	return CallNamedFunction("OnFileBeforeLoad", NULL);
 }
 
-bool LuaExtension::OnClose(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnClose", "si", filename, bufferid);
+bool LuaExtension::OnFileLoadFailed() {
+	return CallNamedFunction("OnFileLoadFailed", NULL);
+}
+
+bool LuaExtension::OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status) {
+	return CallNamedFunction("OnReadOnlyChanged", "sii", filename, bufferid, status);
+}
+
+bool LuaExtension::OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex) {
+	return CallNamedFunction("OnDocOrderChanged", "sii", filename, bufferid, newIndex);
+}
+
+bool LuaExtension::OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnSnapshotDirtyFileLoaded", "si", filename, bufferid);
 }
 
 bool LuaExtension::OnBeforeShutdown() {
@@ -2185,6 +2218,26 @@ bool LuaExtension::OnCancelShutdown() {
 	return CallNamedFunction("OnCancelShutdown", NULL);
 }
 
-bool LuaExtension::OnShutdown() {
-	return CallNamedFunction("OnShutdown", NULL);
+bool LuaExtension::OnFileBeforeRename(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileBeforeRename", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileRenameCancel(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileRenameCancel", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileRenamed(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileRenamed", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileBeforeDelete(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileBeforeDelete", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileDeleteFailed(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnFileDeleteFailed", "si", filename, bufferid);
+}
+
+bool LuaExtension::OnFileDeleted() {
+	return CallNamedFunction("OnFileDeleted", NULL);
 }
