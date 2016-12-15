@@ -177,8 +177,26 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	TCHAR fname[MAX_PATH];
 	NotifyHeader nh = notifyCode->nmhdr;
 
+	// Handle these specific codes since nh.hwndFrom comes from unknown hwnds
+	// and *hope* these only come from the 2 "real" scintilla instances
+	switch (nh.code) {
+		case NPPN_READONLYCHANGED:
+			// Note: hwndFrom is the bufferID
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)nh.hwndFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnReadOnlyChanged(GUI::UTF8FromString(fname).c_str(), (uptr_t)nh.hwndFrom, nh.idFrom);
+			return;
+		case NPPN_DOCORDERCHANGED:
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnDocOrderChanged(GUI::UTF8FromString(fname).c_str(), nh.idFrom, (int)nh.hwndFrom);
+			return;
+		case NPPN_SNAPSHOTDIRTYFILELOADED:
+			// Note: hwndFrom is NULL
+			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
+			LuaExtension::Instance().OnSnapshotDirtyFileLoaded(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			return;
+	}
+
 	// We only want notifications from Notepad++ and it's 2 scintilla handles
-	// NOTE: nh.hwndFrom != nppData._nppHandle needs refined since some NPPN_XXX messages use this for something else
 	if (nh.hwndFrom != nppData._nppHandle && nh.hwndFrom != nppData._scintillaMainHandle && nh.hwndFrom != nppData._scintillaSecondHandle)
 		return;
 
@@ -289,6 +307,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			break;
 		}
 		case NPPN_TBMODIFICATION:
+			LuaExtension::Instance().OnToolBarModification();
 			break;
 		case NPPN_FILEBEFORECLOSE:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
@@ -334,18 +353,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			break;
 		case NPPN_FILELOADFAILED:
 			LuaExtension::Instance().OnFileLoadFailed();
-			break;
-		case NPPN_READONLYCHANGED:
-			// TODO: hwndFrom is the buffer ID. The above if statement throws it away
-			//LuaExtension::Instance().OnReadOnlyChanged(bufferID, status);
-			break;
-		case NPPN_DOCORDERCHANGED:
-			// TODO: hwndFrom is the buffer ID. The above if statement throws it away
-			//LuaExtension::Instance().OnDocOrderChanged(bufferID, newIndex);
-			break;
-		case NPPN_SNAPSHOTDIRTYFILELOADED:
-			// TODO: hwndFrom is NULL. The above if statement throws it away
-			//LuaExtension::Instance().OnSnapshotDirtyFileLoaded(bufferID);
 			break;
 		case NPPN_BEFORESHUTDOWN:
 			LuaExtension::Instance().OnBeforeShutdown();

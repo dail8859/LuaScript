@@ -81,6 +81,7 @@ public:
 
 	// Notepad++ callbacks
 	bool OnReady();
+	bool OnToolBarModification();
 	bool OnBeforeClose(const char *filename, uptr_t bufferid);
 	bool OnOpen(const char *filename, uptr_t bufferid);
 	bool OnClose();
@@ -92,9 +93,9 @@ public:
 	bool OnLangChange();
 	bool OnFileBeforeLoad();
 	bool OnFileLoadFailed();
-	// bool OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status);
-	// bool OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex);
-	// bool OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid);
+	bool OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status);
+	bool OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex);
+	bool OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid);
 	bool OnBeforeShutdown();
 	bool OnCancelShutdown();
 	bool OnFileBeforeRename(const char *filename, uptr_t bufferid);

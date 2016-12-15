@@ -77,7 +77,7 @@ const char *callbacks[] = {
 	"OnFocusOut",
 
 	"OnReady",
-	//"OnToolBarModification",
+	"OnToolBarModification",
 	"OnBeforeClose",
 	"OnOpen",
 	"OnClose",
@@ -87,13 +87,13 @@ const char *callbacks[] = {
 	"OnShutdown",
 	"OnSwitchFile",
 	"OnLangChange",
-	//"OnReadOnlyChanged",
+	"OnReadOnlyChanged",
 	//"OnWordStylesUpdated",
 	//"OnShortcutRemapped",
 	"OnFileBeforeLoad",
 	"OnFileLoadFailed",
-	//"OnDocOrderChanged",
-	//"OnSnapshotDirtyFileLoaded",
+	"OnDocOrderChanged",
+	"OnSnapshotDirtyFileLoaded",
 	"OnBeforeShutdown",
 	"OnCancelShutdown",
 	"OnFileBeforeRename",
@@ -2138,6 +2138,10 @@ bool LuaExtension::OnReady() {
 	return CallNamedFunction("OnReady", NULL);
 }
 
+bool LuaExtension::OnToolBarModification() {
+	return CallNamedFunction("OnToolBarModification", NULL);
+}
+
 bool LuaExtension::OnBeforeClose(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnBeforeClose", "si", filename, bufferid);
 }
@@ -2146,8 +2150,8 @@ bool LuaExtension::OnOpen(const char *filename, uptr_t bufferid) {
 	return CallNamedFunction("OnOpen", "si", filename, bufferid);
 }
 
-bool LuaExtension::OnClose(const char *filename, uptr_t bufferid) {
-	return CallNamedFunction("OnClose", "si", filename, bufferid);
+bool LuaExtension::OnClose() {
+	return CallNamedFunction("OnClose", NULL);
 }
 
 bool LuaExtension::OnBeforeOpen(const char *filename, uptr_t bufferid) {
@@ -2194,9 +2198,17 @@ bool LuaExtension::OnFileLoadFailed() {
 	return CallNamedFunction("OnFileLoadFailed", NULL);
 }
 
-// bool OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status);
-// bool OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex);
-// bool OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid);
+bool LuaExtension::OnReadOnlyChanged(const char *filename, uptr_t bufferid, int status) {
+	return CallNamedFunction("OnReadOnlyChanged", "sii", filename, bufferid, status);
+}
+
+bool LuaExtension::OnDocOrderChanged(const char *filename, uptr_t bufferid, int newIndex) {
+	return CallNamedFunction("OnDocOrderChanged", "sii", filename, bufferid, newIndex);
+}
+
+bool LuaExtension::OnSnapshotDirtyFileLoaded(const char *filename, uptr_t bufferid) {
+	return CallNamedFunction("OnSnapshotDirtyFileLoaded", "si", filename, bufferid);
+}
 
 bool LuaExtension::OnBeforeShutdown() {
 	return CallNamedFunction("OnBeforeShutdown", NULL);
