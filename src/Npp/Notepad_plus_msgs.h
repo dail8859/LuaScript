@@ -240,7 +240,7 @@ enum winVer{ WV_UNKNOWN, WV_WIN32S, WV_95, WV_98, WV_ME, WV_NT, WV_W2K, WV_XP, W
 	// Returns active Buffer
 
 	#define NPPM_RELOADBUFFERID (NPPMSG + 61)
-	// VOID NPPM_RELOADBUFFERID(0, 0)
+	// BOOL NPPM_RELOADBUFFERID(INT bufferID, BOOL alertOrNot)
 	// Reloads Buffer
 	// wParam: Buffer to reload
 	// lParam: 0 if no alert, else alert

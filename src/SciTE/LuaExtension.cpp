@@ -985,7 +985,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 
 	char *stringResult = 0;
 	wchar_t *wstringResult = 0;
-	tstring nppstrparam;
+	tstring nppstrparams[2]; // 2 in case both params are tstrings
 	enum stringResultType { none, string, tstring } needStringResult = none;
 	int loopParamCount = 2;
 
@@ -1011,8 +1011,8 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 			params[i] = SptrFromString(s ? s : "");
 		} else if (func.paramType[i] == iface_tstring) {
 			const char *s = lua_tostring(L, arg++);
-			nppstrparam = GUI::StringFromUTF8(s ? s : "");
-			params[i] = reinterpret_cast<sptr_t>(nppstrparam.c_str());
+			nppstrparams[i] = GUI::StringFromUTF8(s ? s : "");
+			params[i] = reinterpret_cast<sptr_t>(nppstrparams[i].c_str());
 		} else if (func.paramType[i] == iface_keymod) {
 			int keycode = static_cast<int>(luaL_checkinteger(L, arg++)) & 0xFFFF;
 			int modifiers = static_cast<int>(luaL_checkinteger(L, arg++)) & (SCMOD_SHIFT|SCMOD_CTRL|SCMOD_ALT);
