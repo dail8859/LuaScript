@@ -49,6 +49,8 @@ public:
 
 	void showAutoCompletion();
 
+	const std::string &getGlobalConstants() const { return globalConsts; }
+
 	ConsoleDialog *mp_consoleDlg;
 private:
 	NppData* m_nppData;

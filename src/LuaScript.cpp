@@ -338,6 +338,15 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			LuaExtension::Instance().Finalise();
 			break;
 		case NPPN_BUFFERACTIVATED:
+			// If opening the startup.lua file add the constants to a keyword list
+			SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM)fname);
+			if (SendNpp(NPPM_GETBUFFERLANGTYPE, nh.idFrom) == L_LUA && _tcscmp(fname, TEXT("startup.lua")) == 0) {
+				updateScintilla();
+				SendScintilla(SCI_SETKEYWORDS, 4, (LPARAM)g_console->getGlobalConstants().c_str());
+				SendScintilla(SCI_STYLESETFORE, SCE_LUA_WORD5, SendScintilla(SCI_STYLEGETFORE, SCE_LUA_PREPROCESSOR));
+				SendScintilla(SCI_STYLESETBOLD, SCE_LUA_WORD5, true);
+			}
+
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
 			LuaExtension::Instance().OnSwitchFile(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
 			break;
