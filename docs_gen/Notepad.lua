@@ -10,10 +10,21 @@
 -- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
 -- @tparam int index2Activate index of the view to activate
 
+--- Disable checking for auto updates.
+-- @function DisableAutoUpdate
+
+--- View another docked tab.
+-- @function DmmViewOtherTab
+-- @tparam string name name of the docked tab (e.g. "Function List")
+
 --- Opens a document.
 -- @function DoOpen
 -- @tparam string file name
 -- @treturn bool `true` if successful, else `false`
+
+--- Enable or disable the file extension column in the doc switcher.
+-- @function DocSwitcherDisableColumn
+-- @tparam bool toShow whether to show or hide the column
 
 --- Gets the BufferID located at the given position.
 -- @function GetBufferIDFromPos
@@ -24,11 +35,6 @@
 --- Gets the current directory of the document.
 -- @function GetCurrentDirectory
 -- @treturn string current directory
-
---- Gets the BufferID located at the given position.
--- @function GetBufferIDFromPos
--- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
--- @treturn int 
 
 --- Gets the current document index within the view.
 -- @function GetCurrentDocIndex
@@ -51,6 +57,11 @@
 -- @function GetFullCurrentPath
 -- @treturn string full path
 
+--- Gets the full path of the provided buffer ID.
+-- @function GetFullPathFromBufferID
+-- @tparam int BufferID
+-- @treturn string full path
+
 --- Gets the file name (without extension) of the current document.
 -- @function GetNamePart
 -- @treturn string
@@ -60,6 +71,11 @@
 -- @tparam int view either `ALL_OPEN_FILES`, `PRIMARY_VIEW`, or `SECOND_VIEW`
 -- @treturn int
 
+--- Gets the number of files a the session file.
+-- @function GetNbSessionFiles
+-- @tparam string session full path to the session file
+-- @treturn int number of files
+
 --- Gets the directory of the Notepad++ application.
 -- @function GetNppDirectory
 -- @treturn string
@@ -68,9 +84,73 @@
 -- @function GetPluginsConfigDir
 -- @treturn string
 
+--- Gets the position information of the provided buffer ID.
+-- @function GetPosFromBufferID
+-- @tparam int BufferID
+-- @tparam int priorityView either `MAIN_VIEW` or `SUB_VIEW`. If priorityView set to `SUB_VIEW`, then it will be searched first
+-- @treturn int the two highest bits will either be `MAIN_VIEW` or `SUB_VIEW`. The lower 30 bits will be the 0-based index.
+
+--- Hides or shows the menu.
+-- @function HideMenu
+-- @tparam bool hideOrNot whether or not to hide the menu
+-- @treturn bool the previous state
+
+--- Hides or shows the status bar.
+-- @function HideStatusBar
+-- @tparam bool hideOrNot whether or not to hide the status bar
+-- @treturn bool the previous state
+
+--- Hides or shows the tab bar.
+-- @function HideTabBar
+-- @tparam bool hideOrNot whether or not to hide the tab bar
+-- @treturn bool the previous state
+
+--- Hides or shows the tool bar.
+-- @function HideToolBar
+-- @tparam bool hideOrNot whether or not to hide the tool bar
+-- @treturn bool the previous state
+
+--- Gets whether the doc switcher is hidden or shown.
+-- @function IsDocSwitcherShown
+-- @treturn bool
+
+--- Gets whether the menu is hidden or shown.
+-- @function IsMenuHidden
+-- @treturn bool
+
+--- Gets whether the status bar is hidden or shown.
+-- @function IsStatusBarHidden
+-- @treturn bool
+
+--- Gets whether the tab bar is hidden or shown.
+-- @function IsTabBarHidden
+-- @treturn bool
+
+--- Gets whether the tool bar is hidden or shown.
+-- @function IsToolBarHidden
+-- @treturn bool
+
+--- Launch the "Find in Files" dialog.
+-- @function LaunchFindInFilesDlg
+-- @tparam string path the directory path to search
+-- @tparam string filter the filter to use (e.g. "*.c *.h")
+
+--- Loads a session file.
+-- @function LoadSession
+-- @tparam string filename full path to the session file
+
+--- Makes the current buffer marked as dirty.
+-- @function MakeCurrentBufferDirty
+
 --- Executes a menu command.
 -- @function MenuCommand
 -- @tparam int command one of the [IDM_xxx](https://github.com/dail8859/LuaScript/blob/master/src/Npp/menuCmdID.h) constants
+
+--- Reloads the specified buffer ID.
+-- @function ReloadBufferID
+-- @tparam int BufferID
+-- @tparam bool alertOrNot whether to show an alert dialog.
+-- @treturn bool
 
 --- Reloads the specified file.
 -- @function ReloadFile
@@ -91,16 +171,42 @@
 -- @tparam string filename file name
 -- @treturn bool
 
+--- Saves a new session file of the currently opened buffers.
+-- @function SaveCurrentSession
+-- @tparam string session full path of the new session file
+
+--- Enable or disable the editor's border edge
+-- @function SetEditorBorderEdge
+-- @tparam bool useOrNot
+
+--- Enable or disable the use of smooth fonts.
+-- @function SetSmoothFont
+-- @tparam bool useOrNot
+
+--- Enable or disable the doc switcher panel.
+-- @function ShowDocSwitcher
+-- @tparam bool showOrNot
+
 --- Switch to the specified document.
 -- @function SwitchToFile
 -- @tparam string filename file name
 -- @treturn bool `true` if successful, else `false`
 
+--- Activate the tab bar context menu.
+-- @function TriggerTabbarContextMenu
+-- @tparam int view either `MAIN_VIEW` or `SUB_VIEW`
+-- @tparam int index 0-based index
+
 --- Properties
 -- @section properties
 
---- Whether plugins are allowed to be loaded from the %APPDATA% directory.
+--- Whether plugins are allowed to be loaded from the `%APPDATA%` directory.
 -- @tparam[readonly] bool AppDataPluginsAllowed
+
+--- Gets or sets the buffer's end of line mode (one of the `SC_EOL_xxx` constants).
+-- @array BufferFormat
+-- @tparam BufferID id
+-- @treturn int
 
 --- Gets or sets the buffer's language type (one of the `L_xxx` constants).
 -- @array BufferLangType
@@ -135,6 +241,22 @@
 -- @tparam[readonly] int language one of the `L_xxx` constant
 -- @treturn string
 
+--- Gets the encoding of Notepad++'s localization.
+-- @tparam[readonly] int NativeLangEncoding
+
+--- Sets the status bar's text.
+-- `field` must be one of the following:
+-- 
+-- * `STATUSBAR_DOC_TYPE`
+-- * `STATUSBAR_DOC_SIZE`
+-- * `STATUSBAR_CUR_POS`
+-- * `STATUSBAR_EOF_FORMAT`
+-- * `STATUSBAR_UNICODE_TYPE`
+-- * `STATUSBAR_TYPING_MODE`
+-- 
+-- @array StatusBar
+-- @tparam int field
+
 --- Gets the Notepad++ version.
 -- The high 16 bits contain the major version. The low 16 bits contain the minor version.
 -- @usage print((npp.Version >> 16) .. '.' .. (npp.Version & 0xff))
@@ -163,29 +285,7 @@
 -- @treturn string The symbolic name of a Scintilla / Notepad++ constant. Raises error if not found.
 
 --- Registers a Lua function to handle a given event.
--- `event` must be one of the following
--- 
--- * `"OnReady"`
--- * `"OnChar"`
--- * `"OnModification"`
--- * `"OnUpdateUI"`
--- * `"OnSavePointReached"`
--- * `"OnSavePointLeft"`
--- * `"OnBeforeOpen"`
--- * `"OnOpen"`
--- * `"OnSwitchFile"`
--- * `"OnBeforeSave"`
--- * `"OnSave"`
--- * `"OnFileRenamed"`
--- * `"OnFileDeleted"`
--- * `"OnBeforeClose"`
--- * `"OnClose"`
--- * `"OnLangChange"`
--- * `"OnBeforeShutdown"`
--- * `"OnCancelShutdown"`
--- * `"OnStyle"`
--- * `"OnDoubleClick"`
--- * `"OnShutdown"`
+-- See the topic on Callbacks
 -- 
 -- @function AddEventHandler
 -- @static
