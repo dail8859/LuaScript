@@ -226,6 +226,7 @@ void LuaConsole::setupOutput(GUI::ScintillaWindow &sci) {
 bool LuaConsole::processNotification(const SCNotification *scn) {
 	enum AutoCFinish { acf_none, acf_brackets, acf_parens };
 	static AutoCFinish acf = acf_none;
+	static bool triggerAc = false;
 
 	switch (scn->nmhdr.code) {
 		case SCN_CHARADDED: {
@@ -244,8 +245,21 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 				m_sciInput->Call(SCI_CHARLEFT);
 				acf = acf_none;
 			}
+
+			if (triggerAc) {
+				triggerAc = false;
+				m_sciInput->Call(SCI_AUTOCCANCEL);
+				showAutoCompletion();
+			}
 			break;
 		}
+		case SCN_MODIFIED:
+			// Detect certain modifcations (e.g. pasting) when auto-complete is active
+			if (scn->modificationType & SC_MOD_INSERTTEXT && scn->length > 1 && scn->linesAdded == 0 && m_sciInput->Call(SCI_AUTOCACTIVE)) {
+				// Auto-complete needs delayed since caret position information is not updated yet
+				triggerAc = true;
+			}
+			break;
 		case SCN_AUTOCSELECTION: {
 			// See if it's a Sci or Npp property
 			auto prop = SciIFaceTable.FindProperty(scn->text);

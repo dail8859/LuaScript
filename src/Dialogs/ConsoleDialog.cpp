@@ -236,8 +236,8 @@ void ConsoleDialog::historyAdd(const TCHAR *line) {
 void ConsoleDialog::historyEnd() {
 	m_currentHistory = m_history.size();
 	m_curLine.clear();
-	m_sciInput.Call(SCI_CLEARALL);
-	m_sciInput.Call(SCI_EMPTYUNDOBUFFER);
+	m_sciInput.Call(SCI_EMPTYUNDOBUFFER); // Empty first incase it was a mistake
+	m_sciInput.CallString(SCI_SETTEXT, 0, "");
 }
 
 LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
@@ -266,13 +266,13 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 		case WM_KEYUP:
 			switch (wParam) {
 				case VK_RETURN:
-					if (cd->m_sciInput.Call(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
-					if (GetKeyState(VK_SHIFT) & (1 << 15)) cd->m_sciInput.Call(SCI_NEWLINE);
+					if (cd->m_sciInput.Call(SCI_AUTOCACTIVE)) cd->m_sciInput.Call(SCI_AUTOCCOMPLETE);
+					else if (GetKeyState(VK_SHIFT) & (1 << 15)) cd->m_sciInput.Call(SCI_NEWLINE);
 					else cd->runStatement();
 					return FALSE;
 				case VK_ESCAPE:
-					if (cd->m_sciInput.Call(SCI_AUTOCACTIVE)) break; // Pass this along to the Scintilla control
-					cd->historyEnd();
+					if (cd->m_sciInput.Call(SCI_AUTOCACTIVE)) cd->m_sciInput.Call(SCI_AUTOCCANCEL);
+					else cd->historyEnd();
 					return FALSE;
 			}
 			break;
