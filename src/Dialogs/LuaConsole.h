@@ -39,7 +39,6 @@ public:
 		*m_nppData = nppData;
 	}
 
-	void showDialog() { mp_consoleDlg->doDialog(); }
 	void runStatement(const char *statement) { LuaExtension::Instance().OnExecute(statement); }
 
 	void setupInput(GUI::ScintillaWindow &sci);
