@@ -187,6 +187,13 @@ INT_PTR CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 					}
 				}
 			}
+			else if (nmhdr->hwndFrom == _hParent) {
+				switch (LOWORD(nmhdr->code)) {
+					case DMN_CLOSE:
+						updateConsoleCheckMark(false);
+						break;
+				}
+			}
 			break;
 		}
 		default:
@@ -238,6 +245,11 @@ void ConsoleDialog::historyEnd() {
 	m_curLine.clear();
 	m_sciInput.Call(SCI_EMPTYUNDOBUFFER); // Empty first incase it was a mistake
 	m_sciInput.CallString(SCI_SETTEXT, 0, "");
+}
+
+void ConsoleDialog::updateConsoleCheckMark(bool check) const {
+	if (cmdID != nullptr)
+		SendMessage(_hParent, NPPM_SETMENUITEMCHECK, *cmdID, check);
 }
 
 LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
@@ -427,7 +439,16 @@ void ConsoleDialog::writeError(size_t length, const char *text) {
 }
 
 void ConsoleDialog::display(bool toShow) const {
+	updateConsoleCheckMark(toShow);
 	SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
+}
+
+void ConsoleDialog::setCommandID(int *_cmdID) {
+	 cmdID = _cmdID;
+
+	 // Check it for the first time
+	 if (isVisible())
+		 updateConsoleCheckMark(true);
 }
 
 void ConsoleDialog::doDialog() {

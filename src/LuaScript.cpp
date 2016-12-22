@@ -100,28 +100,20 @@ const wchar_t *getStartupScriptFilePath() {
 	return iniPath;
 }
 
-static void updateConsoleCheck() {
-	if (g_console->mp_consoleDlg->isVisible())
-		SendNpp(NPPM_SETMENUITEMCHECK, funcItems.front()._cmdID, TRUE);
-	else
-		SendNpp(NPPM_SETMENUITEMCHECK, funcItems.front()._cmdID, FALSE);
-}
-
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved)
-{
-	switch (reasonForCall)
-	{
-	case DLL_PROCESS_ATTACH:
-		_hModule = hModule;
-		break;
-	case DLL_PROCESS_DETACH:
-		if (tbiConsoleButton.hToolbarBmp) ::DeleteObject(tbiConsoleButton.hToolbarBmp);
-		break;
-	case DLL_THREAD_ATTACH:
-		break;
-	case DLL_THREAD_DETACH:
-		break;
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved) {
+	switch (reasonForCall) {
+		case DLL_PROCESS_ATTACH:
+			_hModule = hModule;
+			break;
+		case DLL_PROCESS_DETACH:
+			if (tbiConsoleButton.hToolbarBmp) ::DeleteObject(tbiConsoleButton.hToolbarBmp);
+			break;
+		case DLL_THREAD_ATTACH:
+			break;
+		case DLL_THREAD_DETACH:
+			break;
 	}
+
 	return TRUE;
 }
 
@@ -311,7 +303,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_READY: {
 			const char *msg = LUA_COPYRIGHT "\r\n\r\n";
 			g_console->mp_consoleDlg->writeText(strlen(msg), msg);
-			updateConsoleCheck();
+			g_console->mp_consoleDlg->setCommandID(&funcItems[0]._cmdID);
 			isReady = true;
 			LuaExtension::Instance().OnReady();
 			break;
@@ -426,8 +418,6 @@ void showConsole() {
 	else
 		g_console->mp_consoleDlg->doDialog();
 
-	updateConsoleCheck();
-
 	// If the console is shown automatically at startup, don't give it focus
 	if (isReady) g_console->mp_consoleDlg->giveInputFocus();
 }
@@ -450,7 +440,6 @@ static void runCurrentFile() {
 	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
 	if (LuaExtension::Instance().RunString(doc) == false) {
 		g_console->mp_consoleDlg->doDialog();
-		updateConsoleCheck();
 	}
 }
 

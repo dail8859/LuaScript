@@ -55,6 +55,8 @@ public:
 
 	virtual void display(bool toShow = true) const;
 
+	void setCommandID(int *_cmdID);
+
 protected:
 	INT_PTR CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
 
@@ -73,6 +75,8 @@ private:
 	void historyAdd(const TCHAR *line);
 	void historyEnd();
 
+	void updateConsoleCheckMark(bool check) const;
+
 	tTbData m_data;
 	GUI::ScintillaWindow m_sciOutput;
 	GUI::ScintillaWindow m_sciInput;
@@ -85,4 +89,6 @@ private:
 	size_t m_currentHistory;
 
 	HMENU m_hContext;
+
+	int *cmdID = nullptr;
 };
