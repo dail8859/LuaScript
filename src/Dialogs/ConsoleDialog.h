@@ -47,7 +47,9 @@ public:
 	void writeError(size_t length, const char *text);
 	void clearText();
 	void setPrompt(const char *prompt);
-	HWND getScintillaHwnd() { return (HWND)m_sciOutput.GetID(); }
+
+	HWND getSciOutputHwnd() { return (HWND)m_sciOutput.GetID(); }
+	HWND getSciInputHwnd() { return (HWND)m_sciInput.GetID(); }
 
 	void giveInputFocus() { SetFocus((HWND)m_sciInput.GetID()); }
 

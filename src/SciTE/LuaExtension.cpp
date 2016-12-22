@@ -1409,6 +1409,9 @@ static bool InitGlobalScope() {
 	push_pane_object(luaState, host->paneOutput);
 	lua_setglobal(luaState, "console");
 
+	push_pane_object(luaState, host->paneInput);
+	lua_setglobal(luaState, "input");
+
 	// scite
 	*static_cast<NppExtensionAPI::Pane *>(lua_newuserdata(luaState, sizeof(host->application))) = host->application;
 	if (luaL_newmetatable(luaState, "Npp_MT_Application")) {

@@ -41,17 +41,19 @@ public:
 		paneEditorMain,
 		paneEditorSecondary,
 		paneOutput,
+		paneInput,
 		application
 	};
 
-	GUI::ScintillaWindow scis[3];
+	GUI::ScintillaWindow scis[4];
 
 	NppExtensionAPI(ConsoleDialog *cd_, const NppData *nppData) : cd(cd_) { 
 		m_nppData = nppData;
 
 		scis[paneEditorMain].SetID(m_nppData->_scintillaMainHandle);
 		scis[paneEditorSecondary].SetID(m_nppData->_scintillaSecondHandle);
-		scis[paneOutput].SetID(cd->getScintillaHwnd());
+		scis[paneOutput].SetID(cd->getSciOutputHwnd());
+		scis[paneInput].SetID(cd->getSciInputHwnd());
 	}
 
 	~NppExtensionAPI();

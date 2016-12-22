@@ -318,7 +318,7 @@ void LuaConsole::braceMatch() {
 }
 
 void LuaConsole::showAutoCompletion() {
-	static const std::vector<std::string> editors = { "console", "editor", "editor1", "editor2" };
+	static const std::vector<std::string> editors = { "console", "editor", "editor1", "editor2", "input" };
 
 	std::string partialWord;
 	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
