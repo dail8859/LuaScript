@@ -319,7 +319,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_TBMODIFICATION:
 			tbiConsoleButton.hToolbarIcon = NULL;
 			tbiConsoleButton.hToolbarBmp = (HBITMAP)::LoadImage((HINSTANCE)_hModule, MAKEINTRESOURCE(IDI_LUABMP), IMAGE_BITMAP, 0, 0, (LR_SHARED | LR_LOADTRANSPARENT | LR_DEFAULTSIZE | LR_LOADMAP3DCOLORS));
-			//                             (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(IDB_SETFIRST), IMAGE_BITMAP, 0, 0, style);
 			SendNpp(NPPM_ADDTOOLBARICON, (WPARAM)funcItems[0]._cmdID, (LPARAM)&tbiConsoleButton);
 
 			LuaExtension::Instance().OnToolBarModification();

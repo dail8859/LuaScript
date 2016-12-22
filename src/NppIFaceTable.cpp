@@ -536,9 +536,10 @@ static std::vector<IFaceConstant> ifaceConstants = {
 
 static std::vector<IFaceFunction> ifaceFunctions = {
 	{ "ActivateDoc", NPPM_ACTIVATEDOC, iface_void, { iface_int, iface_int } },
-	{ "DocSwitcherDisableColumn", NPPM_DOCSWITCHERDISABLECOLUMN, iface_void, { iface_void, iface_bool } },
-	{ "DoOpen", NPPM_DOOPEN, iface_bool, { iface_void, iface_tstring } },
+	{ "DisableAutoUpdate", NPPM_DISABLEAUTOUPDATE, iface_void, { iface_void, iface_void } },
 	{ "DmmViewOtherTab", NPPM_DMMVIEWOTHERTAB, iface_void, { iface_void, iface_tstring } },
+	{ "DoOpen", NPPM_DOOPEN, iface_bool, { iface_void, iface_tstring } },
+	{ "DocSwitcherDisableColumn", NPPM_DOCSWITCHERDISABLECOLUMN, iface_void, { iface_void, iface_bool } },
 	{ "GetBufferIDFromPos", NPPM_GETBUFFERIDFROMPOS, iface_int, { iface_int, iface_int } },
 	{ "GetCurrentDirectory", NPPM_GETCURRENTDIRECTORY, iface_void, { iface_length, iface_tstringresult } },
 	{ "GetCurrentDocIndex", NPPM_GETCURRENTDOCINDEX, iface_int, { iface_void, iface_int } },
