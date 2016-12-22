@@ -58,6 +58,8 @@ The code has been developed using MSVC 2013. To compile the code:
 
 For convenience, MSVC automatically copies the DLL into the Notepad++ plugin directory. 
 
+[![Dev Build](https://ci.appveyor.com/api/projects/status/k80bu9lfjk5n3i39?svg=true)](https://ci.appveyor.com/project/OwnageIsMagic/luascript-til21/build/artifacts)
+
 ## License
 This code is released under the [GNU General Public License version 2](http://www.gnu.org/licenses/gpl-2.0.txt).
 
