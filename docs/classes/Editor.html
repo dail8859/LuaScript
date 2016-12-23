@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.5.1</sub></h1>
+<h1>LuaScript <sub>v0.6.0</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -92,6 +92,8 @@
 <ul class="nowrap">
   <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
   <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/luaautoindent.lua.html">luaautoindent.lua</a></li>
+  <li><a href="../examples/luasyntaxchecker.lua.html">luasyntaxchecker.lua</a></li>
   <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
   <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
   <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
@@ -113,7 +115,8 @@
     <li><code>editor</code> - the currently selected editor</li>
     <li><code>editor1</code> - the first editor (usually on the left)</li>
     <li><code>editor2</code> - the second editor (usually on the right)</li>
-    <li><code>console</code> - the console output used by LuaScript. Note that since this editor is "read-only" some functionality may not work as expected, e.g. manually adding or removing text.</li>
+    <li><code>console</code> - the console's output editor used by LuaScript. Note that since this editor is "read-only" some functionality may not work as expected, e.g. manually adding or removing text.</li>
+    <li><code>input</code> - the console's input editor used by LuaScript.</li>
 </ul>
 
 <p> <strong>Note:</strong> Although the entire Scintilla API is available, a few parts of it should not be used since it would either have unexpected results, or does not make sense to use from Lua. </p>

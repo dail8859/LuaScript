@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.5.1</sub></h1>
+<h1>LuaScript <sub>v0.6.0</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -46,6 +46,8 @@
 <ul class="nowrap">
   <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
   <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/luaautoindent.lua.html">luaautoindent.lua</a></li>
+  <li><a href="../examples/luasyntaxchecker.lua.html">luasyntaxchecker.lua</a></li>
   <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
   <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
   <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
@@ -59,29 +61,65 @@
 
 
 <h1>Callbacks</h1>
-<p>Scripts can register Lua functions as a callback when certain events take place. Each event type can have multiple callbacks registered. Supported events include:</p>
+<p>Scripts can register Lua functions as a callback when certain events take place. Each event type can have multiple callbacks registered.</p>
+
+<p>Scintilla related callbacks:</p>
+
+<ul>
+    <li><code>OnStyle(styler)</code></li>
+    <li><code>OnChar(character)</code></li>
+    <li><code>OnSavePointReached()</code></li>
+    <li><code>OnSavePointLeft()</code></li>
+    <li><code>OnModifyAttemptRO()</code></li>
+    <li><code>OnDoubleClick(position, line, modifiers)</code></li>
+    <li><code>OnUpdateUI(flags)</code></li>
+    <li><code>OnModification(modType, position, length, text, linesAdded)</code></li>
+    <li><code>OnMarginClick(position, margin, modifiers)</code></li>
+    <li><code>OnNeedShown(position, length)</code></li>
+    <li><code>OnPainted(listType, position, text)</code></li>
+    <li><code>OnUserListSelection(listType, position, text)</code></li>
+    <li><code>OnDwellStart(position, x, y)</code></li>
+    <li><code>OnDwellEnd(position, x, y)</code></li>
+    <li><code>OnZoom()</code></li>
+    <li><code>OnHotSpotClick(position, modifiers)</code></li>
+    <li><code>OnHotSpotDoubleClick(position, modifiers)</code></li>
+    <li><code>OnHotSpotReleaseClick(position, modifiers)</code></li>
+    <li><code>OnIndicatorClick(position, modifiers)</code></li>
+    <li><code>OnIndicatorRelease(position, modifiers)</code></li>
+    <li><code>OnCallTipClick(flag)</code></li>
+    <li><code>OnAutoCSelection(position, text)</code></li>
+    <li><code>OnAutoCCancelled()</code></li>
+    <li><code>OnAutoCCharDeleted()</code></li>
+    <li><code>OnFocusIn()</code></li>
+    <li><code>OnFocusOut()</code></li>
+</ul>
+
+<p>Notepad++ related callbacks:</p>
 
 <ul>
     <li><code>OnReady()</code></li>
-    <li><code>OnChar(character)</code></li>
-    <li><code>OnModification(modType, position, length, text, linesAdded)</code></li>
-    <li><code>OnUpdateUI(flags)</code></li>
-    <li><code>OnSavePointReached()</code></li>
-    <li><code>OnSavePointLeft()</code></li>
+    <li><code>OnToolBarModification()</code></li>
+    <li><code>OnFileBeforeLoad()</code></li>
+    <li><code>OnFileLoadFailed()</code></li>
     <li><code>OnBeforeOpen(filename, bufferid)</code></li>
     <li><code>OnOpen(filename, bufferid)</code></li>
-    <li><code>OnSwitchFile(filename, bufferid)</code></li>
     <li><code>OnBeforeSave(filename, bufferid)</code></li>
     <li><code>OnSave(filename, bufferid)</code></li>
-    <li><code>OnFileRenamed(filename, bufferid)</code></li>
-    <li><code>OnFileDeleted(filename, bufferid)</code></li>
     <li><code>OnBeforeClose(filename, bufferid)</code></li>
-    <li><code>OnClose(filename, bufferid)</code></li>
+    <li><code>OnClose()</code></li>
+    <li><code>OnSwitchFile(filename, bufferid)</code></li>
     <li><code>OnLangChange()</code></li>
+    <li><code>OnReadOnlyChanged(filename, bufferid, status)</code></li>
+    <li><code>OnDocOrderChanged(filename, bufferid, index)</code></li>
+    <li><code>OnSnapshotDirtyFileLoaded(filename, bufferid)</code></li>
+    <li><code>OnFileBeforeRename(filename, bufferid)</code></li>
+    <li><code>OnFileRenameCancel(filename, bufferid)</code></li>
+    <li><code>OnFileRenamed(filename, bufferid)</code></li>
+    <li><code>OnFileBeforeDelete(filename, bufferid)</code></li>
+    <li><code>OnFileDeleteFailed(filename, bufferid)</code></li>
+    <li><code>OnFileDeleted()</code></li>
     <li><code>OnBeforeShutdown()</code></li>
     <li><code>OnCancelShutdown()</code></li>
-    <li><code>OnStyle(styler)</code></li>
-    <li><code>OnDoubleClick(position, line, modifiers)</code></li>
     <li><code>OnShutdown()</code></li>
 </ul>
 

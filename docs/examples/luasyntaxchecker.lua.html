@@ -33,10 +33,10 @@
 
 <h2>Examples</h2>
 <ul class="nowrap">
-  <li><strong>bookmark.lua</strong></li>
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
   <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
   <li><a href="../examples/luaautoindent.lua.html">luaautoindent.lua</a></li>
-  <li><a href="../examples/luasyntaxchecker.lua.html">luasyntaxchecker.lua</a></li>
+  <li><strong>luasyntaxchecker.lua</strong></li>
   <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
   <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
   <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
@@ -59,18 +59,31 @@
 
 <div id="content">
 
-    <h2>bookmark.lua</h2>
+    <h2>luasyntaxchecker.lua</h2>
 <pre>
-<span class="comment">-- Get rid of Notepad++'s ugly bookmark icon
+<span class="comment">-- Any time a lua file is saved, this compiles it and checks for
+</span><span class="comment">-- syntax errors. Errors are added as inline annotations
 </span>
-<span class="comment">-- Notepad++ uses 24 internally
-</span>editor1:MarkerDefine(<span class="number">24</span>, SC_MARK_BOOKMARK)
-editor1.MarkerFore[<span class="number">24</span>] = <span class="number">0x0000EE</span>
-editor1.MarkerBack[<span class="number">24</span>] = <span class="number">0x6060F2</span>
+editor1.AnnotationVisible = ANNOTATION_BOXED
+editor2.AnnotationVisible = ANNOTATION_BOXED
 
-editor2:MarkerDefine(<span class="number">24</span>, SC_MARK_BOOKMARK)
-editor2.MarkerFore[<span class="number">24</span>] = <span class="number">0x0000EE</span>
-editor2.MarkerBack[<span class="number">24</span>] = <span class="number">0x6060F2</span></pre>
+npp.AddEventHandler(<span class="string">"OnSave"</span>, <span class="keyword">function</span>(filename, bufferid)
+    <span class="keyword">if</span> npp:GetExtPart() ~= <span class="string">".lua"</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">false</span> <span class="keyword">end</span>
+
+    editor:AnnotationClearAll()
+
+    <span class="comment">-- Try to compile the lua code
+</span>    <span class="keyword">local</span> _, err = <span class="global">load</span>(editor:GetText(<span class="number">0</span>, editor.Length), npp:GetFileName(), <span class="string">"t"</span>)
+
+    <span class="comment">-- See if it worked
+</span>    <span class="keyword">if</span> err == <span class="keyword">nil</span> <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">false</span> <span class="keyword">end</span>
+
+    <span class="global">print</span>(err)
+    <span class="keyword">local</span> line = <span class="global">tonumber</span>(err:match(<span class="string">":(%d+):"</span>)) - <span class="number">1</span>
+    editor.AnnotationText[line] = err
+    editor.AnnotationStyle[line] = STYLE_BRACELIGHT
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)</pre>
 
 
 </div> <!-- id="content" -->

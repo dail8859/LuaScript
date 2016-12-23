@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.6.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><strong>luaautoindent.lua</strong></li>
+  <li><a href="../examples/luasyntaxchecker.lua.html">luasyntaxchecker.lua</a></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
+  <li><a href="../examples/stylecustom.lua.html">stylecustom.lua</a></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><a href="../classes/Styler.html">Styler</a></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">callbacks</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>luaautoindent.lua</h2>
+<pre>
+<span class="comment">-- Regexs to determine when to indent or unindent
+</span><span class="comment">-- From: https://github.com/sublimehq/Packages/blob/master/Lua/Indent.tmPreferences
+</span><span class="keyword">local</span> decreaseIndentPattern = <span class="string">[[^\s*(elseif|else|end|\})\s*$]]</span>
+<span class="keyword">local</span> increaseIndentPattern = <span class="string">[[^\s*(else|elseif|for|(local\s+)?function|if|repeat|until|while)\b((?!end).)*$|\{\s*$]]</span>
+
+do_increase = <span class="keyword">false</span>
+
+<span class="comment">-- Get the start and end position of a specific line number
+</span><span class="keyword">local</span> <span class="keyword">function</span> getLinePositions(line_num)
+    <span class="keyword">local</span> start_pos = editor:PositionFromLine(line_num)
+    <span class="keyword">local</span> end_pos = start_pos + editor:LineLength(line_num)
+    <span class="keyword">return</span> start_pos, end_pos
+<span class="keyword">end</span>
+
+<span class="comment">-- Check any time a character is added
+</span><span class="keyword">local</span> <span class="keyword">function</span> autoIndent_OnChar(ch)
+    <span class="keyword">if</span> ch == <span class="string">"\n"</span> <span class="keyword">then</span>
+        <span class="comment">-- Get the previous line
+</span>        <span class="keyword">local</span> line_num = editor:LineFromPosition(editor.CurrentPos) - <span class="number">1</span>
+        <span class="keyword">local</span> start_pos, end_pos = getLinePositions(line_num)
+        <span class="keyword">if</span> editor:findtext(increaseIndentPattern, SCFIND_REGEXP, start_pos, end_pos) <span class="keyword">then</span>
+            <span class="comment">-- This has to be delayed because N++'s auto-indentation hasn't triggered yet
+</span>            do_increase = <span class="keyword">true</span>
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        <span class="keyword">local</span> line_num = editor:LineFromPosition(editor.CurrentPos)
+        <span class="keyword">local</span> start_pos, end_pos = getLinePositions(line_num)
+        <span class="keyword">if</span> editor:findtext(decreaseIndentPattern, SCFIND_REGEXP, start_pos, end_pos) <span class="keyword">then</span>
+            <span class="comment">-- The pattern matched, now check the previous line's indenation
+</span>            <span class="keyword">if</span> line_num &gt; <span class="number">1</span> <span class="keyword">and</span> editor.LineIndentation[line_num - <span class="number">1</span>] &lt;= editor.LineIndentation[line_num] <span class="keyword">then</span>
+                editor.LineIndentation[line_num] = editor.LineIndentation[line_num] - <span class="number">4</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>
+
+<span class="comment">-- Work around N++'s auto indentation by delaying the indentation change
+</span><span class="keyword">local</span> <span class="keyword">function</span> autoIndent_OnUpdateUI(flags)
+    <span class="keyword">if</span> do_increase <span class="keyword">then</span>
+        do_increase = <span class="keyword">false</span>
+        <span class="comment">-- Now the the indentation can be increased since N++'s auto-indentation is done by now
+</span>        editor:Tab()
+    <span class="keyword">end</span>
+
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>
+
+<span class="comment">-- See if the auto indentation should be turned on or off
+</span><span class="keyword">local</span> <span class="keyword">function</span> checkAutoIndent(bufferid)
+    <span class="keyword">if</span> npp.BufferLangType[bufferid] == L_LUA <span class="keyword">then</span>
+        do_increase = <span class="keyword">false</span>
+        <span class="comment">-- Register the event handlers
+</span>        npp.AddEventHandler(<span class="string">"OnChar"</span>, autoIndent_OnChar)
+        npp.AddEventHandler(<span class="string">"OnUpdateUI"</span>, autoIndent_OnUpdateUI)
+    <span class="keyword">else</span>
+        <span class="comment">-- Remove the event handlers
+</span>        npp.RemoveEventHandler(<span class="string">"OnChar"</span>, autoIndent_OnChar)
+        npp.RemoveEventHandler(<span class="string">"OnUpdateUI"</span>, autoIndent_OnUpdateUI)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">-- Only turn on the auto indentation when it is actually a lua file
+</span><span class="comment">-- Check it when the file is switched to and if the language changes
+</span>
+npp.AddEventHandler(<span class="string">"OnSwitchFile"</span>, <span class="keyword">function</span>(filename, bufferid)
+    checkAutoIndent(bufferid)
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)
+
+npp.AddEventHandler(<span class="string">"OnLangChange"</span>, <span class="keyword">function</span>()
+    checkAutoIndent(npp.CurrentBufferID)
+    <span class="keyword">return</span> <span class="keyword">false</span>
+<span class="keyword">end</span>)</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>Generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>
