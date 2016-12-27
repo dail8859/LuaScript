@@ -121,7 +121,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins"</Command>
+      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -156,7 +156,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins"</Command>
+      <Command>if EXIST "C:\Program Files\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -187,7 +187,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins"</Command>
+      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -216,7 +216,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins"</Command>
+      <Command>if EXIST "C:\Program Files\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

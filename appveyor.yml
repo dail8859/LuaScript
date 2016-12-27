@@ -1,0 +1,63 @@
+version: 0.7.0.{build}
+image: Visual Studio 2015
+
+platform:
+    - x64
+    - Win32
+
+configuration:
+    - Release
+    - Debug
+
+install:
+    - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="Win32" set archi=x86
+    - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+
+build:
+    parallel: true
+    verbosity: minimal
+
+build_script:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - msbuild LuaScript.sln /p:configuration="%configuration%" /p:platform="%platform%"
+
+after_build:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - ps: >-
+
+        if ($env:PLATFORM -eq "x64") {
+            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\LuaScript_64.dll" -FileName LuaScript_64.dll
+        }
+
+        if ($env:PLATFORM -eq "Win32" ) {
+            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\LuaScript.dll" -FileName LuaScript.dll
+        }
+
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
+            if ($env:PLATFORM -eq "x64"){
+                $ZipFileName = "LuaScript$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+                7z a $ZipFileName bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll
+            }
+            if ($env:PLATFORM -eq "Win32"){
+                $ZipFileName = "LuaScript$($env:APPVEYOR_REPO_TAG_NAME).zip"
+                7z a $ZipFileName bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll
+            }
+        }
+
+artifacts:
+  - path: LuaScript*.zip
+    name: releases
+
+deploy:
+    provider: GitHub
+    auth_token:
+        secure: qrw+nu8dQKFLG+lNmky6buHsvHFwlibAai0r0aJ3MYbyBniONVxvgnmyx37bPh44
+    artifact: releases
+    draft: true
+    prerelease: false
+    force_update: true
+    on:
+        branch: master
+        appveyor_repo_tag: true
+        configuration: Release
