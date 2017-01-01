@@ -192,24 +192,6 @@ inline int absolute_index(lua_State *L, int index) {
 	return ((index < 0) && (index != LUA_REGISTRYINDEX)) ? (lua_gettop(L) + index + 1) : index;
 }
 
-// Lua 5.1's checkudata throws an error on failure, we don't want that, we want NULL
-static void *checkudata(lua_State *L, int ud, const char *tname) {
-	void *p = lua_touserdata(L, ud);
-	if (p != NULL) { // value is a userdata?
-		if (lua_getmetatable(L, ud)) { // does it have a metatable?
-			lua_getfield(L, LUA_REGISTRYINDEX, tname); // get correct metatable
-			if (lua_rawequal(L, -1, -2)) { // does it have correct mt?
-				lua_pop(L, 2);
-				return p;
-			}
-			else {
-				lua_pop(L, 2);
-			}
-		}
-	}
-	return NULL;
-}
-
 static int cf_npp_send(lua_State *L) {
 	// This is reinstated as a replacement for the old <pane>:send, which was removed
 	// due to safety concerns.  Is now exposed as npp.SendEditor / npp.SendOutput.
@@ -524,21 +506,21 @@ static int cf_npp_clear_console(lua_State *L) {
 }
 
 static NppExtensionAPI::Pane check_pane_object(lua_State *L, int index) {
-	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Pane"));
+	NppExtensionAPI::Pane *pPane = static_cast<NppExtensionAPI::Pane *>(luaL_testudata(L, index, "Npp_MT_Pane"));
 
 	if ((!pPane) && lua_istable(L, index)) {
 		// so that nested objects have a convenient way to do a back reference
 		int absIndex = absolute_index(L, index);
 		lua_pushliteral(L, "pane");
 		lua_gettable(L, absIndex);
-		pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, -1, "Npp_MT_Pane"));
+		pPane = static_cast<NppExtensionAPI::Pane *>(luaL_testudata(L, -1, "Npp_MT_Pane"));
 	}
 
 	if (pPane) {
 		return *pPane;
 	}
 
-	pPane = static_cast<NppExtensionAPI::Pane *>(checkudata(L, index, "Npp_MT_Application"));
+	pPane = static_cast<NppExtensionAPI::Pane *>(luaL_testudata(L, index, "Npp_MT_Application"));
 
 	// NOTE: I'm not sure what the above comment about the "back reference" means. This may or
 	// may not apply in thise case. So that if statement may need pasted/modified in this case
@@ -670,7 +652,7 @@ struct PaneMatchObject {
 };
 
 static int cf_match_replace(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(luaL_testudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Self argument for match:replace() should be a pane match object.");
 		return 0;
@@ -695,7 +677,7 @@ static int cf_match_replace(lua_State *L) {
 }
 
 static int cf_match_metatable_index(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(luaL_testudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Internal error: pane match object is missing.");
 		return 0;
@@ -741,7 +723,7 @@ static int cf_match_metatable_index(lua_State *L) {
 }
 
 static int cf_match_metatable_tostring(lua_State *L) {
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 1, "Npp_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(luaL_testudata(L, 1, "Npp_MT_PaneMatchObject"));
 	if (!pmo) {
 		raise_error(L, "Internal error: pane match object is missing.");
 		return 0;
@@ -810,7 +792,7 @@ static int cf_pane_match(lua_State *L) {
 
 static int cf_pane_match_generator(lua_State *L) {
 	const char *text = lua_tostring(L, 1);
-	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(checkudata(L, 2, "Npp_MT_PaneMatchObject"));
+	PaneMatchObject *pmo = static_cast<PaneMatchObject *>(luaL_testudata(L, 2, "Npp_MT_PaneMatchObject"));
 
 	if (!(text)) {
 		raise_error(L, "Internal error: invalid state for <pane>:match generator.");
@@ -1106,7 +1088,7 @@ struct IFacePropertyBinding {
 static int cf_ifaceprop_metatable_index(lua_State *L) {
 	// if there is a getter, __index calls it
 	// otherwise, __index raises "property 'name' is write-only".
-	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "Npp_MT_IFacePropertyBinding"));
+	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(luaL_testudata(L, 1, "Npp_MT_IFacePropertyBinding"));
 	if (!(ipb && IFacePropertyIsScriptable(*(ipb->prop)))) {
 		raise_error(L, "Internal error: property binding is improperly set up");
 		return 0;
@@ -1125,7 +1107,7 @@ static int cf_ifaceprop_metatable_index(lua_State *L) {
 }
 
 static int cf_ifaceprop_metatable_newindex(lua_State *L) {
-	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(checkudata(L, 1, "Npp_MT_IFacePropertyBinding"));
+	IFacePropertyBinding *ipb = static_cast<IFacePropertyBinding *>(luaL_testudata(L, 1, "Npp_MT_IFacePropertyBinding"));
 	if (!(ipb && IFacePropertyIsScriptable(*(ipb->prop)))) {
 		raise_error(L, "Internal error: property binding is improperly set up");
 		return 0;
