@@ -27,7 +27,7 @@
 #define INDIC_BRACEBADLIGHT INDIC_CONTAINER + 1
 
 // Extra helper functions not from the IFace tables
-static const std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "textrange" };
+static const std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "set_text_direction", "textrange" };
 static const std::vector<std::string> moreNppFuncs = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
 
 // Copied from Scintilla

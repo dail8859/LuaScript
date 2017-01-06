@@ -587,6 +587,18 @@ static int cf_pane_append(lua_State *L) {
 	return 0;
 }
 
+static int cf_pane_set_text_dir(lua_State *L) {
+	NppExtensionAPI::Pane p = check_pane_object(L, 1);
+	const char *s = luaL_checkstring(L, 2);
+
+	if (strcmp(s, "RTL") != 0 && strcmp(s, "LTR") != 0)
+		raise_error(L, "Invalid text direction. Must be \"RTL\" or \"LTR\"");
+
+	host->SetTextDirection(p, strcmp(s, "RTL") == 0);
+
+	return 0;
+}
+
 static int cf_pane_findtext(lua_State *L) {
 	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
@@ -1302,6 +1314,8 @@ void push_pane_object(lua_State *L, NppExtensionAPI::Pane p) {
 		lua_setfield(L, -2, "remove");
 		lua_pushcfunction(L, cf_pane_append);
 		lua_setfield(L, -2, "append");
+		lua_pushcfunction(L, cf_pane_set_text_dir);
+		lua_setfield(L, -2, "set_text_direction");
 
 		lua_pushcfunction(L, cf_pane_match_generator);
 		lua_pushcclosure(L, cf_pane_match, 1);

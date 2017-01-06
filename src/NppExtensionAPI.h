@@ -64,6 +64,7 @@ public:
 	char *Range(Pane p, int start, int end);
 	void Remove(Pane p, int start, int end);
 	void Insert(Pane p, int pos, const char *s);
+	void SetTextDirection(Pane p, bool rtl);
 	void Trace(const char *s);
 	void TraceError(const char *s);
 	void Tracef(const char *fmt, ...);

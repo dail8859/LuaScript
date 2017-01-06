@@ -63,6 +63,19 @@ void NppExtensionAPI::Insert(NppExtensionAPI::Pane p, int pos, const char *s) {
 	this->Send(p, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
 
+void NppExtensionAPI::SetTextDirection(NppExtensionAPI::Pane p, bool rtl) {
+	HWND hwnd = reinterpret_cast<HWND>(scis[p].GetID());
+	long exStyle = static_cast<long>(::GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+	exStyle = rtl ? (exStyle | WS_EX_LAYOUTRTL) : (exStyle & (~WS_EX_LAYOUTRTL));
+	::SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle);
+
+	// Toggle the wrap mode back and forth to fix the problem of mirrored characters
+	// This was taken from N++
+	bool isWrapped = this->Send(p, SCI_GETWRAPMODE) == SC_WRAP_WORD;
+	this->Send(p, SCI_SETWRAPMODE, !isWrapped);
+	this->Send(p, SCI_SETWRAPMODE, isWrapped);
+}
+
 void NppExtensionAPI::Trace(const char *s) {
 	cd->writeText(strlen(s), s);
 }
