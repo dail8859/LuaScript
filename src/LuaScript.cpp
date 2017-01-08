@@ -32,7 +32,7 @@
 // --- Menu callbacks ---
 static void showConsole();
 static void editStartupScript();
-static void runCurrentFile();
+static void executeCurrentFile();
 static void showDocumentation();
 static void showAbout();
 
@@ -128,7 +128,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
 	// Set up the short cuts that we know of
 	funcItems.emplace_back(FuncItem{ TEXT("Show Console"), showConsole, 0, false, NULL });
 	funcItems.emplace_back(FuncItem{ TEXT("Edit Startup Script"), editStartupScript, 0, false, NULL });
-	funcItems.emplace_back(FuncItem{ TEXT("Run Current File"), runCurrentFile, 0, false, NULL });
+	funcItems.emplace_back(FuncItem{ TEXT("Execute Current File"), executeCurrentFile, 0, false, NULL });
 
 	// Run the startup script
 	const wchar_t *buff = getStartupScriptFilePath();
@@ -435,7 +435,7 @@ void editStartupScript() {
 	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);
 }
 
-static void runCurrentFile() {
+static void executeCurrentFile() {
 	updateScintilla();
 	const char *doc = (const char *)SendScintilla(SCI_GETCHARACTERPOINTER);
 	if (LuaExtension::Instance().RunString(doc) == false) {
