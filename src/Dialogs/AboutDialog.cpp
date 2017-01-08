@@ -48,3 +48,24 @@ INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	}
 	return false;
 }
+
+void ShowAboutDialog(HINSTANCE hInstance, const wchar_t *lpTemplateName, HWND hWndParent) {
+	HWND hSelf = CreateDialogParam((HINSTANCE)hInstance, lpTemplateName, hWndParent, abtDlgProc, NULL);
+
+	// Go to center
+	RECT rc;
+	GetClientRect(hWndParent, &rc);
+	POINT center;
+	int w = rc.right - rc.left;
+	int h = rc.bottom - rc.top;
+	center.x = rc.left + w / 2;
+	center.y = rc.top + h / 2;
+	ClientToScreen(hWndParent, &center);
+
+	RECT dlgRect;
+	GetClientRect(hSelf, &dlgRect);
+	int x = center.x - (dlgRect.right - dlgRect.left) / 2;
+	int y = center.y - (dlgRect.bottom - dlgRect.top) / 2;
+
+	SetWindowPos(hSelf, HWND_TOP, x, y, (dlgRect.right - dlgRect.left), (dlgRect.bottom - dlgRect.top), SWP_SHOWWINDOW);
+}

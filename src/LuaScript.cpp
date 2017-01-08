@@ -448,22 +448,5 @@ static void showDocumentation() {
 }
 
 static void showAbout() {
-	HWND hSelf = CreateDialogParam((HINSTANCE)_hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle, abtDlgProc, NULL);
-
-	// Go to center
-	RECT rc;
-	GetClientRect(nppData._nppHandle, &rc);
-	POINT center;
-	int w = rc.right - rc.left;
-	int h = rc.bottom - rc.top;
-	center.x = rc.left + w / 2;
-	center.y = rc.top + h / 2;
-	ClientToScreen(nppData._nppHandle, &center);
-
-	RECT dlgRect;
-	GetClientRect(hSelf, &dlgRect);
-	int x = center.x - (dlgRect.right - dlgRect.left) / 2;
-	int y = center.y - (dlgRect.bottom - dlgRect.top) / 2;
-
-	SetWindowPos(hSelf, HWND_TOP, x, y, (dlgRect.right - dlgRect.left), (dlgRect.bottom - dlgRect.top), SWP_SHOWWINDOW);
+	ShowAboutDialog((HINSTANCE)_hModule, MAKEINTRESOURCE(IDD_ABOUTDLG), nppData._nppHandle);
 }
