@@ -49,15 +49,16 @@ end
 
 -- See if the auto indentation should be turned on or off
 local function checkAutoIndent(bufferid)
+    -- Make sure the event handlers are completely removed.
+    -- There are some cases where they can get registered more than once.
+    while npp.RemoveEventHandler("OnChar", autoIndent_OnChar) do end
+    while npp.RemoveEventHandler("OnUpdateUI", autoIndent_OnUpdateUI) do end
+
     if npp.BufferLangType[bufferid] == L_LUA then
         do_increase = false
         -- Register the event handlers
         npp.AddEventHandler("OnChar", autoIndent_OnChar)
         npp.AddEventHandler("OnUpdateUI", autoIndent_OnUpdateUI)
-    else
-        -- Remove the event handlers
-        npp.RemoveEventHandler("OnChar", autoIndent_OnChar)
-        npp.RemoveEventHandler("OnUpdateUI", autoIndent_OnUpdateUI)
     end
 end
 
