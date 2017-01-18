@@ -43,6 +43,7 @@ template = true
 no_lua_ref = true
 merge = true
 no_space_before_args = true
+use_markdown_titles = true
 
 topics = { -- Put any md files here
 	'Callbacks.md',

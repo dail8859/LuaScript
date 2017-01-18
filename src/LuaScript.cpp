@@ -100,6 +100,16 @@ const wchar_t *getStartupScriptFilePath() {
 	return iniPath;
 }
 
+bool fileIsInConfigDir() {
+	wchar_t configDir[MAX_PATH];
+	wchar_t filePath[MAX_PATH];
+
+	SendNpp(NPPM_GETFULLCURRENTPATH, MAX_PATH, (LPARAM)filePath);
+	SendNpp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
+
+	return _wcsnicmp(filePath, configDir, wcslen(configDir)) == 0;
+}
+
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID lpReserved) {
 	switch (reasonForCall) {
 		case DLL_PROCESS_ATTACH:
@@ -346,7 +356,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_BUFFERACTIVATED:
 			// If opening the startup.lua file add the constants to a keyword list
 			SendNpp(NPPM_GETFILENAME, MAX_PATH, (LPARAM)fname);
-			if (SendNpp(NPPM_GETBUFFERLANGTYPE, nh.idFrom) == L_LUA && _tcscmp(fname, TEXT("startup.lua")) == 0) {
+			if (SendNpp(NPPM_GETBUFFERLANGTYPE, nh.idFrom) == L_LUA && fileIsInConfigDir()) {
 				updateScintilla();
 				SendScintilla(SCI_SETKEYWORDS, 4, (LPARAM)g_console->getGlobalConstants().c_str());
 				SendScintilla(SCI_STYLESETFORE, SCE_LUA_WORD5, SendScintilla(SCI_STYLEGETFORE, SCE_LUA_PREPROCESSOR));
