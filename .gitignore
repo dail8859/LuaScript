@@ -157,3 +157,4 @@ $RECYCLE.BIN/
 LuaDist
 gh-pages
 /docs_gen/Editor.lua
+*.pyc
