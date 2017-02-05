@@ -7,9 +7,9 @@ Plugin developers are able to execute Lua code from their own plugins. Notepad++
 
 Information needed for LuaScript is defined in the custom struct defined [here](https://github.com/dail8859/LuaScript/blob/master/src/NppLuaScript.h).
 
- - `structVersion` - (reserved for future use) must always be `1`
- - `flags` - (reserved for future use) must always be `0`
- - `script` - UTF-8 encoded string. The meaning of this is dependent on the command executed.
+- `structVersion` - (reserved for future use) must always be `1`
+- `flags` - (reserved for future use) must always be `0`
+- `script` - UTF-8 encoded string. The meaning of this is dependent on the command executed.
 
 <br/>
 

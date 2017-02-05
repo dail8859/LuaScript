@@ -23,12 +23,18 @@
 #include "Hyperlinks.h"
 #include "Version.h"
 
+#ifdef _WIN64
+#define BITNESS TEXT("(64 bit)")
+#else
+#define BITNESS TEXT("(32 bit)")
+#endif
+
 INT_PTR CALLBACK abtDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch(uMsg) {
 		case WM_INITDIALOG:
 			ConvertStaticToHyperlink(hwndDlg, IDC_GITHUB);
 			ConvertStaticToHyperlink(hwndDlg, IDC_README);
-			SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("LuaScript v") VERSION_TEXT TEXT(" ") VERSION_STAGE);
+			SetWindowText(GetDlgItem(hwndDlg, IDC_VERSION), TEXT("LuaScript v") VERSION_TEXT TEXT(" ") VERSION_STAGE TEXT(" ") BITNESS);
 			return true;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {

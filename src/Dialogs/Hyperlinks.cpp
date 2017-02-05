@@ -122,7 +122,7 @@ BOOL ConvertStaticToHyperlink(HWND hwndCtl)
 	HWND hwndParent = GetParent(hwndCtl);
 	if (NULL != hwndParent)
 	{
-		WNDPROC pfnOrigProc = (WNDPROC)GetWindowLongPtr(hwndParent, GWLP_WNDPROC);
+		WNDPROC pfnOrigProc = (WNDPROC) GetWindowLongPtr(hwndParent, GWLP_WNDPROC);
 		if (pfnOrigProc != _HyperlinkParentProc)
 		{
 			SetProp(hwndParent, PROP_ORIGINAL_PROC, (HANDLE) pfnOrigProc);

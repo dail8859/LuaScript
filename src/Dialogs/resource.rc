@@ -20,7 +20,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 {
 	PUSHBUTTON      "Close", IDOK, 86, 109, 50, 14
     GROUPBOX        "", IDC_VERSION, 10, 9, 201, 93, BS_CENTER
-    LTEXT           "Author : Justin Dailey <dail8859@yahoo.com>", IDC_STATIC, 30, 26, 180, 8
+    LTEXT           "Author: Justin Dailey <dail8859@yahoo.com>", IDC_STATIC, 30, 26, 180, 8
     LTEXT           "The LuaScript code is hosted on", IDC_STATIC, 30, 43, 180, 8
     LTEXT           "GitHub", IDC_GITHUB, 133, 43, 31, 8, SS_LEFT | SS_NOTIFY, WS_EX_LEFT
     LTEXT           "For detailed usage, see the ", IDC_STATIC, 30, 62, 180, 8

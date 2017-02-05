@@ -172,7 +172,7 @@ properties - a sorted list of (name, property), where property is a
 	return (constants, funclist, proplist)
 
 
-def printIFaceTableCXXFile(faceAndIDs):
+def printIFaceTableCppFile(faceAndIDs):
 	out = []
 	f, ids = faceAndIDs
 	(constants, functions, properties) = GetScriptableInterface(f)
@@ -383,7 +383,7 @@ def RegenerateAll():
 	f = Face.Face()
 	f.ReadFromFile("Scintilla.iface")
 	#idsInOrder = idsFromDocumentation(srcRoot + "/scintilla/doc/ScintillaDoc.html")
-	Regenerate("../src/SciIFaceTable.cpp", "//", printIFaceTableCXXFile([f, []]))
+	Regenerate("../src/SciIFaceTable.cpp", "//", printIFaceTableCppFile([f, []]))
 	#Regenerate(srcRoot + "/scite/doc/PaneAPI.html", "<!--", printIFaceTableHTMLFile([f, menuIDs, idsInOrder]))
 
 if __name__=="__main__":

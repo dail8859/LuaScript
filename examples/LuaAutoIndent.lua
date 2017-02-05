@@ -3,7 +3,7 @@
 local decreaseIndentPattern = [[^\s*(elseif|else|end|\})\s*$]]
 local increaseIndentPattern = [[^\s*(else|elseif|for|(local\s+)?function|if|repeat|until|while)\b((?!end).)*$|\{\s*$]]
 
-do_increase = false
+local do_increase = false
 
 -- Get the start and end position of a specific line number
 local function getLinePositions(line_num)
