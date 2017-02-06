@@ -47,6 +47,7 @@ use_markdown_titles = true
 
 topics = { -- Put any md files here
 	'Callbacks.md',
+	'ExternalPluginSupport.md',
 }
 
 file = { -- sourcecode to parse comments from (Lua or C)

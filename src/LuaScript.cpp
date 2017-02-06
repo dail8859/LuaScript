@@ -28,6 +28,7 @@
 #include "NppExtensionAPI.h"
 #include "GUI.h"
 #include "StyleWriter.h"
+#include "NppLuaScript.h"
 
 // --- Menu callbacks ---
 static void showConsole();
@@ -412,7 +413,22 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	return;
 }
 
-extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam) {
+// NOTE: this function's return value doesn't actually matter since N++ never uses it
+extern "C" __declspec(dllexport) LRESULT messageProc(UINT message, WPARAM wParam, LPARAM lParam) {
+	if (message == NPPM_MSGTOPLUGIN) {
+		auto ci = reinterpret_cast<const CommunicationInfo*>(lParam);
+		auto lsi = reinterpret_cast<const LuaScriptInfo*>(ci->info);
+
+		if (lsi && lsi->structVersion == 1) {
+			if (ci->internalMsg == LS_EXECUTE_SCRIPT && lsi->script != nullptr) {
+				LuaExtension::Instance().RunFile(GUI::StringFromUTF8(lsi->script).c_str());
+			}
+			else if (ci->internalMsg == LS_EXECUTE_STATEMENT && lsi->script != nullptr) {
+				LuaExtension::Instance().RunString(lsi->script);
+			}
+		}
+	}
+
 	return TRUE;
 }
 
