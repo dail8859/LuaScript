@@ -53,6 +53,10 @@
 -- @function GetFileName
 -- @treturn string file name
 
+--- Gets the file name at the cursor position.
+-- @function GetFileNameAtCursor
+-- @treturn string file path
+
 --- Gets the full path of the current document.
 -- @function GetFullCurrentPath
 -- @treturn string full path
