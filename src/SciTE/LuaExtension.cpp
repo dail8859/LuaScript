@@ -264,7 +264,7 @@ static bool isValidCallback(const char *cb) {
 	return false;
 }
 
-static int cf_npp_add_callback(lua_State *L) {
+static int cf_npp_add_callback_single(lua_State *L) {
 	const char *callback = luaL_checkstring(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
@@ -288,6 +288,42 @@ static int cf_npp_add_callback(lua_State *L) {
 
 	lua_pushvalue(L, -3); // copy the callback function to the top of the stack
 	lua_seti(L, -2, len + 1);
+
+	lua_pop(L, 2); // callback tables
+
+	return 0;
+}
+
+static int cf_npp_add_callback(lua_State *L) {
+	luaL_argcheck(L, lua_type(L, 1) == LUA_TSTRING || lua_type(L, 1) == LUA_TTABLE, 1, "string or table expected");
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	if (lua_isstring(L, 1)) {
+		cf_npp_add_callback_single(L);
+	}
+	else {
+		size_t len = lua_rawlen(L, 1);
+
+		if (len == 0)
+			luaL_argerror(L, 1, "non-empty array required");
+
+		for (size_t i = 1; i <= len; ++i) {
+			lua_rawgeti(L, 1, i);
+			lua_pushvalue(L, 2);
+
+			// The arguments need to be at the bottom of the stack
+			lua_insert(L, 1);
+			lua_insert(L, 1);
+			cf_npp_add_callback_single(L);
+
+			// Move the original 2 back to the bottom
+			lua_insert(L, 1);
+			lua_insert(L, 1);
+
+			// Pop the 2 params that were needed for the function call
+			lua_pop(L, 2);
+		}
+	}
 
 	lua_pushboolean(L, 1);
 	return 1;

@@ -293,8 +293,8 @@
 -- 
 -- @function AddEventHandler
 -- @static
--- @tparam string event name of the desired event
--- @tparam function callback function to call when the event is triggered
+-- @tparam string event name of the desired event (can also be an array of strings)
+-- @tparam function callback function to call when the event(s) is triggered
 -- @treturn bool always returns `true` currently
 
 --- Removes previously registered Lua function for a given event.
