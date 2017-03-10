@@ -1,53 +1,31 @@
 # LuaScript
-Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities. Provides control over all of Scintilla's features and options with a light-weight, fully-functional programming language. Download it from the [Release](https://github.com/dail8859/LuaScript/releases) page.
+Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities. This provides control over all of Scintilla's features and options with a light-weight, fully-functional programming language.
 
 Major features include:
 
 - Assign Lua functions to shortcut keys
-- Register callbacks to specific events
+- Register callback functions for events
 - Full Lua 5.3 functionality
 - Interactive console with auto-completion
 - Requires no special permissions
 
+## Getting Started
+Install the plugin using the Notepad++ Plugin Manager, or download it from the [Release](https://github.com/dail8859/LuaScript/releases) page and copy `LuaScript.dll` to your `\plugins` folder.
+
+#### Lua Console
+LuaScript provides an interactive console for running Lua commands. This can be shown by `Plugins > LuaScript > Show Console`.
+
+#### Startup Script
+LuaScript looks for the `\plugins\config\startup.lua` file and automatically runs it on Notepad++ startup. You can easily edit this file via `Plugins > LuaScript > Edit Startup Script`. You can include any commands you want to immediately execute on program startup, as well as register any additional shortcuts or callbacks.
+
+#### Registering New Shortcuts
+New functions can be added as shortcuts by using [AddShortcut](https://dail8859.github.io/LuaScript/classes/Notepad.html#Notepad.AddShortcut). The new menu items are listed under the `Plugins > LuaScript` menu. For example [this script](https://dail8859.github.io/LuaScript/examples/visualstudiolinecopy.lua.html) adds 2 new menu items.
+
+#### Registering Callback Functions
+Scripts can also register functions to be called when certain events occur, such as a file being opened, text being modified, etc. Each callback provides a different set of parameters. See the documentation for [callbacks](https://dail8859.github.io/LuaScript/topics/callbacks.md.html) to see the entire list of possible events and parameters provided.
+
 ## Documentation
-The full API documentation can be found [here](http://dail8859.github.io/LuaScript/).
-
-## Examples
-Just show me what it can do! Also, check out the [examples](/examples/) directory.
-
-- Change Notepad++'s ugly marker symbols:
-```lua
--- Notepad++ uses 24 internally
-editor:MarkerDefine(24, SC_MARK_BOOKMARK)
-editor.MarkerFore[24] = 0x0000EE
-editor.MarkerBack[24] = 0x6060F2
-```
-
-- Find all instances of `image345.jpg`, `image123.png`, etc and modify the number:
-```lua
-for m in editor:match("(image)(\\d+)(\\.(jpg|png))", SCFIND_REGEXP) do
-    i = tonumber(editor.Tag[2])
-    m:replace(editor.Tag[1] .. i + 1 .. editor.Tag[3])
-end
-```
-
-- Get some of Visual Studio's copy and paste functionality:
-```lua
--- Mimic Visual Studio's "Ctrl+C" that copies the entire line if nothing is selected
-npp.AddShortcut("Copy Allow Line", "Ctrl+C", function()
-	editor:CopyAllowLine()
-end)
-
--- Mimic Visual Studio's "Ctrl+X" that cuts the line if nothing is selected
-npp.AddShortcut("Cut Allow Line", "Ctrl+X", function()
-	if editor.SelectionEmpty then
-		editor:CopyAllowLine()
-		editor:LineDelete()
-	else
-		editor:Cut()
-	end
-end)
-```
+The full API documentation can be found [here](http://dail8859.github.io/LuaScript/). Also be sure to check out the [examples](/examples/) directory.
 
 ## Development
 The code has been developed using MSVC 2013. To compile the code:
