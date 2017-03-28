@@ -9,6 +9,26 @@ Major features include:
 - Interactive console with auto-completion
 - Requires no special permissions
 
+## Getting Started
+Install the plugin using the Notepad++ Plugin Manager, or download it from the [Release](https://github.com/dail8859/LuaScript/releases) page and copy `LuaScript.dll` to your `\plugins` folder.
+
+#### Startup Scripts
+LuaScript looks for the file `\plugins\config\startup.lua` and automatically runs it on Notepad++ startup. You can include any commands you want to immediately execute on prgram startup, as well as register any additional functions/shortcuts.
+
+You can include additional script files within your `startup.lua` file. In the following example, LuaScript will look for a folder  `\plugins\config\lua` and automatially load all of the `.lua` script files within:
+
+```lua
+--Include other scripts from lua folder
+package.path = package.path .. ";" .. npp:GetPluginsConfigDir() .. "\\lua\\?.lua"
+local f = io.popen('dir "' .. npp:GetPluginsConfigDir() .. '\\lua\\*.lua" /b') 
+for mod in f:lines() do require( mod:sub(0,-5) ) end
+```
+
+#### Registering New Commands
+You can register new commands (with or without keyboard shortcuts) by using [AddShortcut](https://dail8859.github.io/LuaScript/classes/Notepad.html#Notepad.AddShortcut). For example [this example script](https://dail8859.github.io/LuaScript/examples/visualstudiolinecopy.lua.html) adds 2 new menu items.
+
+The new menu items are listed under the `Plugins...LuaScript` menu. Commands can be registered without keyboard shortcuts by supplying an empty string or `nil` value in the second argument of `AddShortcut()`
+
 ## Documentation
 The full API documentation can be found [here](http://dail8859.github.io/LuaScript/).
 
