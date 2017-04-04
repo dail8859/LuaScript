@@ -13,7 +13,7 @@ Scintilla related callbacks:
 - `OnModification(modType, position, length, text, linesAdded)`
 - `OnMarginClick(position, margin, modifiers)`
 - `OnNeedShown(position, length)`
-- `OnPainted(listType, position, text)`
+- `OnPainted()`
 - `OnUserListSelection(listType, position, text)`
 - `OnDwellStart(position, x, y)`
 - `OnDwellEnd(position, x, y)`
