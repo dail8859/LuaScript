@@ -8,7 +8,7 @@
 ---------------------------------------------------------------
 
 -- helper function to split lines
-function split(str, sep)
+local function split(str, sep)
     local result = {}
     local regex = ("([^%s]+)"):format(sep)
     for each in str:gmatch(regex) do
