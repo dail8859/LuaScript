@@ -3,8 +3,9 @@
 --
 -- This script will randomize the lines within a document.
 --
--- Activate it on all text in the editor with CTRL+F5
--- or select a group of lines to randomize only the selection.
+-- Activate it on all text in the editor by running without a
+-- selection, or select a group of lines to randomize only 
+-- the selected lines.
 ---------------------------------------------------------------
 
 -- helper function to split lines
@@ -33,7 +34,7 @@ end
 
 --------------------------------------------------------------------
 
-npp.AddShortcut("Randomize Lines", "Ctrl+R", function()
+npp.AddShortcut("Randomize Lines", "", function()
 
     local result --placeholder to store the processed text for return to editor
     local SelectionStart, SelectionEnd --placeholder to store selection points
