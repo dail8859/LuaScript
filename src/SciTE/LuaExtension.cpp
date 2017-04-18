@@ -997,7 +997,7 @@ static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 					}
 					va_end(vl);
 				}
-				handled = call_function(luaState, varfmt != NULL ? strlen(varfmt) : 0);
+				handled = call_function(luaState, varfmt != NULL ? static_cast<int>(strlen(varfmt)) : 0);
 				// call_function removes the function for us, the key stays on the stack
 			}
 		}

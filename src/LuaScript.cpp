@@ -181,7 +181,7 @@ extern "C" __declspec(dllexport) const wchar_t *getName() {
 }
 
 extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) {
-	*nbF = funcItems.size();
+	*nbF = static_cast<int>(funcItems.size());
 	return funcItems.data();
 }
 
@@ -195,16 +195,16 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		case NPPN_READONLYCHANGED:
 			// Note: hwndFrom is the bufferID
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, (WPARAM)nh.hwndFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnReadOnlyChanged(GUI::UTF8FromString(fname).c_str(), (uptr_t)nh.hwndFrom, nh.idFrom);
+			LuaExtension::Instance().OnReadOnlyChanged(GUI::UTF8FromString(fname).c_str(), (uptr_t)nh.hwndFrom, (int)nh.idFrom);
 			return;
 		case NPPN_DOCORDERCHANGED:
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnDocOrderChanged(GUI::UTF8FromString(fname).c_str(), nh.idFrom, (int)nh.hwndFrom);
+			LuaExtension::Instance().OnDocOrderChanged(GUI::UTF8FromString(fname).c_str(), nh.idFrom, static_cast<int>(reinterpret_cast<intptr_t>(nh.hwndFrom)));
 			return;
 		case NPPN_SNAPSHOTDIRTYFILELOADED:
 			// Note: hwndFrom is NULL
 			SendNpp(NPPM_GETFULLPATHFROMBUFFERID, nh.idFrom, (LPARAM)fname);
-			LuaExtension::Instance().OnSnapshotDirtyFileLoaded(GUI::UTF8FromString(fname).c_str(), nh.idFrom);
+			LuaExtension::Instance().OnSnapshotDirtyFileLoaded(GUI::UTF8FromString(fname).c_str(), (uptr_t)nh.idFrom);
 			return;
 	}
 
@@ -455,7 +455,7 @@ void editStartupScript() {
 		const char *s = "-- Startup script\r\n-- Changes will take effect once Notepad++ is restarted\r\n\r\n";
 		DWORD dwBytesWritten;
 		HANDLE h = CreateFile(buff, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-		WriteFile(h, s, strlen(s), &dwBytesWritten, NULL);
+		WriteFile(h, s, static_cast<DWORD>(strlen(s)), &dwBytesWritten, NULL);
 		CloseHandle(h);
 	}
 	SendNpp(NPPM_DOOPEN, 0, (LPARAM)buff);

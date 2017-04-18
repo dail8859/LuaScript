@@ -65,16 +65,16 @@ struct Sorter {
 	Sorter(bool ignoreCase_) : ignoreCase(ignoreCase_) {}
 
 	inline bool operator()(const std::string& a, const std::string& b) {
-		int lenA = a.length();
-		int lenB = b.length();
-		int len = min(lenA, lenB);
+		auto lenA = a.length();
+		auto lenB = b.length();
+		auto len = min(lenA, lenB);
 		int cmp;
 		if (ignoreCase)
 			cmp = CompareNCaseInsensitive(a.c_str(), b.c_str(), len);
 		else
 			cmp = strncmp(a.c_str(), b.c_str(), len);
 		if (cmp == 0)
-			cmp = lenA - lenB;
+			cmp = static_cast<int>(lenA - lenB);
 		return cmp < 0;
 	}
 };
@@ -344,7 +344,7 @@ void LuaConsole::showAutoCompletion() {
 
 		// Back up past the partial word
 		prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1 - partialWord.size());
-		curPos = curPos - partialWord.size();
+		curPos = curPos - static_cast<int>(partialWord.size());
 	}
 
 	if (prevCh == '.' || prevCh == ':') {

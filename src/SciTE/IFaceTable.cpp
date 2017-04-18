@@ -23,41 +23,26 @@
 #include <algorithm>
 #include <iterator>
 
+template<typename Iter>
+static typename const std::iterator_traits<Iter>::value_type *binary_find(Iter begin, Iter end, const char *name) {
+	auto it = std::lower_bound(begin, end, name, [](const auto &lhs, const char *rhs) {
+		return strcmp(lhs.name, rhs) < 0;
+	});
+
+	if (it == end || strcmp(name, it->name) != 0) {
+		return nullptr;
+	}
+	else {
+		return &(*it);
+	}
+}
+
 const IFaceConstant *IFaceTable::FindConstant(const char *name) const {
-	int lo = 0;
-	int hi = constants.size() - 1;
-	do {
-		int idx = (lo+hi)/2;
-		int cmp = strcmp(name, constants[idx].name);
-
-		if (cmp > 0) {
-			lo = idx + 1;
-		} else if (cmp < 0) {
-			hi = idx - 1;
-		} else {
-			return &constants[idx];
-		}
-	} while (lo <= hi);
-
-	return nullptr;
+	return binary_find(constants.cbegin(), constants.cend(), name);
 }
 
 const IFaceFunction *IFaceTable::FindFunction(const char *name) const {
-	int lo = 0;
-	int hi = functions.size() - 1;
-	do {
-		int idx = (lo+hi)/2;
-		int cmp = strcmp(name, functions[idx].name);
-		if (cmp > 0) {
-			lo = idx + 1;
-		} else if (cmp < 0) {
-			hi = idx - 1;
-		} else {
-			return &functions[idx];
-		}
-	} while (lo <= hi);
-
-	return nullptr;
+	return binary_find(functions.cbegin(), functions.cend(), name);
 }
 
 const IFaceFunction *IFaceTable::FindFunctionByConstantName(const char *name) const {
@@ -90,22 +75,7 @@ const IFaceFunction *IFaceTable::FindFunctionByValue(int value) const {
 }
 
 const IFaceProperty *IFaceTable::FindProperty(const char *name) const {
-	int lo = 0;
-	int hi = properties.size() - 1;
-	do {
-		int idx = (lo+hi)/2;
-		int cmp = strcmp(name, properties[idx].name);
-
-		if (cmp > 0) {
-			lo = idx + 1;
-		} else if (cmp < 0) {
-			hi = idx - 1;
-		} else {
-			return &properties[idx];
-		}
-	} while (lo <= hi);
-
-	return nullptr;
+	return binary_find(properties.cbegin(), properties.cend(), name);
 }
 
 int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen, const char *hint) const {
@@ -116,7 +86,7 @@ int IFaceTable::GetConstantName(int value, char *nameOut, unsigned nameBufferLen
 	// Look in both the constants table and the functions table.  Start with functions.
 	for (const auto &func : functions) {
 		if (func.value == value) {
-			int len = static_cast<int>(strlen(func.name)) + strlen(prefix);
+			int len = static_cast<int>(strlen(func.name) + strlen(prefix));
 			if (nameOut && (static_cast<int>(nameBufferLen) > len)) {
 				strcpy(nameOut, prefix);
 				strcat(nameOut, func.name);
