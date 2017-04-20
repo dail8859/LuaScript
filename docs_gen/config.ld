@@ -20,7 +20,7 @@ custom_see_handler('^(SCI_[%w_]+)$', function(name)
 	return name, url
 end)
 
-project = 'LuaScript <sub>v0.6.0</sub>'
+project = 'LuaScript <sub>v0.7.0</sub>'
 title = 'LuaScript Reference'
 description = 'Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities.'
 full_description = [[LuaScript allows you to customize Notepad++.

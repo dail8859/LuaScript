@@ -28,11 +28,10 @@ Scripts can also register functions to be called when certain events occur, such
 The full API documentation can be found [here](http://dail8859.github.io/LuaScript/). Also be sure to check out the [examples](/examples/) directory.
 
 ## Development
-The code has been developed using MSVC 2013. To compile the code:
+The code has been developed using MSVC 2015. To compile the code:
 
 1. Open the `LuaScript.sln` file
-2. Select the `Win32` platform (x64 is currently experimental)
-3. Press `F7` and that's it!
+1. Press `F7` and that's it!
 
 For convenience, MSVC automatically copies the DLL into the Notepad++ plugin directory. 
 

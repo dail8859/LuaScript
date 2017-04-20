@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>LuaScript Reference</title>
+	<link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaScript <sub>v0.7.0</sub></h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/bookmark.lua.html">bookmark.lua</a></li>
+  <li><a href="../examples/highlightoccurrences.lua.html">highlightoccurrences.lua</a></li>
+  <li><a href="../examples/luaautoindent.lua.html">luaautoindent.lua</a></li>
+  <li><a href="../examples/luasyntaxchecker.lua.html">luasyntaxchecker.lua</a></li>
+  <li><strong>randomizelines.lua</strong></li>
+  <li><a href="../examples/selectionaddnext.lua.html">selectionaddnext.lua</a></li>
+  <li><a href="../examples/sessionmanager.lua.html">sessionmanager.lua</a></li>
+  <li><a href="../examples/stylecsv.lua.html">stylecsv.lua</a></li>
+  <li><a href="../examples/stylecustom.lua.html">stylecustom.lua</a></li>
+  <li><a href="../examples/visualstudiolinecopy.lua.html">visualstudiolinecopy.lua</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Editor.html">Editor</a></li>
+  <li><a href="../classes/Match.html">Match</a></li>
+  <li><a href="../classes/Styler.html">Styler</a></li>
+  <li><a href="../classes/Notepad.html">Notepad</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/callbacks.md.html">Callbacks</a></li>
+  <li><a href="../topics/externalpluginsupport.md.html">External Plugin Support</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>randomizelines.lua</h2>
+<pre>
+<span class="comment">---------------------------------------------------------------
+</span><span class="comment">-- randomizelines.lua for Notepad++ LuaScript plugin
+</span><span class="comment">--
+</span><span class="comment">-- This script will randomize the lines within a document.
+</span><span class="comment">--
+</span><span class="comment">-- Activate it on all text in the editor by running without a
+</span><span class="comment">-- selection, or select a group of lines to randomize only
+</span><span class="comment">-- the selected lines.
+</span><span class="comment">---------------------------------------------------------------
+</span>
+<span class="comment">-- helper function to split lines
+</span><span class="keyword">local</span> <span class="keyword">function</span> split(str, sep)
+    <span class="keyword">local</span> result = {}
+    <span class="keyword">local</span> regex = (<span class="string">"([^%s]+)"</span>):format(sep)
+    <span class="keyword">for</span> each <span class="keyword">in</span> str:gmatch(regex) <span class="keyword">do</span>
+      <span class="global">table</span>.insert(result, each)
+    <span class="keyword">end</span>
+    <span class="keyword">return</span> result
+<span class="keyword">end</span>
+
+<span class="comment">-- helper function to shuffle a table
+</span><span class="keyword">local</span> <span class="keyword">function</span> shuffle(t)
+    <span class="global">math</span>.randomseed( <span class="global">os</span>.time() )
+    <span class="keyword">local</span> rand = <span class="global">math</span>.random
+    <span class="keyword">local</span> iterations = #t
+    <span class="keyword">local</span> j
+
+    <span class="keyword">for</span> i = iterations, <span class="number">2</span>, -<span class="number">1</span> <span class="keyword">do</span>
+        j = rand(i)
+        t[i], t[j] = t[j], t[i]
+    <span class="keyword">end</span>
+    <span class="keyword">return</span> t
+<span class="keyword">end</span>
+
+<span class="comment">--------------------------------------------------------------------
+</span>
+npp.AddShortcut(<span class="string">"Randomize Lines"</span>, <span class="string">""</span>, <span class="keyword">function</span>()
+
+    <span class="keyword">local</span> result <span class="comment">--placeholder to store the processed text for return to editor
+</span>    <span class="keyword">local</span> SelectionStart, SelectionEnd <span class="comment">--placeholder to store selection points
+</span>
+    <span class="comment">-- Preserve Undo Capability
+</span>    editor:BeginUndoAction()
+
+    <span class="comment">-- Get any selected text
+</span>    <span class="keyword">local</span> seltext = editor:GetSelText()
+    <span class="keyword">local</span> seltextlen = #seltext
+
+    <span class="comment">-- read selected text or entire document
+</span>    <span class="keyword">local</span> rawtext
+    <span class="keyword">if</span> seltextlen &gt;= <span class="number">1</span> <span class="keyword">then</span>
+        rawtext = seltext
+        <span class="comment">--read the selection points for restore after operation
+</span>        SelectionStart = editor.SelectionStart
+        SelectionEnd = editor.SelectionEnd
+    <span class="keyword">else</span>
+        rawtext = editor:GetText()
+    <span class="keyword">end</span>
+
+    <span class="comment">-- Preserve EOL Mode when we send back the reordered lines
+</span>    <span class="keyword">local</span> EOLchar
+    <span class="keyword">if</span> editor.EOLMode == <span class="number">0</span> <span class="keyword">then</span>
+      EOLchar = <span class="string">"\r\n"</span>
+    <span class="keyword">elseif</span> editor.EOLMode == <span class="number">1</span> <span class="keyword">then</span>
+       EOLchar = <span class="string">"\r"</span>
+    <span class="keyword">elseif</span> editor.EOLMode == <span class="number">2</span> <span class="keyword">then</span>
+       EOLchar = <span class="string">"\n"</span>
+    <span class="keyword">end</span>
+    <span class="comment">--------------------
+</span>    <span class="comment">-- process the text
+</span>    <span class="comment">--------------------
+</span>
+    <span class="comment">-- split the text into an array of lines
+</span>    <span class="keyword">local</span> rawtextlines = split(rawtext,EOLchar);
+
+    <span class="comment">-- randomize the lines
+</span>    rawtextlines = shuffle(rawtextlines)
+
+    <span class="comment">-- output to result var
+</span>    result = <span class="global">table</span>.concat(rawtextlines, EOLchar)
+
+    <span class="comment">--------------------
+</span>    <span class="comment">--  end processing
+</span>    <span class="comment">--------------------
+</span>
+     <span class="comment">-- replace selected text or entire document
+</span>    <span class="keyword">if</span> seltextlen &gt;= <span class="number">1</span> <span class="keyword">then</span>
+        editor:ReplaceSel(result)
+        <span class="comment">-- restore selection
+</span>        editor:SetSel(SelectionStart, SelectionEnd)
+    <span class="keyword">else</span>
+        editor:SetText(result)
+    <span class="keyword">end</span>
+
+    editor:EndUndoAction()
+
+<span class="keyword">end</span>)</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+<footer>
+	<a href="https://github.com/dail8859/LuaScript"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+</footer>
+</body>
+</html>
