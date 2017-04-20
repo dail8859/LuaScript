@@ -289,3 +289,5 @@ __pycache__/
 
 LuaDist
 /docs_gen/Editor.lua
+bin/
+src/build/
