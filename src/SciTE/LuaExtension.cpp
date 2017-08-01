@@ -1035,22 +1035,28 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 		}
 	}
 
-	for (int i=0; i<loopParamCount; ++i) {
-		if (func.paramType[i] == iface_string) {
-			const char *s = lua_tostring(L, arg++);
-			params[i] = SptrFromString(s ? s : "");
-		} else if (func.paramType[i] == iface_tstring) {
-			const char *s = lua_tostring(L, arg++);
-			nppstrparams[i] = GUI::StringFromUTF8(s ? s : "");
-			params[i] = reinterpret_cast<sptr_t>(nppstrparams[i].c_str());
-		} else if (func.paramType[i] == iface_keymod) {
-			int keycode = static_cast<int>(luaL_checkinteger(L, arg++)) & 0xFFFF;
-			int modifiers = static_cast<int>(luaL_checkinteger(L, arg++)) & (SCMOD_SHIFT|SCMOD_CTRL|SCMOD_ALT);
-			params[i] = keycode | (modifiers<<16);
-		} else if (func.paramType[i] == iface_bool) {
-			params[i] = lua_toboolean(L, arg++);
-		} else if (IFaceTypeIsNumeric(func.paramType[i])) {
-			params[i] = static_cast<long>(luaL_checkinteger(L, arg++));
+	// Specifically handle these 2 messages because they carry the setter in the 2nd param
+	if (func.value == SCI_SETMARGINLEFT || func.value == SCI_SETMARGINRIGHT) {
+		params[1] = static_cast<long>(luaL_checkinteger(L, arg++));
+	}
+	else {
+		for (int i = 0; i < loopParamCount; ++i) {
+			if (func.paramType[i] == iface_string) {
+				const char *s = lua_tostring(L, arg++);
+				params[i] = SptrFromString(s ? s : "");
+			} else if (func.paramType[i] == iface_tstring) {
+				const char *s = lua_tostring(L, arg++);
+				nppstrparams[i] = GUI::StringFromUTF8(s ? s : "");
+				params[i] = reinterpret_cast<sptr_t>(nppstrparams[i].c_str());
+			} else if (func.paramType[i] == iface_keymod) {
+				int keycode = static_cast<int>(luaL_checkinteger(L, arg++)) & 0xFFFF;
+				int modifiers = static_cast<int>(luaL_checkinteger(L, arg++)) & (SCMOD_SHIFT|SCMOD_CTRL|SCMOD_ALT);
+				params[i] = keycode | (modifiers<<16);
+			} else if (func.paramType[i] == iface_bool) {
+				params[i] = lua_toboolean(L, arg++);
+			} else if (IFaceTypeIsNumeric(func.paramType[i])) {
+				params[i] = static_cast<long>(luaL_checkinteger(L, arg++));
+			}
 		}
 	}
 
