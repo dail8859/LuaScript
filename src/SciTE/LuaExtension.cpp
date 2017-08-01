@@ -104,6 +104,7 @@ const char *callbacks[] = {
 	"OnFileDeleted",
 };
 
+static bool call_function(lua_State *L, int nargs, bool ignoreFunctionReturnValue);
 
 // Helper function from SciTE
 static int Substitute(std::string &s, const std::string &sFind, const std::string &sReplace) {
@@ -350,7 +351,7 @@ static int cf_npp_remove_callback(lua_State *L) {
 
 	// Iterate the callback table to see if the function is registered
 	lua_pushnil(L);
-	while (lua_next(luaState, -2) != 0) {
+	while (lua_next(L, -2) != 0) {
 		if (lua_rawequal(L, -1, 2) == 1) {
 			idx = (int)lua_tointeger(L, -2);
 			// remove the key and value
@@ -394,6 +395,71 @@ static int cf_npp_removeall_callbacks(lua_State *L) {
 		lua_pushnil(L);
 		lua_settable(L, -4);
 	}
+
+	return 0;
+}
+
+static void CALLBACK timercallback(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
+	lua_pushliteral(luaState, "Npp_Timers");
+	lua_gettable(luaState, LUA_REGISTRYINDEX);
+	if (lua_isnil(luaState, -1)) {
+		raise_error(luaState, "Attempting to call missing timer event");
+	}
+
+	lua_geti(luaState, -1, idEvent);
+	lua_pushinteger(luaState, idEvent);
+	call_function(luaState, 1, true);
+	lua_settop(luaState, 0); // Make sure it is cleared
+
+	return;
+}
+
+static int cf_npp_starttimer(lua_State *L) {
+	int milliseconds = static_cast<int>(luaL_checkinteger(L, 1));
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	if (milliseconds <= 0) {
+		raise_error(L, "Timeout value must be > 0 miliseconds");
+	}
+
+	UINT_PTR timer_id = SetTimer(NULL, 0, milliseconds, timercallback);
+
+	if (timer_id == 0) {
+		raise_error(L, "Call to SetTimer() failed");
+	}
+
+	lua_pushliteral(L, "Npp_Timers");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1); // the nil value
+		lua_newtable(L);
+		lua_setfield(L, LUA_REGISTRYINDEX, "Npp_Timers");
+		lua_getfield(L, LUA_REGISTRYINDEX, "Npp_Timers"); // get the table back on top of the stack
+	}
+
+	lua_pushvalue(L, 2); // the function
+	lua_seti(L, -2, timer_id);
+
+	lua_pushinteger(L, timer_id);
+	return 1;
+}
+
+static int cf_npp_stoptimer(lua_State *L) {
+	int timer_id = static_cast<int>(luaL_checkinteger(L, 1));
+
+	KillTimer(NULL, timer_id);
+
+	lua_pushliteral(L, "Npp_Timers");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1); // the nil value
+		lua_newtable(L);
+		lua_setfield(L, LUA_REGISTRYINDEX, "Npp_Timers");
+		lua_getfield(L, LUA_REGISTRYINDEX, "Npp_Timers"); // get the table back on top of the stack
+	}
+
+	lua_pushnil(L);
+	lua_seti(L, -2, timer_id);
 
 	return 0;
 }
@@ -1486,6 +1552,12 @@ static bool InitGlobalScope() {
 
 		lua_pushcfunction(luaState, cf_npp_removeall_callbacks);
 		lua_setfield(luaState, -2, "RemoveAllEventHandlers");
+
+		lua_pushcfunction(luaState, cf_npp_starttimer);
+		lua_setfield(luaState, -2, "StartTimer");
+
+		lua_pushcfunction(luaState, cf_npp_stoptimer);
+		lua_setfield(luaState, -2, "StopTimer");
 	}
 	lua_setmetatable(luaState, -2);
 

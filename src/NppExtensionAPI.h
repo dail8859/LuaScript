@@ -74,7 +74,6 @@ public:
 	void UnsetProperty(const char *key);
 	uptr_t GetInstance();
 	void ShutDown();
-	void Perform(const char *actions);
 	void DoMenuCommand(int cmdID);
 
 private:

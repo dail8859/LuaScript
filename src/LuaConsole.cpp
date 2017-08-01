@@ -28,7 +28,7 @@
 
 // Extra helper functions not from the IFace tables
 static const std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "set_text_direction", "textrange" };
-static const std::vector<std::string> moreNppFuncs = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "WriteError" };
+static const std::vector<std::string> moreNppFuncs = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "StartTimer", "StopTimer", "WriteError" };
 
 // Copied from Scintilla
 inline int MakeUpperCase(int ch) {
