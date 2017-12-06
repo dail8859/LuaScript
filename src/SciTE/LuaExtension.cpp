@@ -1086,7 +1086,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 	int loopParamCount = 2;
 
 	if (func.paramType[0] == iface_length && func.paramType[1] == iface_string) {
-		params[0] = lua_rawlen(L, arg);
+		params[0] = static_cast<sptr_t>(lua_rawlen(L, arg));
 		params[1] = SptrFromString(params[0] ? lua_tostring(L, arg) : "");
 		loopParamCount = 0;
 	} else if ((func.paramType[1] == iface_stringresult) || (func.returnType == iface_stringresult) ||
@@ -1103,7 +1103,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 
 	// Specifically handle these 2 messages because they carry the setter in the 2nd param
 	if (func.value == SCI_SETMARGINLEFT || func.value == SCI_SETMARGINRIGHT) {
-		params[1] = static_cast<long>(luaL_checkinteger(L, arg++));
+		params[1] = static_cast<sptr_t>(luaL_checkinteger(L, arg++));
 	}
 	else {
 		for (int i = 0; i < loopParamCount; ++i) {
@@ -1121,7 +1121,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 			} else if (func.paramType[i] == iface_bool) {
 				params[i] = lua_toboolean(L, arg++);
 			} else if (IFaceTypeIsNumeric(func.paramType[i])) {
-				params[i] = static_cast<long>(luaL_checkinteger(L, arg++));
+				params[i] = static_cast<sptr_t>(luaL_checkinteger(L, arg++));
 			}
 		}
 	}
@@ -1193,7 +1193,7 @@ static int iface_function_helper(lua_State *L, const IFaceFunction &func) {
 		lua_pushboolean(L, static_cast<int>(result));
 		resultCount++;
 	} else if (IFaceTypeIsNumeric(func.returnType)) {
-		lua_pushinteger(L, static_cast<int>(result));
+		lua_pushinteger(L, static_cast<lua_Integer>(result));
 		resultCount++;
 	}
 
