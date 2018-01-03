@@ -20,7 +20,7 @@ build:
 
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
-    - msbuild LuaScript.sln /p:configuration="%configuration%" /p:platform="%platform%"
+    - msbuild LuaScript.sln /p:configuration="%configuration%" /p:platform="%platform%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
@@ -58,6 +58,5 @@ deploy:
     prerelease: false
     force_update: true
     on:
-        branch: master
         appveyor_repo_tag: true
         configuration: Release
