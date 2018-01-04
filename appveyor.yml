@@ -1,4 +1,4 @@
-version: 0.7.0.{build}
+version: 0.7.1.{build}
 image: Visual Studio 2015
 
 platform:
@@ -36,12 +36,12 @@ after_build:
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if ($env:PLATFORM -eq "x64"){
-                $ZipFileName = "LuaScript$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
-                7z a $ZipFileName bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll
+                $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+                7z a $ZipFileName "$($env:APPVEYOR_BUILD_FOLDER)\bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll"
             }
             if ($env:PLATFORM -eq "Win32"){
-                $ZipFileName = "LuaScript$($env:APPVEYOR_REPO_TAG_NAME).zip"
-                7z a $ZipFileName bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll
+                $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME).zip"
+                7z a $ZipFileName "$($env:APPVEYOR_BUILD_FOLDER)\bin\$($env:CONFIGURATION)_$($env:PLATFORM)\*.dll"
             }
         }
 
