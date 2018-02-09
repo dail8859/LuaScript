@@ -19,7 +19,7 @@ npp.AddEventHandler("OnSave", function(filename, bufferid)
     local line = tonumber(err:match(":(%d+):")) - 1
     editor.AnnotationText[line] = err
     editor.AnnotationStyle[line] = STYLE_BRACELIGHT
-    editor:GotoLine(line_num)
+    editor:GotoLine(line)
     editor:VerticalCentreCaret()
     return false
 end)
