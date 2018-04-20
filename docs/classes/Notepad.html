@@ -109,6 +109,14 @@
 	<td class="name" nowrap><a href="#Notepad.ClearConsole">Notepad.ClearConsole()</a></td>
 	<td class="summary">Clears the console.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.StartTimer">Notepad.StartTimer(ms, callback)</a></td>
+	<td class="summary">Continuously calls a function at a set interval.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Notepad.StopTimer">Notepad.StopTimer(timer)</a></td>
+	<td class="summary">Stops a previously created timer.</td>
+	</tr>
 </table>
 <h2><a href="#Methods">Methods</a></h2>
 <table class="function_list">
@@ -584,6 +592,77 @@
 
 
 
+
+
+</dd>
+    <dt>
+    <a name = "Notepad.StartTimer"></a>
+    <strong>Notepad.StartTimer(ms, callback)</strong>
+    </dt>
+    <dd>
+    Continuously calls a function at a set interval. </p>
+
+<p> <strong>Note:</strong> The timer will continue to fire until <a href="../classes/Notepad.html#Notepad.StopTimer">StopTimer</a> is called. Also, these timers run synchronously in the same thread as Notepad++, meaning that if Notepad++ is busy processing the file (such as doing search/replace) the timer event will get delayed. It is safe to access any of the globally defined LuaScript objects in the callback.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ms</span>
+            <span class="types"><span class="type">int</span></span>
+         milliseconds to wait between calls
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         function to be called. It will be passed a singe parameter, the opaque <code>timer</code> object
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the opaque <code>timer</code> object
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../classes/Notepad.html#Notepad.StopTimer">StopTimer</a>
+    </ul>
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="comment">-- A trivial example...save a copy of the current file every 10 seconds, unless the file is too big
+</span>npp.StartTimer(<span class="number">10000</span>, <span class="keyword">function</span>(timer)
+    <span class="keyword">if</span> editor.Length &lt; <span class="number">1000</span> <span class="keyword">then</span>
+        npp:SaveCurrentFileAs(<span class="keyword">true</span>, <span class="string">[[C:\path\to\current\file.backup]]</span>)
+    <span class="keyword">else</span>
+        npp.StopTimer(timer)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Notepad.StopTimer"></a>
+    <strong>Notepad.StopTimer(timer)</strong>
+    </dt>
+    <dd>
+    Stops a previously created timer.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timer</span>
+         the opaque <code>timer</code> object returned from <a href="../classes/Notepad.html#Notepad.StartTimer">StartTimer</a> or passed into the callback
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../classes/Notepad.html#Notepad.StartTimer">StartTimer</a>
+    </ul>
 
 
 </dd>

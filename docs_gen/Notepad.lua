@@ -330,3 +330,28 @@
 --- Clears the console.
 -- @function ClearConsole
 -- @static
+
+--- Continuously calls a function at a set interval.
+--
+-- **Note:** The timer will continue to fire until `StopTimer` is called. Also, these timers run synchronously in the same thread as Notepad++, meaning that if Notepad++ is busy processing the file (such as doing search/replace) the timer event will get delayed. It is safe to access any of the globally defined LuaScript objects in the callback.
+-- @function StartTimer
+-- @static
+-- @tparam int ms milliseconds to wait between calls
+-- @tparam function callback function to be called. It will be passed a singe parameter, the opaque `timer` object
+-- @return the opaque `timer` object
+-- @see StopTimer
+-- @usage -- A trivial example...save a copy of the current file every 10 seconds, unless the file is too big
+-- npp.StartTimer(10000, function(timer)
+--     if editor.Length < 1000 then
+--         npp:SaveCurrentFileAs(true, [[C:\path\to\current\file.backup]])
+--     else
+--         npp.StopTimer(timer)
+--     end
+-- end)
+
+--- Stops a previously created timer.
+--
+-- @function StopTimer
+-- @static
+-- @param timer the opaque `timer` object returned from `StartTimer` or passed into the callback
+-- @see StartTimer
