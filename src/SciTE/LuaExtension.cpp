@@ -1474,6 +1474,9 @@ static int LuaPanicFunction(lua_State *L) {
 	return 1;
 }
 
+
+LUAMOD_API "C" int luaopen_winfile(lua_State *L);
+
 static bool InitGlobalScope() {
 	tracebackEnabled = (GetPropertyInt("ext.lua.debug.traceback") == 1);
 
@@ -1580,6 +1583,10 @@ static bool InitGlobalScope() {
 	// set global index callback hook
 	lua_setmetatable(luaState, -2);
 	// remove the global environment table from the stack
+	lua_pop(luaState, 1);
+
+	// Load the winfile module
+	luaL_requiref(luaState, "winfile", luaopen_winfile, 1);
 	lua_pop(luaState, 1);
 
 	return true;

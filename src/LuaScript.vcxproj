@@ -210,6 +210,7 @@
     <ClCompile Include="Dialogs\StaticDialog.cpp" />
     <ClCompile Include="IFaceTableMixer.cpp" />
     <ClCompile Include="LuaConsole.cpp" />
+    <ClCompile Include="luawinfile\winfile.c" />
     <ClCompile Include="NppExtensionAPI.cpp" />
     <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="NppIFaceTable.cpp" />
