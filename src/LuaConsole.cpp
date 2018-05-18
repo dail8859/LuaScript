@@ -332,8 +332,6 @@ void LuaConsole::braceMatch() {
 }
 
 void LuaConsole::showAutoCompletion() {
-	static const std::vector<std::string> editors = { "console", "editor", "editor1", "editor2", "input" };
-
 	std::string partialWord;
 	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
 	int prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1);
@@ -350,7 +348,8 @@ void LuaConsole::showAutoCompletion() {
 	if (prevCh == '.' || prevCh == ':') {
 		std::string prev = getWordAt(m_sciInput, curPos - 1);
 
-		if (prev.compare("npp") == 0) {
+		auto udataname = LuaExtension::Instance().GetUserDataName(prev.c_str());
+		if (udataname == "Npp_MT_Application") {
 			if (prevCh == '.') {
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppProperties.c_str());
 			}
@@ -358,13 +357,29 @@ void LuaConsole::showAutoCompletion() {
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppFunctions.c_str());
 			}
 		}
-		else if (std::binary_search(editors.begin(), editors.end(), prev)) {
+		else if (udataname == "Npp_MT_Pane") {
 			if (prevCh == '.') {
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciProperties.c_str());
 			}
 			else if (prevCh == ':') {
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciFunctions.c_str());
 			}
+		}
+		else if (prev.length() > 0) {
+			std::string lua = "local object = " + prev;
+			lua += R"(
+				local list = {}
+				if type(object) == "table" then
+					for k,v in pairs(object) do
+						list[#list + 1] = k
+					end
+				end
+				return list
+				)";
+
+			auto list = LuaExtension::Instance().ExecuteAndReturnList(lua.c_str());
+			if (list.size() > 0)
+				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), join(sortCaseInsensitive(list), ' ').c_str());
 		}
 	}
 	else if (m_sciInput->Call(SCI_AUTOCACTIVE) == false) {

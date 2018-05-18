@@ -1564,9 +1564,6 @@ static bool InitGlobalScope() {
 	}
 	lua_setmetatable(luaState, -2);
 
-	// Keep "scite" for backwards compatibility but also allow "npp"
-	lua_setglobal(luaState, "scite");
-	lua_getglobal(luaState, "scite");
 	lua_setglobal(luaState, "npp");
 
 	// Create the registry table to hold callbacks
@@ -1618,7 +1615,7 @@ bool LuaExtension::Finalise() {
 	return false;
 }
 
-bool LuaExtension::RunString(const char *s) {
+bool LuaExtension::RunString(const char *s, bool clearStack) {
 	if (luaState || InitGlobalScope()) {
 		int status = luaL_loadbuffer(luaState, s, strlen(s), "=File");
 
@@ -1628,13 +1625,17 @@ bool LuaExtension::RunString(const char *s) {
 
 		if (status != LUA_OK) {
 			// Print an error message
-			host->TraceError(lua_tostring(luaState, -1));
-			host->TraceError("\r\n");
+			if (clearStack) {
+				// Should probably use a separate flag instead of clearStack...oh well
+				host->TraceError(lua_tostring(luaState, -1));
+				host->TraceError("\r\n");
+			}
 			lua_settop(luaState, 0); /* clear stack */
 			return false;
 		}
 
-		lua_settop(luaState, 0); /* clear stack */
+		if (clearStack)
+			lua_settop(luaState, 0); /* clear stack */
 	}
 
 	return true;
@@ -1740,6 +1741,48 @@ bool LuaExtension::OnExecute(const char *s) {
 		lua_settop(luaState, 0); /* clear stack */
 	}
 	return true;
+}
+
+std::vector<std::string> LuaExtension::ExecuteAndReturnList(const char * s) {
+	if (!RunString(s, false)) {
+		return std::vector<std::string>();
+	}
+
+	luaL_checktype(luaState, 1, LUA_TTABLE);
+
+	std::vector<std::string> list;
+
+	lua_pushnil(luaState);
+	while (lua_next(luaState, 1) != 0) {
+		list.push_back(lua_tostring(luaState, -1));
+		lua_pop(luaState, 1);
+	}
+	lua_pop(luaState, 1);
+
+	return list;
+}
+
+std::string LuaExtension::ExecuteAndReturnString(const char * s) {
+	if (!RunString(s, false)) {
+		return std::string();
+	}
+
+	std::string string = luaL_checkstring(luaState, -1);
+	lua_pop(luaState, 1);
+
+	return string;
+}
+
+
+std::string LuaExtension::GetUserDataName(const char *object) {
+	if (!object || object[0] == '\0')
+		return std::string();
+
+	std::string lua = "return getmetatable(";
+	lua += object;
+	lua += ").__name";
+
+	return ExecuteAndReturnString(lua.c_str());
 }
 
 void LuaExtension::CallShortcut(int id) {

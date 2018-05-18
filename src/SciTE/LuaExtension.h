@@ -45,9 +45,12 @@ public:
 	bool Finalise();
 
 	// Helper methods
-	bool RunString(const char *s);
+	bool RunString(const char *s, bool clearStack = true);
 	bool RunFile(const wchar_t *filename);
 	bool OnExecute(const char *s);
+	std::vector<std::string> ExecuteAndReturnList(const char *s);
+	std::string ExecuteAndReturnString(const char * s);
+	std::string GetUserDataName(const char *object);
 	void CallShortcut(int id);
 
 	// Scintilla callbacks
