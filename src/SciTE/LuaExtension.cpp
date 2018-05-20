@@ -1586,6 +1586,38 @@ static bool InitGlobalScope() {
 	luaL_requiref(luaState, "winfile", luaopen_winfile, 1);
 	lua_pop(luaState, 1);
 
+	// A function to inspect lua objects and return a list for autocompletion
+	// "onlyFuncs" is used to get only functions when a ':' is typed since it
+	// can only access functions
+	luaL_dostring(luaState, R"(
+function GetAutoComplete(object, onlyFuncs)
+	local function GetKeys(tbl, list, onlyFuncs)
+		if type(tbl) == "table" then
+			for k,v in pairs(tbl) do
+				if not onlyFuncs or type(v) == "function" then
+					list[#list + 1] = k
+				end
+			end
+		end
+	end
+
+	local list = {}
+
+	if type(object) == "table" then
+		GetKeys(object, list, onlyFuncs)
+	end
+	
+	local mt = getmetatable(object)
+	if mt ~= nil then
+		if type(mt.__index) == "table" and mt ~= object then
+			GetKeys(mt.__index, list, onlyFuncs)
+		end
+	end
+
+	return list
+end)"
+);
+
 	return true;
 }
 
@@ -1767,12 +1799,31 @@ std::string LuaExtension::ExecuteAndReturnString(const char * s) {
 		return std::string();
 	}
 
-	std::string string = luaL_checkstring(luaState, -1);
-	lua_pop(luaState, 1);
+	std::string string;
+
+	if (lua_gettop(luaState) > 0) {
+		if (lua_type(luaState, -1) == LUA_TSTRING) {
+			string = luaL_checkstring(luaState, -1);
+		}
+		lua_pop(luaState, 1);
+	}
+
 
 	return string;
 }
 
+std::vector<std::string> LuaExtension::GetObjectAttributes(const char *object, bool onlyFuncs) {
+	if (!object || object[0] == '\0')
+		return std::vector<std::string>();
+	
+	std::string lua = "return GetAutoComplete(";
+	lua += object;
+	lua += ',';
+	lua += onlyFuncs ? "true" : "false";
+	lua += ")";
+
+	return ExecuteAndReturnList(lua.c_str());
+}
 
 std::string LuaExtension::GetUserDataName(const char *object) {
 	if (!object || object[0] == '\0')

@@ -50,6 +50,7 @@ public:
 	bool OnExecute(const char *s);
 	std::vector<std::string> ExecuteAndReturnList(const char *s);
 	std::string ExecuteAndReturnString(const char * s);
+	std::vector<std::string> GetObjectAttributes(const char * object, bool onlyFuncs);
 	std::string GetUserDataName(const char *object);
 	void CallShortcut(int id);
 

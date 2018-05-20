@@ -366,18 +366,7 @@ void LuaConsole::showAutoCompletion() {
 			}
 		}
 		else if (prev.length() > 0) {
-			std::string lua = "local object = " + prev;
-			lua += R"(
-				local list = {}
-				if type(object) == "table" then
-					for k,v in pairs(object) do
-						list[#list + 1] = k
-					end
-				end
-				return list
-				)";
-
-			auto list = LuaExtension::Instance().ExecuteAndReturnList(lua.c_str());
+			auto list = LuaExtension::Instance().GetObjectAttributes(prev.c_str(), prevCh == ':');
 			if (list.size() > 0)
 				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), join(sortCaseInsensitive(list), ' ').c_str());
 		}
