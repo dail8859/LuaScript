@@ -108,6 +108,23 @@ static std::string getWordAt(GUI::ScintillaWindow *sw, int pos) {
 	return getRange(sw, word_start, word_end);
 }
 
+static std::string getLuaIdentifierAt(GUI::ScintillaWindow *sw, int pos) {
+	const int line = sw->Call(SCI_LINEFROMPOSITION);
+
+	Sci_TextToFind ttf = {
+		{
+			sw->Call(SCI_POSITIONFROMLINE, line),
+			pos
+		},
+		"[a-z_][a-z0-9_]*(\\.[a-z_][a-z0-9_]*)*",
+	};
+
+	if (sw->CallPointer(SCI_FINDTEXT, SCFIND_REGEXP, &ttf) != -1)
+		return getRange(sw, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+	else
+		return std::string();
+}
+
 template <typename T, typename U>
 static std::string join(const std::vector<T> &v, const U &delim) {
 	std::stringstream ss;
@@ -346,29 +363,31 @@ void LuaConsole::showAutoCompletion() {
 	}
 
 	if (prevCh == '.' || prevCh == ':') {
-		std::string prev = getWordAt(m_sciInput, curPos - 1);
+		std::string prev = getLuaIdentifierAt(m_sciInput, curPos - 1);
 
-		auto udataname = LuaExtension::Instance().GetUserDataName(prev.c_str());
-		if (udataname == "Npp_MT_Application") {
-			if (prevCh == '.') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppProperties.c_str());
+		if (!prev.empty()) {
+			auto udataname = LuaExtension::Instance().GetUserDataName(prev.c_str());
+			if (udataname == "Npp_MT_Application") {
+				if (prevCh == '.') {
+					m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppProperties.c_str());
+				}
+				else if (prevCh == ':') {
+					m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppFunctions.c_str());
+				}
 			}
-			else if (prevCh == ':') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), nppFunctions.c_str());
+			else if (udataname == "Npp_MT_Pane") {
+				if (prevCh == '.') {
+					m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciProperties.c_str());
+				}
+				else if (prevCh == ':') {
+					m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciFunctions.c_str());
+				}
 			}
-		}
-		else if (udataname == "Npp_MT_Pane") {
-			if (prevCh == '.') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciProperties.c_str());
+			else if (prev.length() > 0) {
+				auto list = LuaExtension::Instance().GetObjectAttributes(prev.c_str(), prevCh == ':');
+				if (list.size() > 0)
+					m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), join(sortCaseInsensitive(list), ' ').c_str());
 			}
-			else if (prevCh == ':') {
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), sciFunctions.c_str());
-			}
-		}
-		else if (prev.length() > 0) {
-			auto list = LuaExtension::Instance().GetObjectAttributes(prev.c_str(), prevCh == ':');
-			if (list.size() > 0)
-				m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), join(sortCaseInsensitive(list), ' ').c_str());
 		}
 	}
 	else if (m_sciInput->Call(SCI_AUTOCACTIVE) == false) {
