@@ -48,7 +48,7 @@ public:
 
 	void showAutoCompletion();
 
-	const std::string &getGlobalConstants() const { return globalConsts; }
+	std::string getGlobalConstants();
 
 	ConsoleDialog *mp_consoleDlg;
 private:
@@ -60,7 +60,7 @@ private:
 	std::string sciFunctions;
 	std::string nppProperties;
 	std::string nppFunctions;
-	std::string globalConsts;
+	std::vector<std::string> globalConsts;
 
 	GUI::ScintillaWindow *m_sciInput;
 

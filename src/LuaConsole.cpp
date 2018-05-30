@@ -197,7 +197,7 @@ LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hN
 	auto nppConsts = NppIFaceTable.GetAllConstantNames();
 	auto sciConsts = SciIFaceTable.GetAllConstantNames();
 	nppConsts.insert(nppConsts.end(), sciConsts.begin(), sciConsts.end());
-	globalConsts = join(sortCaseInsensitive(nppConsts), ' ');
+	globalConsts = nppConsts;
 }
 
 void LuaConsole::setupInput(GUI::ScintillaWindow &sci) {
@@ -391,6 +391,12 @@ void LuaConsole::showAutoCompletion() {
 		}
 	}
 	else if (m_sciInput->Call(SCI_AUTOCACTIVE) == false) {
-		m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), globalConsts.c_str());
+		auto list = LuaExtension::Instance().GetObjectAttributes("_G", false);
+		list.insert(list.end(), globalConsts.begin(), globalConsts.end());
+		m_sciInput->CallString(SCI_AUTOCSHOW, partialWord.size(), join(sortCaseInsensitive(list), ' ').c_str());
 	}
+}
+
+std::string LuaConsole::getGlobalConstants() {
+	return join(sortCaseInsensitive(globalConsts), ' ');
 }
