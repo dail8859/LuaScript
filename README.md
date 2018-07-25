@@ -1,6 +1,6 @@
 # LuaScript
 
-[![Build status](https://ci.appveyor.com/api/projects/status/github/dail8859/LuaScript?branch=master&svg=true)](https://ci.appveyor.com/project/dail8859/LuaScript/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/lxmu20jgggdm0xl3?svg=true)](https://ci.appveyor.com/project/dail8859/luascript)
 
 Notepad++ plugin for [Lua](http://www.lua.org/) scripting capabilities. This provides control over all of Scintilla's features and options with a light-weight, fully-functional programming language.
 
