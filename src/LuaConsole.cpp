@@ -113,13 +113,15 @@ static std::string getLuaIdentifierAt(GUI::ScintillaWindow *sw, int pos) {
 
 	Sci_TextToFind ttf = {
 		{
-			sw->Call(SCI_POSITIONFROMLINE, line),
-			pos
+			// Search backwards
+			pos,
+			sw->Call(SCI_POSITIONFROMLINE, line)
 		},
 		"[a-z_][a-z0-9_]*(\\.[a-z_][a-z0-9_]*)*",
 	};
 
-	if (sw->CallPointer(SCI_FINDTEXT, SCFIND_REGEXP, &ttf) != -1)
+	// Only return the range if it ends at pos
+	if (sw->CallPointer(SCI_FINDTEXT, SCFIND_REGEXP, &ttf) != -1 && ttf.chrgText.cpMax == pos)
 		return getRange(sw, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 	else
 		return std::string();
@@ -134,7 +136,6 @@ static std::string join(const std::vector<T> &v, const U &delim) {
 	}
 	return ss.str();
 }
-
 
 static void setStyles(GUI::ScintillaWindow &sci) {
 	sci.Call(SCI_SETEOLMODE, SC_EOL_CRLF, 0);
