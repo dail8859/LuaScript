@@ -1594,7 +1594,7 @@ function GetAutoComplete(object, onlyFuncs)
 	local function GetKeys(tbl, list, onlyFuncs)
 		if type(tbl) == "table" then
 			for k,v in pairs(tbl) do
-				if not onlyFuncs or type(v) == "function" then
+				if (type(k) == "string") and (not onlyFuncs or type(v) == "function") then
 					list[#list + 1] = k
 				end
 			end
