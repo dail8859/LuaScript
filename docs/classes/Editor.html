@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.7.1</sub></h1>
+<h1>LuaScript <sub>v0.8</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -110,8 +110,6 @@
 <h1>Class <code>Editor</code></h1>
 <p>Scintilla wrapper.</p>
 <p> This is a straight forward API to directly control Scintilla. This documentation is not intended to fully describe the Scintilla API, but only to give a brief description. The <a href="http://www.scintilla.org/ScintillaDoc.html">official Scintilla documentation</a> should be consulted for more details. All constants from the official documentation are exposed as Lua globals variables.</p>
-
-<p> Some Scintilla messages, such as "<code>SCI_SETxxx</code>" and "<code>SCI_GETxxx</code>", are implemented in LuaScript as a single property. For example <a href="../classes/Editor.html#Editor.CurrentPos">Editor.CurrentPos</a> is a read/write property that calls both "<code>SCI_GETCURRENTPOS</code>" and "<code>SCI_SETCURRENTPOS</code>". The automatically generated documentation below may only refer to one or the other.</p>
 
 <p> This class cannot be instantiated, rather predefined globals are available to use.</p>
 
@@ -733,7 +731,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.VScrollBar">Editor.VScrollBar</a></td>
-	<td class="summary">Show or ire the vertical scroll bar.</td>
+	<td class="summary">Show or hide the vertical scroll bar.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.XOffset">Editor.XOffset</a></td>
@@ -6388,7 +6386,7 @@
     <strong>Editor.VScrollBar</strong>
     </dt>
     <dd>
-    Show or ire the vertical scroll bar.
+    Show or hide the vertical scroll bar.
 
 
     <ul>

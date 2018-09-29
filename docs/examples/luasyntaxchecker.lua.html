@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.7.1</sub></h1>
+<h1>LuaScript <sub>v0.8</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -84,6 +84,8 @@ npp.AddEventHandler(<span class="string">"OnSave"</span>, <span class="keyword">
     <span class="keyword">local</span> line = <span class="global">tonumber</span>(err:match(<span class="string">":(%d+):"</span>)) - <span class="number">1</span>
     editor.AnnotationText[line] = err
     editor.AnnotationStyle[line] = STYLE_BRACELIGHT
+    editor:GotoLine(line)
+    editor:VerticalCentreCaret()
     <span class="keyword">return</span> <span class="keyword">false</span>
 <span class="keyword">end</span>)</pre>
 
