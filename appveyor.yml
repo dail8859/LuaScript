@@ -26,13 +26,7 @@ after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - ps: >-
 
-        if ($env:PLATFORM -eq "x64") {
-            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\LuaScript_64.dll" -FileName LuaScript_64.dll
-        }
-
-        if ($env:PLATFORM -eq "Win32" ) {
-            Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\LuaScript.dll" -FileName LuaScript.dll
-        }
+        Push-AppveyorArtifact "bin\$($env:CONFIGURATION)_$($env:PLATFORM)\LuaScript.dll" -FileName LuaScript.dll
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if ($env:PLATFORM -eq "x64"){
