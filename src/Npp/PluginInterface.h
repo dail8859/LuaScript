@@ -25,11 +25,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#pragma once
 
+#ifndef PLUGININTERFACE_H
+#define PLUGININTERFACE_H
+
+#ifndef SCINTILLA_H
 #include "Scintilla.h"
-#include "SciLexer.h"
+#endif //SCINTILLA_H
+
+#ifndef NOTEPAD_PLUS_MSGS_H
 #include "Notepad_plus_msgs.h"
+#endif //NOTEPAD_PLUS_MSGS_H
 
 const int nbChar = 64;
 
@@ -46,6 +52,7 @@ typedef void (__cdecl * PFUNCSETINFO)(NppData);
 typedef void (__cdecl * PFUNCPLUGINCMD)();
 typedef void (__cdecl * PBENOTIFIED)(SCNotification *);
 typedef LRESULT (__cdecl * PMESSAGEPROC)(UINT Message, WPARAM wParam, LPARAM lParam);
+
 
 struct ShortcutKey
 {
@@ -72,7 +79,9 @@ extern "C" __declspec(dllexport) const TCHAR * getName();
 extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *);
 extern "C" __declspec(dllexport) void beNotified(SCNotification *);
 extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam, LPARAM lParam);
+
+// This API return always true now, since Notepad++ isn't compiled in ANSI mode anymore
 extern "C" __declspec(dllexport) BOOL isUnicode();
 
-#define SCI_UNUSED 0
-const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
+
+#endif //PLUGININTERFACE_H
