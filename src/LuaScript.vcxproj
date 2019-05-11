@@ -22,28 +22,29 @@
     <ProjectGuid>{1590D7CD-7D3A-4AB7-A355-EE02F7FB987D}</ProjectGuid>
     <RootNamespace>LuaScript</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -116,7 +117,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMFILES(X86)%\Notepad++\plugins\" (
+  mkdir "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+  copy "$(TargetPath)" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,7 +151,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMFILES%\Notepad++\plugins\" (
+  mkdir "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+  copy "$(TargetPath)" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -174,7 +181,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files (x86)\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files (x86)\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMFILES(X86)%\Notepad++\plugins\" (
+  mkdir "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+  copy "$(TargetPath)" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -200,7 +210,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)_$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if EXIST "C:\Program Files\Notepad++\plugins" (copy "$(TargetPath)" "C:\Program Files\Notepad++\plugins")</Command>
+      <Command>if EXIST "%PROGRAMFILES%\Notepad++\plugins\" (
+  mkdir "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+  copy "$(TargetPath)" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
