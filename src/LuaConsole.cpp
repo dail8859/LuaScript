@@ -21,6 +21,7 @@
 #include "LuaConsole.h"
 #include "SciIFaceTable.h"
 #include "NppIFaceTable.h"
+#include "SciLexer.h"
 
 
 #define INDIC_BRACEHIGHLIGHT INDIC_CONTAINER
@@ -92,7 +93,7 @@ static std::string getRange(GUI::ScintillaWindow *sw, int start, int end) {
 	if (end <= start) return std::string();
 
 	std::vector<char> buffer(end - start + 1);
-	TextRange tr;
+	Sci_TextRange tr;
 	tr.chrg.cpMin = start;
 	tr.chrg.cpMax = end;
 	tr.lpstrText = buffer.data();

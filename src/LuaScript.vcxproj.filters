@@ -134,6 +134,9 @@
     <ClInclude Include="NppLuaScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Npp\Sci_Position.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dialogs\resource.rc">

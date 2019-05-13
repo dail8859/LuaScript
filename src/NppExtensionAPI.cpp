@@ -43,7 +43,7 @@ char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, int start, int end) {
 	if (end <= start) return nullptr;
 
 	char *dest = new char[end - start + 1];
-	TextRange tr;
+	Sci_TextRange tr;
 	tr.chrg.cpMin = start;
 	tr.chrg.cpMax = end;
 	tr.lpstrText = dest;

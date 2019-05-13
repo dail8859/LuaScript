@@ -83,5 +83,7 @@ extern "C" __declspec(dllexport) LRESULT messageProc(UINT Message, WPARAM wParam
 // This API return always true now, since Notepad++ isn't compiled in ANSI mode anymore
 extern "C" __declspec(dllexport) BOOL isUnicode();
 
+#define SCI_UNUSED 0
+const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
 
 #endif //PLUGININTERFACE_H

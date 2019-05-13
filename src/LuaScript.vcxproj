@@ -252,6 +252,7 @@
     <ClInclude Include="Npp\PluginInterface.h" />
     <ClInclude Include="Npp\SciLexer.h" />
     <ClInclude Include="Npp\Scintilla.h" />
+    <ClInclude Include="Npp\Sci_Position.h" />
     <ClInclude Include="SciIFaceTable.h" />
     <ClInclude Include="SciTE\GUI.h" />
     <ClInclude Include="SciTE\IFaceTable.h" />

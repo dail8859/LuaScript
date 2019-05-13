@@ -29,6 +29,7 @@
 #include "GUI.h"
 #include "StyleWriter.h"
 #include "NppLuaScript.h"
+#include "SciLexer.h"
 
 // --- Menu callbacks ---
 static void showConsole();
@@ -267,7 +268,7 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) {
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 	TCHAR fname[MAX_PATH];
-	NotifyHeader nh = notifyCode->nmhdr;
+	Sci_NotifyHeader nh = notifyCode->nmhdr;
 
 	// Handle these specific codes since nh.hwndFrom comes from unknown hwnds
 	// and *hope* these only come from the 2 "real" scintilla instances
