@@ -305,7 +305,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			int styleStart = 0;
 			if (endStyled > 0) styleStart = styler.StyleAt(endStyled - 1);
 			styler.SetCodePage(wEditor.Call(SCI_GETCODEPAGE));
-			LuaExtension::Instance().OnStyle(endStyled, notifyCode->position - endStyled, styleStart, &styler);
+			LuaExtension::Instance().OnStyle(endStyled, static_cast<int>(notifyCode->position) - endStyled, styleStart, &styler);
 			styler.Flush();
 			break;
 		}
