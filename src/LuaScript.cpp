@@ -393,6 +393,15 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 		// Notepad++ messages
 
 		case NPPN_READY: {
+			// Ensure it is using the correct version of Notepad++
+			int version = static_cast<int>(SendNpp(NPPM_GETNPPVERSION));
+			int major = (version >> 16) & 0xFF;
+			int minor = version & 0xFF;
+
+			if (major < 7 || (major == 7 && minor < 7)) {
+				MessageBox(NULL, TEXT("This version of LuaScript should only be used with Notepad++ v7.7 and later."), NPP_PLUGIN_NAME, MB_OK | MB_ICONWARNING);
+			}
+
 			const char *msg = LUA_COPYRIGHT "\r\n\r\n";
 			g_console->mp_consoleDlg->writeText(strlen(msg), msg);
 			g_console->mp_consoleDlg->setCommandID(&funcItems[0]._cmdID);

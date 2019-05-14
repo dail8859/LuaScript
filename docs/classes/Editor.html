@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.8</sub></h1>
+<h1>LuaScript <sub>v0.9</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -39,12 +39,14 @@
 <li><a href="#Error_handling">Error handling </a></li>
 <li><a href="#Undo_and_Redo">Undo and Redo </a></li>
 <li><a href="#Selection_and_information">Selection and information </a></li>
+<li><a href="#By_character_or_UTF_16_code_unit">By character or UTF-16 code unit </a></li>
 <li><a href="#Multiple_Selection_and_Virtual_Space">Multiple Selection and Virtual Space </a></li>
 <li><a href="#Scrolling_and_automatic_scrolling">Scrolling and automatic scrolling </a></li>
 <li><a href="#White_space">White space </a></li>
 <li><a href="#Cursor">Cursor </a></li>
 <li><a href="#Mouse_capture">Mouse capture </a></li>
 <li><a href="#Line_endings">Line endings </a></li>
+<li><a href="#Words">Words </a></li>
 <li><a href="#Styling">Styling </a></li>
 <li><a href="#Style_definition">Style definition </a></li>
 <li><a href="#Caret__selection__and_hotspot_styles">Caret, selection, and hotspot styles </a></li>
@@ -71,9 +73,9 @@
 <li><a href="#Line_wrapping">Line wrapping </a></li>
 <li><a href="#Zooming">Zooming </a></li>
 <li><a href="#Long_lines">Long lines </a></li>
+<li><a href="#Accessibility">Accessibility </a></li>
 <li><a href="#Lexer">Lexer </a></li>
 <li><a href="#Notifications">Notifications </a></li>
-<li><a href="#Deprecated_messages_and_notifications">Deprecated messages and notifications </a></li>
 </ul>
 
 
@@ -110,6 +112,8 @@
 <h1>Class <code>Editor</code></h1>
 <p>Scintilla wrapper.</p>
 <p> This is a straight forward API to directly control Scintilla. This documentation is not intended to fully describe the Scintilla API, but only to give a brief description. The <a href="http://www.scintilla.org/ScintillaDoc.html">official Scintilla documentation</a> should be consulted for more details. All constants from the official documentation are exposed as Lua globals variables.</p>
+
+<p> Some Scintilla messages, such as "<code>SCI_SETxxx</code>" and "<code>SCI_GETxxx</code>", are implemented in LuaScript as a single property. For example <a href="../classes/Editor.html#Editor.CurrentPos">Editor.CurrentPos</a> is a read/write property that calls both "<code>SCI_GETCURRENTPOS</code>" and "<code>SCI_SETCURRENTPOS</code>". The automatically generated documentation below may only refer to one or the other.</p>
 
 <p> This class cannot be instantiated, rather predefined globals are available to use.</p>
 
@@ -202,7 +206,7 @@
 	<td class="summary">Delete all text in the document.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:DeleteRange">Editor:DeleteRange(pos, deleteLength)</a></td>
+	<td class="name" nowrap><a href="#Editor:DeleteRange">Editor:DeleteRange(start, lengthDelete)</a></td>
 	<td class="summary">Delete a range of text in the document.</td>
 	</tr>
 	<tr>
@@ -257,6 +261,10 @@
 	<td class="summary">Make the target range start and end be the same as the selection range start and end.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor:TargetWholeDocument">Editor:TargetWholeDocument()</a></td>
+	<td class="summary">Sets the target to the whole document.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.SearchFlags">Editor.SearchFlags</a></td>
 	<td class="summary">Set the search flags used by SearchInTarget.</td>
 	</tr>
@@ -285,11 +293,11 @@
 	<td class="summary">Sets the current caret position to be the search anchor.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:SearchNext">Editor:SearchNext(flags, text)</a></td>
+	<td class="name" nowrap><a href="#Editor:SearchNext">Editor:SearchNext(searchFlags, text)</a></td>
 	<td class="summary">Find some text starting at the search anchor.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:SearchPrev">Editor:SearchPrev(flags, text)</a></td>
+	<td class="name" nowrap><a href="#Editor:SearchPrev">Editor:SearchPrev(searchFlags, text)</a></td>
 	<td class="summary">Find some text starting at the search anchor and moving backwards.</td>
 	</tr>
 </table>
@@ -400,10 +408,6 @@
 	<td class="summary">read-only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.FirstVisibleLine">Editor.FirstVisibleLine</a></td>
-	<td class="summary">Scroll so that a display line is at the top of the display.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Editor.LinesOnScreen">Editor.LinesOnScreen</a></td>
 	<td class="summary">read-only</td>
 	</tr>
@@ -412,11 +416,11 @@
 	<td class="summary">read-only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:SetSel">Editor:SetSel(start, end)</a></td>
+	<td class="name" nowrap><a href="#Editor:SetSel">Editor:SetSel(anchor, caret)</a></td>
 	<td class="summary">Select a range of text.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:GotoPos">Editor:GotoPos(pos)</a></td>
+	<td class="name" nowrap><a href="#Editor:GotoPos">Editor:GotoPos(caret)</a></td>
 	<td class="summary">Set caret to a position and ensure it is visible.</td>
 	</tr>
 	<tr>
@@ -437,10 +441,10 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionEnd">Editor.SelectionEnd</a></td>
-	<td class="summary">Sets the position that ends the selection - this becomes the currentPosition.</td>
+	<td class="summary">Sets the position that ends the selection - this becomes the caret.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:SetEmptySelection">Editor:SetEmptySelection(pos)</a></td>
+	<td class="name" nowrap><a href="#Editor:SetEmptySelection">Editor:SetEmptySelection(caret)</a></td>
 	<td class="summary">Set caret to a position, while removing any existing selection.</td>
 	</tr>
 	<tr>
@@ -480,6 +484,10 @@
 	<td class="summary">Set the selection mode to stream (SC_SEL_STREAM) or rectangular (SC_SEL_RECTANGLE/SC_SEL_THIN) or by lines (SC_SEL_LINES).</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.MoveExtendsSelection">Editor.MoveExtendsSelection</a></td>
+	<td class="summary">read-only</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor:GetLineSelStartPosition">Editor:GetLineSelStartPosition(line)</a></td>
 	<td class="summary">Retrieve the position of the start of the selection at the given line (INVALID_POSITION if no selection on this line).</td>
 	</tr>
@@ -492,28 +500,12 @@
 	<td class="summary">Move the caret inside current view if it's not there already.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:WordEndPosition">Editor:WordEndPosition(pos, onlyWordCharacters)</a></td>
-	<td class="summary">Get position of end of word.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor:WordStartPosition">Editor:WordStartPosition(pos, onlyWordCharacters)</a></td>
-	<td class="summary">Get position of start of word.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Editor:PositionBefore">Editor:PositionBefore(pos)</a></td>
 	<td class="summary">Given a valid document position, return the previous position taking code page into account.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:PositionAfter">Editor:PositionAfter(pos)</a></td>
 	<td class="summary">Given a valid document position, return the next position taking code page into account.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor:PositionRelative">Editor:PositionRelative(pos, relative)</a></td>
-	<td class="summary">Given a valid document position, return a position that differs in a number of characters.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor:CountCharacters">Editor:CountCharacters(startPos, endPos)</a></td>
-	<td class="summary">Count characters between two positions.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:TextWidth">Editor:TextWidth(style, text)</a></td>
@@ -556,8 +548,8 @@
 	<td class="summary">Retrieve the y value of the point in the window where a position is displayed.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:HideSelection">Editor:HideSelection(normal)</a></td>
-	<td class="summary">Draw the selection in normal style or with selection highlighted.</td>
+	<td class="name" nowrap><a href="#Editor:HideSelection">Editor:HideSelection(hide)</a></td>
+	<td class="summary">Draw the selection either highlighted or in normal (non-highlighted) style.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:ChooseCaretX">Editor:ChooseCaretX()</a></td>
@@ -576,6 +568,45 @@
 	<td class="summary">Set whether switching to rectangular mode while selecting with the mouse is allowed.</td>
 	</tr>
 </table>
+<h2><a href="#By_character_or_UTF_16_code_unit">By character or UTF-16 code unit </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor:PositionRelative">Editor:PositionRelative(pos, relative)</a></td>
+	<td class="summary">Given a valid document position, return a position that differs in a number of characters.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:CountCharacters">Editor:CountCharacters(start, end)</a></td>
+	<td class="summary">Count characters between two positions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:PositionRelativeCodeUnits">Editor:PositionRelativeCodeUnits(pos, relative)</a></td>
+	<td class="summary">Given a valid document position, return a position that differs in a number of UTF-16 code units.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:CountCodeUnits">Editor:CountCodeUnits(start, end)</a></td>
+	<td class="summary">Count code units between two positions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.LineCharacterIndex">Editor.LineCharacterIndex</a></td>
+	<td class="summary">read-only</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:AllocateLineCharacterIndex">Editor:AllocateLineCharacterIndex(lineCharacterIndex)</a></td>
+	<td class="summary">Request line character index be created or its use count increased.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:ReleaseLineCharacterIndex">Editor:ReleaseLineCharacterIndex(lineCharacterIndex)</a></td>
+	<td class="summary">Decrease use count of line character index and remove if 0.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:LineFromIndexPosition">Editor:LineFromIndexPosition(pos, lineCharacterIndex)</a></td>
+	<td class="summary">Retrieve the document line containing a position measured in index units.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:IndexPositionFromLine">Editor:IndexPositionFromLine(line, lineCharacterIndex)</a></td>
+	<td class="summary">Retrieve the position measured in index units at the start of a document line.</td>
+	</tr>
+</table>
 <h2><a href="#Multiple_Selection_and_Virtual_Space">Multiple Selection and Virtual Space </a></h2>
 <table class="function_list">
 	<tr>
@@ -592,7 +623,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.VirtualSpaceOptions">Editor.VirtualSpaceOptions</a></td>
-	<td class="summary">Returns the position at the end of the selection.</td>
+	<td class="summary">Set options for virtual space behaviour.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionModifier">Editor.RectangularSelectionModifier</a></td>
@@ -628,19 +659,19 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNCaret">Editor.SelectionNCaret[selection]</a></td>
-	<td class="summary">Which selection is the main selection</td>
+	<td class="summary">Set the caret position of the nth selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNCaretVirtualSpace">Editor.SelectionNCaretVirtualSpace[selection]</a></td>
-	<td class="summary">Which selection is the main selection</td>
+	<td class="summary">Set the virtual space of the caret of the nth selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNAnchor">Editor.SelectionNAnchor[selection]</a></td>
-	<td class="summary">Which selection is the main selection</td>
+	<td class="summary">Set the anchor position of the nth selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNAnchorVirtualSpace">Editor.SelectionNAnchorVirtualSpace[selection]</a></td>
-	<td class="summary">Which selection is the main selection</td>
+	<td class="summary">Set the virtual space of the anchor of the nth selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNStart">Editor.SelectionNStart[selection]</a></td>
@@ -652,19 +683,19 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionCaret">Editor.RectangularSelectionCaret</a></td>
-	<td class="summary">Returns the position at the end of the selection.</td>
+	<td class="summary">Set the caret position of the rectangular selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionCaretVirtualSpace">Editor.RectangularSelectionCaretVirtualSpace</a></td>
-	<td class="summary">Returns the position at the end of the selection.</td>
+	<td class="summary">Set the virtual space of the caret of the rectangular selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionAnchor">Editor.RectangularSelectionAnchor</a></td>
-	<td class="summary">Returns the position at the end of the selection.</td>
+	<td class="summary">Set the anchor position of the rectangular selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionAnchorVirtualSpace">Editor.RectangularSelectionAnchorVirtualSpace</a></td>
-	<td class="summary">Returns the position at the end of the selection.</td>
+	<td class="summary">Set the virtual space of the anchor of the rectangular selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.AdditionalSelAlpha">Editor.AdditionalSelAlpha</a></td>
@@ -698,9 +729,25 @@
 	<td class="name" nowrap><a href="#Editor:RotateSelection">Editor:RotateSelection()</a></td>
 	<td class="summary">Set the main selection to the next selection.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MultipleSelectAddNext">Editor:MultipleSelectAddNext()</a></td>
+	<td class="summary">Add the next occurrence of the main selection to the set of selections as main.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MultipleSelectAddEach">Editor:MultipleSelectAddEach()</a></td>
+	<td class="summary">Add each occurrence of the main selection in the target to the set of selections.</td>
+	</tr>
 </table>
 <h2><a href="#Scrolling_and_automatic_scrolling">Scrolling and automatic scrolling </a></h2>
 <table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor.FirstVisibleLine">Editor.FirstVisibleLine</a></td>
+	<td class="summary">Scroll so that a display line is at the top of the display.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.XOffset">Editor.XOffset</a></td>
+	<td class="summary">Set the xOffset (ie, horizontal scroll position).</td>
+	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:LineScroll">Editor:LineScroll(columns, lines)</a></td>
 	<td class="summary">Scroll horizontally and vertically.</td>
@@ -734,10 +781,6 @@
 	<td class="summary">Show or hide the vertical scroll bar.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.XOffset">Editor.XOffset</a></td>
-	<td class="summary">Get and Set the xOffset (ie, horizontal scroll position).</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Editor.ScrollWidth">Editor.ScrollWidth</a></td>
 	<td class="summary">Sets the document width assumed for scrolling.</td>
 	</tr>
@@ -769,6 +812,10 @@
 	<td class="summary">Set the size of the dots used to mark space characters.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.TabDrawMode">Editor.TabDrawMode</a></td>
+	<td class="summary">Set how tabs are drawn when visible.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.ExtraAscent">Editor.ExtraAscent</a></td>
 	<td class="summary">Set extra ascent for each line</td>
 	</tr>
@@ -789,6 +836,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor.MouseDownCaptures">Editor.MouseDownCaptures</a></td>
 	<td class="summary">Set whether the mouse is captured when its button is pressed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.MouseWheelCaptures">Editor.MouseWheelCaptures</a></td>
+	<td class="summary">Set whether the mouse wheel can be active outside the window.</td>
 	</tr>
 </table>
 <h2><a href="#Line_endings">Line endings </a></h2>
@@ -818,6 +869,41 @@
 	<td class="summary">read-only</td>
 	</tr>
 </table>
+<h2><a href="#Words">Words </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor:WordEndPosition">Editor:WordEndPosition(pos, onlyWordCharacters)</a></td>
+	<td class="summary">Get position of end of word.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:WordStartPosition">Editor:WordStartPosition(pos, onlyWordCharacters)</a></td>
+	<td class="summary">Get position of start of word.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:IsRangeWord">Editor:IsRangeWord(start, end)</a></td>
+	<td class="summary">Is the range start..end considered a word?</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.WordChars">Editor.WordChars</a></td>
+	<td class="summary">Set the set of characters making up words for when moving or selecting by word.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.WhitespaceChars">Editor.WhitespaceChars</a></td>
+	<td class="summary">Set the set of characters making up whitespace for when moving or selecting by word.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.PunctuationChars">Editor.PunctuationChars</a></td>
+	<td class="summary">Set the set of characters making up punctuation characters Should be called after SetWordChars.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:SetCharsDefault">Editor:SetCharsDefault()</a></td>
+	<td class="summary">Reset the set of characters for whitespace and word characters to the defaults.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.CharacterCategoryOptimization">Editor.CharacterCategoryOptimization</a></td>
+	<td class="summary">Set the number of characters to have directly indexed categories</td>
+	</tr>
+</table>
 <h2><a href="#Styling">Styling </a></h2>
 <table class="function_list">
 	<tr>
@@ -825,8 +911,8 @@
 	<td class="summary">read-only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:StartStyling">Editor:StartStyling(pos, mask)</a></td>
-	<td class="summary">Set the current styling position to pos and the styling mask to mask.</td>
+	<td class="name" nowrap><a href="#Editor:StartStyling">Editor:StartStyling(start, unused)</a></td>
+	<td class="summary">Set the current styling position to start.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:SetStyling">Editor:SetStyling(length, style)</a></td>
@@ -835,6 +921,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor:SetStylingEx">Editor:SetStylingEx(styles)</a></td>
 	<td class="summary">Set the styles for a segment of the document.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.IdleStyling">Editor.IdleStyling</a></td>
+	<td class="summary">Sets limits to idle styling.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.LineState">Editor.LineState[line]</a></td>
@@ -951,6 +1041,10 @@
 	<td class="summary">Set background alpha of the caret line.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.CaretLineFrame">Editor.CaretLineFrame</a></td>
+	<td class="summary">Display the caret line framed.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.CaretLineVisibleAlways">Editor.CaretLineVisibleAlways</a></td>
 	<td class="summary">Sets the caret line to always visible.</td>
 	</tr>
@@ -1017,6 +1111,10 @@
 <h2><a href="#Margins">Margins </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#Editor.Margins">Editor.Margins</a></td>
+	<td class="summary">Allocate a non-standard number of margins.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.MarginTypeN">Editor.MarginTypeN[margin]</a></td>
 	<td class="summary">Set a margin to be either numeric or symbolic.</td>
 	</tr>
@@ -1037,6 +1135,10 @@
 	<td class="summary">Set the cursor shown when the mouse is inside a margin.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.MarginBackN">Editor.MarginBackN[margin]</a></td>
+	<td class="summary">Set the background colour of a margin.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.MarginLeft">Editor.MarginLeft</a></td>
 	<td class="summary">Sets the size in pixels of the left margin.</td>
 	</tr>
@@ -1046,11 +1148,11 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:SetFoldMarginColour">Editor:SetFoldMarginColour(useSetting, back)</a></td>
-	<td class="summary">Set the colours used as a chequerboard pattern in the fold margin</td>
+	<td class="summary">Set one of the colours used as a chequerboard pattern in the fold margin</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:SetFoldMarginHiColour">Editor:SetFoldMarginHiColour(useSetting, fore)</a></td>
-	<td class="summary">Set the colours used as a chequerboard pattern in the fold margin</td>
+	<td class="summary">Set the other colour used as a chequerboard pattern in the fold margin</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.MarginText">Editor.MarginText[line]</a></td>
@@ -1119,10 +1221,6 @@
 	<td class="summary">In one phase draw, text is drawn in a series of rectangular blocks with no overlap.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.TwoPhaseDraw">Editor.TwoPhaseDraw</a></td>
-	<td class="summary">In twoPhaseDraw mode, drawing is performed in two phases, first the background and then the foreground.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Editor.Technology">Editor.Technology</a></td>
 	<td class="summary">Set the technology used.</td>
 	</tr>
@@ -1139,20 +1237,8 @@
 	<td class="summary">Choose to display the the IME in a winow or inline.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.WordChars">Editor.WordChars</a></td>
-	<td class="summary">Set the set of characters making up words for when moving or selecting by word.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor.WhitespaceChars">Editor.WhitespaceChars</a></td>
-	<td class="summary">Set the set of characters making up whitespace for when moving or selecting by word.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor.PunctuationChars">Editor.PunctuationChars</a></td>
-	<td class="summary">Set the set of characters making up punctuation characters Should be called after SetWordChars.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Editor:SetCharsDefault">Editor:SetCharsDefault()</a></td>
-	<td class="summary">Reset the set of characters for whitespace and word characters to the defaults.</td>
+	<td class="name" nowrap><a href="#Editor.Bidirectional">Editor.Bidirectional</a></td>
+	<td class="summary">Set bidirectional text display state.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:GrabFocus">Editor:GrabFocus()</a></td>
@@ -1166,7 +1252,7 @@
 <h2><a href="#Brace_highlighting">Brace highlighting </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:BraceHighlight">Editor:BraceHighlight(pos1, pos2)</a></td>
+	<td class="name" nowrap><a href="#Editor:BraceHighlight">Editor:BraceHighlight(posA, posB)</a></td>
 	<td class="summary">Highlight the characters at two positions.</td>
 	</tr>
 	<tr>
@@ -1174,15 +1260,15 @@
 	<td class="summary">Highlight the character at a position indicating there is no matching brace.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:BraceHighlightIndicator">Editor:BraceHighlightIndicator(useBraceHighlightIndicator, indicator)</a></td>
+	<td class="name" nowrap><a href="#Editor:BraceHighlightIndicator">Editor:BraceHighlightIndicator(useSetting, indicator)</a></td>
 	<td class="summary">Use specified indicator to highlight matching braces instead of changing their style.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:BraceBadLightIndicator">Editor:BraceBadLightIndicator(useBraceBadLightIndicator, indicator)</a></td>
+	<td class="name" nowrap><a href="#Editor:BraceBadLightIndicator">Editor:BraceBadLightIndicator(useSetting, indicator)</a></td>
 	<td class="summary">Use specified indicator to highlight non matching brace instead of changing its style.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:BraceMatch">Editor:BraceMatch(pos)</a></td>
+	<td class="name" nowrap><a href="#Editor:BraceMatch">Editor:BraceMatch(pos, maxReStyle)</a></td>
 	<td class="summary">Find the position of a matching brace or INVALID_POSITION if no match.</td>
 	</tr>
 </table>
@@ -1292,7 +1378,7 @@
 	<td class="summary">Add a marker to a line, returning an ID which can be used to find or delete the marker.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:MarkerAddSet">Editor:MarkerAddSet(line, set)</a></td>
+	<td class="name" nowrap><a href="#Editor:MarkerAddSet">Editor:MarkerAddSet(line, markerSet)</a></td>
 	<td class="summary">Add a set of markers to a line.</td>
 	</tr>
 	<tr>
@@ -1316,22 +1402,22 @@
 	<td class="summary">Find the previous line before lineStart that includes a marker in mask.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:MarkerLineFromHandle">Editor:MarkerLineFromHandle(handle)</a></td>
+	<td class="name" nowrap><a href="#Editor:MarkerLineFromHandle">Editor:MarkerLineFromHandle(markerHandle)</a></td>
 	<td class="summary">Retrieve the line number at which a particular marker is located.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:MarkerDeleteHandle">Editor:MarkerDeleteHandle(handle)</a></td>
+	<td class="name" nowrap><a href="#Editor:MarkerDeleteHandle">Editor:MarkerDeleteHandle(markerHandle)</a></td>
 	<td class="summary">Delete a marker.</td>
 	</tr>
 </table>
 <h2><a href="#Indicators">Indicators </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicStyle">Editor.IndicStyle[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicStyle">Editor.IndicStyle[indicator]</a></td>
 	<td class="summary">Set an indicator to plain, squiggle or TT.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicFore">Editor.IndicFore[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicFore">Editor.IndicFore[indicator]</a></td>
 	<td class="summary">Set the foreground colour of an indicator.</td>
 	</tr>
 	<tr>
@@ -1343,19 +1429,19 @@
 	<td class="summary">Set the alpha outline colour of the given indicator.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicUnder">Editor.IndicUnder[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicUnder">Editor.IndicUnder[indicator]</a></td>
 	<td class="summary">Set an indicator to draw under text or over(default).</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicHoverStyle">Editor.IndicHoverStyle[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicHoverStyle">Editor.IndicHoverStyle[indicator]</a></td>
 	<td class="summary">Set a hover indicator to plain, squiggle or TT.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicHoverFore">Editor.IndicHoverFore[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicHoverFore">Editor.IndicHoverFore[indicator]</a></td>
 	<td class="summary">Set the foreground hover colour of an indicator.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.IndicFlags">Editor.IndicFlags[indic]</a></td>
+	<td class="name" nowrap><a href="#Editor.IndicFlags">Editor.IndicFlags[indicator]</a></td>
 	<td class="summary">Set the attributes of an indicator.</td>
 	</tr>
 	<tr>
@@ -1367,27 +1453,27 @@
 	<td class="summary">Set the value used for IndicatorFillRange</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorFillRange">Editor:IndicatorFillRange(position, fillLength)</a></td>
+	<td class="name" nowrap><a href="#Editor:IndicatorFillRange">Editor:IndicatorFillRange(start, lengthFill)</a></td>
 	<td class="summary">Turn a indicator on over a range.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorClearRange">Editor:IndicatorClearRange(position, clearLength)</a></td>
+	<td class="name" nowrap><a href="#Editor:IndicatorClearRange">Editor:IndicatorClearRange(start, lengthClear)</a></td>
 	<td class="summary">Turn a indicator off over a range.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorAllOnFor">Editor:IndicatorAllOnFor(position)</a></td>
-	<td class="summary">Are any indicators present at position?</td>
+	<td class="name" nowrap><a href="#Editor:IndicatorAllOnFor">Editor:IndicatorAllOnFor(pos)</a></td>
+	<td class="summary">Are any indicators present at pos?</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorValueAt">Editor:IndicatorValueAt(indicator, position)</a></td>
-	<td class="summary">What value does a particular indicator have at at a position?</td>
+	<td class="name" nowrap><a href="#Editor:IndicatorValueAt">Editor:IndicatorValueAt(indicator, pos)</a></td>
+	<td class="summary">What value does a particular indicator have at a position?</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorStart">Editor:IndicatorStart(indicator, position)</a></td>
+	<td class="name" nowrap><a href="#Editor:IndicatorStart">Editor:IndicatorStart(indicator, pos)</a></td>
 	<td class="summary">Where does a particular indicator start?</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:IndicatorEnd">Editor:IndicatorEnd(indicator, position)</a></td>
+	<td class="name" nowrap><a href="#Editor:IndicatorEnd">Editor:IndicatorEnd(indicator, pos)</a></td>
 	<td class="summary">Where does a particular indicator end?</td>
 	</tr>
 	<tr>
@@ -1406,7 +1492,7 @@
 <h2><a href="#Autocompletion">Autocompletion </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:AutoCShow">Editor:AutoCShow(lenEntered, itemList)</a></td>
+	<td class="name" nowrap><a href="#Editor:AutoCShow">Editor:AutoCShow(lengthEntered, itemList)</a></td>
 	<td class="summary">Display a auto-completion list.</td>
 	</tr>
 	<tr>
@@ -1434,7 +1520,7 @@
 	<td class="summary">Change the separator character in the string setting up an auto-completion list.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:AutoCSelect">Editor:AutoCSelect(text)</a></td>
+	<td class="name" nowrap><a href="#Editor:AutoCSelect">Editor:AutoCSelect(select)</a></td>
 	<td class="summary">Select the item in the auto-completion list that starts with a string.</td>
 	</tr>
 	<tr>
@@ -1536,7 +1622,7 @@
 	<td class="summary">Set the start position in order to change when backspacing removes the calltip.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:CallTipSetHlt">Editor:CallTipSetHlt(start, end)</a></td>
+	<td class="name" nowrap><a href="#Editor:CallTipSetHlt">Editor:CallTipSetHlt(highlightStart, highlightEnd)</a></td>
 	<td class="summary">Highlight a segment of the definition.</td>
 	</tr>
 	<tr>
@@ -1563,12 +1649,12 @@
 <h2><a href="#Key_bindings">Key bindings </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:AssignCmdKey">Editor:AssignCmdKey(keycode, modifiers, msg)</a></td>
-	<td class="summary">When key+modifier combination km is pressed perform msg.</td>
+	<td class="name" nowrap><a href="#Editor:AssignCmdKey">Editor:AssignCmdKey(keycode, modifiers, sciCommand)</a></td>
+	<td class="summary">When key+modifier combination keyDefinition is pressed perform sciCommand.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:ClearCmdKey">Editor:ClearCmdKey(keycode, modifiers)</a></td>
-	<td class="summary">When key+modifier combination km is pressed do nothing.</td>
+	<td class="summary">When key+modifier combination keyDefinition is pressed do nothing.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:ClearAllCmdKeys">Editor:ClearAllCmdKeys()</a></td>
@@ -1957,8 +2043,8 @@
 <h2><a href="#Popup_edit_menu">Popup edit menu </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:UsePopUp">Editor:UsePopUp(allowPopUp)</a></td>
-	<td class="summary">Set whether a pop up menu is displayed automatically when the user presses the wrong mouse button.</td>
+	<td class="name" nowrap><a href="#Editor:UsePopUp">Editor:UsePopUp(popUpMode)</a></td>
+	<td class="summary">Set whether a pop up menu is displayed automatically when the user presses the wrong mouse button on certain areas.</td>
 	</tr>
 </table>
 <h2><a href="#Macro_recording">Macro recording </a></h2>
@@ -2002,7 +2088,7 @@
 	<td class="summary">read-only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:GetRangePointer">Editor:GetRangePointer(position, rangeLength)</a></td>
+	<td class="name" nowrap><a href="#Editor:GetRangePointer">Editor:GetRangePointer(start, lengthRange)</a></td>
 	<td class="summary">Return a read-only pointer to a range of characters in the document.</td>
 	</tr>
 	<tr>
@@ -2017,7 +2103,7 @@
 	<td class="summary">Change the document object used.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:CreateDocument">Editor:CreateDocument()</a></td>
+	<td class="name" nowrap><a href="#Editor:CreateDocument">Editor:CreateDocument(bytes, documentOptions)</a></td>
 	<td class="summary">Create a new document object.</td>
 	</tr>
 	<tr>
@@ -2028,22 +2114,26 @@
 	<td class="name" nowrap><a href="#Editor:ReleaseDocument">Editor:ReleaseDocument(doc)</a></td>
 	<td class="summary">Release a reference to the document, deleting document if it fades to black.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.DocumentOptions">Editor.DocumentOptions</a></td>
+	<td class="summary">read-only</td>
+	</tr>
 </table>
 <h2><a href="#Background_loading_and_saving">Background loading and saving </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:CreateLoader">Editor:CreateLoader(bytes)</a></td>
+	<td class="name" nowrap><a href="#Editor:CreateLoader">Editor:CreateLoader(bytes, documentOptions)</a></td>
 	<td class="summary">Create an ILoader*.</td>
 	</tr>
 </table>
 <h2><a href="#Folding">Folding </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Editor:VisibleFromDocLine">Editor:VisibleFromDocLine(line)</a></td>
+	<td class="name" nowrap><a href="#Editor:VisibleFromDocLine">Editor:VisibleFromDocLine(docLine)</a></td>
 	<td class="summary">Find the display line of a document line taking hidden lines into account.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:DocLineFromVisible">Editor:DocLineFromVisible(lineDisplay)</a></td>
+	<td class="name" nowrap><a href="#Editor:DocLineFromVisible">Editor:DocLineFromVisible(displayLine)</a></td>
 	<td class="summary">Find the document line of a display line taking hidden lines into account.</td>
 	</tr>
 	<tr>
@@ -2081,6 +2171,22 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor:ToggleFold">Editor:ToggleFold(line)</a></td>
 	<td class="summary">Switch a header line between expanded and contracted.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:ToggleFoldShowText">Editor:ToggleFoldShowText(line, text)</a></td>
+	<td class="summary">Switch a header line between expanded and contracted and show some text after the line.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.FoldDisplayTextStyle">Editor.FoldDisplayTextStyle</a></td>
+	<td class="summary">Set the style of fold display text.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:SetDefaultFoldDisplayText">Editor:SetDefaultFoldDisplayText(text)</a></td>
+	<td class="summary">Set the default fold display text.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:GetDefaultFoldDisplayText">Editor:GetDefaultFoldDisplayText()</a></td>
+	<td class="summary">Get the default fold display text.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.FoldExpanded">Editor.FoldExpanded[line]</a></td>
@@ -2158,7 +2264,7 @@
 	<td class="summary">Join the lines in the target.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor:WrapCount">Editor:WrapCount(line)</a></td>
+	<td class="name" nowrap><a href="#Editor:WrapCount">Editor:WrapCount(docLine)</a></td>
 	<td class="summary">The number of display lines needed to wrap a document line</td>
 	</tr>
 </table>
@@ -2181,7 +2287,7 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#Editor.EdgeMode">Editor.EdgeMode</a></td>
-	<td class="summary">The edge may be displayed by a line (EDGE_LINE) or by highlighting text that goes beyond it (EDGE_BACKGROUND) or not displayed at all (EDGE_NONE).</td>
+	<td class="summary">The edge may be displayed by a line (EDGE_LINE/EDGE_MULTILINE) or by highlighting text that goes beyond it (EDGE_BACKGROUND) or not displayed at all (EDGE_NONE).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.EdgeColumn">Editor.EdgeColumn</a></td>
@@ -2190,6 +2296,21 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor.EdgeColour">Editor.EdgeColour</a></td>
 	<td class="summary">Change the colour used in edge indication.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MultiEdgeAddLine">Editor:MultiEdgeAddLine(column, edgeColour)</a></td>
+	<td class="summary">Add a new vertical edge to the view.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MultiEdgeClearAll">Editor:MultiEdgeClearAll()</a></td>
+	<td class="summary">Clear all vertical edges.</td>
+	</tr>
+</table>
+<h2><a href="#Accessibility">Accessibility </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor.Accessibility">Editor.Accessibility</a></td>
+	<td class="summary">Enable or disable accessibility.</td>
 	</tr>
 </table>
 <h2><a href="#Lexer">Lexer </a></h2>
@@ -2235,11 +2356,11 @@
 	<td class="summary">read-only</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.PropertyInt">Editor.PropertyInt[key]</a></td>
-	<td class="summary">read-only</td>
+	<td class="name" nowrap><a href="#Editor:GetPropertyInt">Editor:GetPropertyInt(key, defaultValue)</a></td>
+	<td class="summary">Retrieve a "property" value previously set with SetProperty, interpreted as an int AFTER any "$()" variable replacement.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Editor.KeyWords">Editor.KeyWords[keywordSet]</a></td>
+	<td class="name" nowrap><a href="#Editor.KeyWords">Editor.KeyWords[keyWordSet]</a></td>
 	<td class="summary">Set up the key words used by the lexer.</td>
 	</tr>
 	<tr>
@@ -2282,6 +2403,26 @@
 	<td class="name" nowrap><a href="#Editor.Identifiers">Editor.Identifiers[style]</a></td>
 	<td class="summary">Set the identifiers that are shown in a particular style</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:PrivateLexerCall">Editor:PrivateLexerCall(operation, pointer)</a></td>
+	<td class="summary">For private communication between an application and a known lexer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.NamedStyles">Editor.NamedStyles</a></td>
+	<td class="summary">read-only</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:NameOfStyle">Editor:NameOfStyle(style)</a></td>
+	<td class="summary">Retrieve the name of a style.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:TagsOfStyle">Editor:TagsOfStyle(style)</a></td>
+	<td class="summary">Retrieve a ' ' separated list of style tags like "literal quoted string".</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:DescriptionOfStyle">Editor:DescriptionOfStyle(style)</a></td>
+	<td class="summary">Retrieve a description of a style.</td>
+	</tr>
 </table>
 <h2><a href="#Notifications">Notifications </a></h2>
 <table class="function_list">
@@ -2294,15 +2435,12 @@
 	<td class="summary">Set which document modification events are sent to the container.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.CommandEvents">Editor.CommandEvents</a></td>
+	<td class="summary">Set whether command events are sent to the container.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.MouseDwellTime">Editor.MouseDwellTime</a></td>
 	<td class="summary">Sets the time the mouse must sit still to generate a mouse dwell event.</td>
-	</tr>
-</table>
-<h2><a href="#Deprecated_messages_and_notifications">Deprecated messages and notifications </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Editor.StyleBitsNeeded">Editor.StyleBitsNeeded</a></td>
-	<td class="summary">read-only</td>
 	</tr>
 </table>
 
@@ -2493,8 +2631,8 @@
 
 </dd>
     <dt>
-    <a name = "Editor:set_text_direction"></a>
-    <strong>Editor:set_text_direction(direction)</strong>
+    <a name = "Editor:set"></a>
+    <strong>Editor:set(direction)</strong>
     </dt>
     <dd>
     Sets the text direction.
@@ -2837,7 +2975,7 @@
 </dd>
     <dt>
     <a name = "Editor:DeleteRange"></a>
-    <strong>Editor:DeleteRange(pos, deleteLength)</strong>
+    <strong>Editor:DeleteRange(start, lengthDelete)</strong>
     </dt>
     <dd>
     Delete a range of text in the document.
@@ -2845,13 +2983,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pos</span>
+        <li><span class="parameter">start</span>
             <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">deleteLength</span>
+        <li><span class="parameter">lengthDelete</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -3187,6 +3325,24 @@
 
 </dd>
     <dt>
+    <a name = "Editor:TargetWholeDocument"></a>
+    <strong>Editor:TargetWholeDocument()</strong>
+    </dt>
+    <dd>
+    Sets the target to the whole document.
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_TARGETWHOLEDOCUMENT">SCI_TARGETWHOLEDOCUMENT</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.SearchFlags"></a>
     <strong>Editor.SearchFlags</strong>
     </dt>
@@ -3389,7 +3545,7 @@
 </dd>
     <dt>
     <a name = "Editor:SearchNext"></a>
-    <strong>Editor:SearchNext(flags, text)</strong>
+    <strong>Editor:SearchNext(searchFlags, text)</strong>
     </dt>
     <dd>
     Find some text starting at the search anchor.  Does not ensure the selection is visible.
@@ -3397,7 +3553,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">flags</span>
+        <li><span class="parameter">searchFlags</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -3430,7 +3586,7 @@
 </dd>
     <dt>
     <a name = "Editor:SearchPrev"></a>
-    <strong>Editor:SearchPrev(flags, text)</strong>
+    <strong>Editor:SearchPrev(searchFlags, text)</strong>
     </dt>
     <dd>
     Find some text starting at the search anchor and moving backwards.  Does not ensure the selection is visible.
@@ -3438,7 +3594,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">flags</span>
+        <li><span class="parameter">searchFlags</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -4023,32 +4179,6 @@
 
 </dd>
     <dt>
-    <a name = "Editor.FirstVisibleLine"></a>
-    <strong>Editor.FirstVisibleLine</strong>
-    </dt>
-    <dd>
-    Scroll so that a display line is at the top of the display.
-
-
-    <ul>
-        <li><span class="parameter">FirstVisibleLine</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETFIRSTVISIBLELINE">SCI_SETFIRSTVISIBLELINE</a>
-    </ul>
-
-
-</dd>
-    <dt>
     <a name = "Editor.LinesOnScreen"></a>
     <strong>Editor.LinesOnScreen</strong>
     </dt>
@@ -4102,7 +4232,7 @@
 </dd>
     <dt>
     <a name = "Editor:SetSel"></a>
-    <strong>Editor:SetSel(start, end)</strong>
+    <strong>Editor:SetSel(anchor, caret)</strong>
     </dt>
     <dd>
     Select a range of text.
@@ -4110,13 +4240,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">start</span>
+        <li><span class="parameter">anchor</span>
             <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">end</span>
+        <li><span class="parameter">caret</span>
             <span class="types"><span class="type">position</span></span>
 
 
@@ -4135,7 +4265,7 @@
 </dd>
     <dt>
     <a name = "Editor:GotoPos"></a>
-    <strong>Editor:GotoPos(pos)</strong>
+    <strong>Editor:GotoPos(caret)</strong>
     </dt>
     <dd>
     Set caret to a position and ensure it is visible.
@@ -4143,7 +4273,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pos</span>
+        <li><span class="parameter">caret</span>
             <span class="types"><span class="type">position</span></span>
 
 
@@ -4270,7 +4400,7 @@
     <strong>Editor.SelectionEnd</strong>
     </dt>
     <dd>
-    Sets the position that ends the selection - this becomes the currentPosition.
+    Sets the position that ends the selection - this becomes the caret.
 
 
     <ul>
@@ -4293,7 +4423,7 @@
 </dd>
     <dt>
     <a name = "Editor:SetEmptySelection"></a>
-    <strong>Editor:SetEmptySelection(pos)</strong>
+    <strong>Editor:SetEmptySelection(caret)</strong>
     </dt>
     <dd>
     Set caret to a position, while removing any existing selection.
@@ -4301,7 +4431,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pos</span>
+        <li><span class="parameter">caret</span>
             <span class="types"><span class="type">position</span></span>
 
 
@@ -4572,6 +4702,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.MoveExtendsSelection"></a>
+    <strong>Editor.MoveExtendsSelection</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">MoveExtendsSelection</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETMOVEEXTENDSSELECTION">SCI_GETMOVEEXTENDSSELECTION</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor:GetLineSelStartPosition"></a>
     <strong>Editor:GetLineSelStartPosition(line)</strong>
     </dt>
@@ -4660,88 +4816,6 @@
 
 </dd>
     <dt>
-    <a name = "Editor:WordEndPosition"></a>
-    <strong>Editor:WordEndPosition(pos, onlyWordCharacters)</strong>
-    </dt>
-    <dd>
-    Get position of end of word.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">pos</span>
-            <span class="types"><span class="type">position</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">onlyWordCharacters</span>
-            <span class="types"><span class="type">bool</span></span>
-
-
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">int</span></span>
-
-
-
-    </ol>
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_WORDENDPOSITION">SCI_WORDENDPOSITION</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor:WordStartPosition"></a>
-    <strong>Editor:WordStartPosition(pos, onlyWordCharacters)</strong>
-    </dt>
-    <dd>
-    Get position of start of word.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">pos</span>
-            <span class="types"><span class="type">position</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">onlyWordCharacters</span>
-            <span class="types"><span class="type">bool</span></span>
-
-
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">int</span></span>
-
-
-
-    </ol>
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_WORDSTARTPOSITION">SCI_WORDSTARTPOSITION</a>
-    </ul>
-
-
-</dd>
-    <dt>
     <a name = "Editor:PositionBefore"></a>
     <strong>Editor:PositionBefore(pos)</strong>
     </dt>
@@ -4807,88 +4881,6 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_POSITIONAFTER">SCI_POSITIONAFTER</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor:PositionRelative"></a>
-    <strong>Editor:PositionRelative(pos, relative)</strong>
-    </dt>
-    <dd>
-    Given a valid document position, return a position that differs in a number of characters.  Returned value is always between 0 and last position in document.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">pos</span>
-            <span class="types"><span class="type">position</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">relative</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">position</span></span>
-
-
-
-    </ol>
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor:CountCharacters"></a>
-    <strong>Editor:CountCharacters(startPos, endPos)</strong>
-    </dt>
-    <dd>
-    Count characters between two positions.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">startPos</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">endPos</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">int</span></span>
-
-
-
-    </ol>
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS</a>
     </ul>
 
 
@@ -5272,15 +5264,15 @@
 </dd>
     <dt>
     <a name = "Editor:HideSelection"></a>
-    <strong>Editor:HideSelection(normal)</strong>
+    <strong>Editor:HideSelection(hide)</strong>
     </dt>
     <dd>
-    Draw the selection in normal style or with selection highlighted.
+    Draw the selection either highlighted or in normal (non-highlighted) style.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">normal</span>
+        <li><span class="parameter">hide</span>
             <span class="types"><span class="type">bool</span></span>
 
 
@@ -5378,6 +5370,336 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="By_character_or_UTF_16_code_unit"></a>By character or UTF-16 code unit </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Editor:PositionRelative"></a>
+    <strong>Editor:PositionRelative(pos, relative)</strong>
+    </dt>
+    <dd>
+    Given a valid document position, return a position that differs in a number of characters.  Returned value is always between 0 and last position in document.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">relative</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">position</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:CountCharacters"></a>
+    <strong>Editor:CountCharacters(start, end)</strong>
+    </dt>
+    <dd>
+    Count characters between two positions.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">end</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:PositionRelativeCodeUnits"></a>
+    <strong>Editor:PositionRelativeCodeUnits(pos, relative)</strong>
+    </dt>
+    <dd>
+    Given a valid document position, return a position that differs in a number of UTF-16 code units.  Returned value is always between 0 and last position in document. The result may point half way (2 bytes) inside a non-BMP character.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">relative</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">position</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_POSITIONRELATIVECODEUNITS">SCI_POSITIONRELATIVECODEUNITS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:CountCodeUnits"></a>
+    <strong>Editor:CountCodeUnits(start, end)</strong>
+    </dt>
+    <dd>
+    Count code units between two positions.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">end</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_COUNTCODEUNITS">SCI_COUNTCODEUNITS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.LineCharacterIndex"></a>
+    <strong>Editor.LineCharacterIndex</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">LineCharacterIndex</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETLINECHARACTERINDEX">SCI_GETLINECHARACTERINDEX</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:AllocateLineCharacterIndex"></a>
+    <strong>Editor:AllocateLineCharacterIndex(lineCharacterIndex)</strong>
+    </dt>
+    <dd>
+    Request line character index be created or its use count increased.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lineCharacterIndex</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_ALLOCATELINECHARACTERINDEX">SCI_ALLOCATELINECHARACTERINDEX</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:ReleaseLineCharacterIndex"></a>
+    <strong>Editor:ReleaseLineCharacterIndex(lineCharacterIndex)</strong>
+    </dt>
+    <dd>
+    Decrease use count of line character index and remove if 0.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lineCharacterIndex</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_RELEASELINECHARACTERINDEX">SCI_RELEASELINECHARACTERINDEX</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:LineFromIndexPosition"></a>
+    <strong>Editor:LineFromIndexPosition(pos, lineCharacterIndex)</strong>
+    </dt>
+    <dd>
+    Retrieve the document line containing a position measured in index units.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">lineCharacterIndex</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_LINEFROMINDEXPOSITION">SCI_LINEFROMINDEXPOSITION</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:IndexPositionFromLine"></a>
+    <strong>Editor:IndexPositionFromLine(line, lineCharacterIndex)</strong>
+    </dt>
+    <dd>
+    Retrieve the position measured in index units at the start of a document line.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">lineCharacterIndex</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">position</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_INDEXPOSITIONFROMLINE">SCI_INDEXPOSITIONFROMLINE</a>
+    </ul>
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Multiple_Selection_and_Virtual_Space"></a>Multiple Selection and Virtual Space </h2>
 
     <dl class="function">
@@ -5464,7 +5786,7 @@
     <strong>Editor.VirtualSpaceOptions</strong>
     </dt>
     <dd>
-    Returns the position at the end of the selection.
+    Set options for virtual space behaviour.
 
 
     <ul>
@@ -5592,27 +5914,19 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">caret</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
         <li><span class="parameter">anchor</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
     </ul>
 
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">int</span></span>
-
-
-
-    </ol>
 
 
     <h3>See also:</h3>
@@ -5633,27 +5947,19 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">caret</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
         <li><span class="parameter">anchor</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
     </ul>
 
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">int</span></span>
-
-
-
-    </ol>
 
 
     <h3>See also:</h3>
@@ -5721,7 +6027,7 @@
     <strong>Editor.SelectionNCaret[selection]</strong>
     </dt>
     <dd>
-    Which selection is the main selection
+    Set the caret position of the nth selection.
 
 
     <ul>
@@ -5747,7 +6053,7 @@
     <strong>Editor.SelectionNCaretVirtualSpace[selection]</strong>
     </dt>
     <dd>
-    Which selection is the main selection
+    Set the virtual space of the caret of the nth selection.
 
 
     <ul>
@@ -5773,7 +6079,7 @@
     <strong>Editor.SelectionNAnchor[selection]</strong>
     </dt>
     <dd>
-    Which selection is the main selection
+    Set the anchor position of the nth selection.
 
 
     <ul>
@@ -5799,7 +6105,7 @@
     <strong>Editor.SelectionNAnchorVirtualSpace[selection]</strong>
     </dt>
     <dd>
-    Which selection is the main selection
+    Set the virtual space of the anchor of the nth selection.
 
 
     <ul>
@@ -5877,7 +6183,7 @@
     <strong>Editor.RectangularSelectionCaret</strong>
     </dt>
     <dd>
-    Returns the position at the end of the selection.
+    Set the caret position of the rectangular selection.
 
 
     <ul>
@@ -5903,7 +6209,7 @@
     <strong>Editor.RectangularSelectionCaretVirtualSpace</strong>
     </dt>
     <dd>
-    Returns the position at the end of the selection.
+    Set the virtual space of the caret of the rectangular selection.
 
 
     <ul>
@@ -5929,7 +6235,7 @@
     <strong>Editor.RectangularSelectionAnchor</strong>
     </dt>
     <dd>
-    Returns the position at the end of the selection.
+    Set the anchor position of the rectangular selection.
 
 
     <ul>
@@ -5955,7 +6261,7 @@
     <strong>Editor.RectangularSelectionAnchorVirtualSpace</strong>
     </dt>
     <dd>
-    Returns the position at the end of the selection.
+    Set the virtual space of the anchor of the rectangular selection.
 
 
     <ul>
@@ -6168,10 +6474,98 @@
 
 
 </dd>
+    <dt>
+    <a name = "Editor:MultipleSelectAddNext"></a>
+    <strong>Editor:MultipleSelectAddNext()</strong>
+    </dt>
+    <dd>
+    Add the next occurrence of the main selection to the set of selections as main.  If the current selection is empty then select word around caret.
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIPLESELECTADDNEXT">SCI_MULTIPLESELECTADDNEXT</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:MultipleSelectAddEach"></a>
+    <strong>Editor:MultipleSelectAddEach()</strong>
+    </dt>
+    <dd>
+    Add each occurrence of the main selection in the target to the set of selections.  If the current selection is empty then select word around caret.
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIPLESELECTADDEACH">SCI_MULTIPLESELECTADDEACH</a>
+    </ul>
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Scrolling_and_automatic_scrolling"></a>Scrolling and automatic scrolling </h2>
 
     <dl class="function">
+    <dt>
+    <a name = "Editor.FirstVisibleLine"></a>
+    <strong>Editor.FirstVisibleLine</strong>
+    </dt>
+    <dd>
+    Scroll so that a display line is at the top of the display.
+
+
+    <ul>
+        <li><span class="parameter">FirstVisibleLine</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETFIRSTVISIBLELINE">SCI_SETFIRSTVISIBLELINE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.XOffset"></a>
+    <strong>Editor.XOffset</strong>
+    </dt>
+    <dd>
+    Set the xOffset (ie, horizontal scroll position).
+
+
+    <ul>
+        <li><span class="parameter">XOffset</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETXOFFSET">SCI_SETXOFFSET</a>
+    </ul>
+
+
+</dd>
     <dt>
     <a name = "Editor:LineScroll"></a>
     <strong>Editor:LineScroll(columns, lines)</strong>
@@ -6408,32 +6802,6 @@
 
 </dd>
     <dt>
-    <a name = "Editor.XOffset"></a>
-    <strong>Editor.XOffset</strong>
-    </dt>
-    <dd>
-    Get and Set the xOffset (ie, horizontal scroll position).
-
-
-    <ul>
-        <li><span class="parameter">XOffset</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETXOFFSET">SCI_SETXOFFSET</a>
-    </ul>
-
-
-</dd>
-    <dt>
     <a name = "Editor.ScrollWidth"></a>
     <strong>Editor.ScrollWidth</strong>
     </dt>
@@ -6634,6 +7002,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.TabDrawMode"></a>
+    <strong>Editor.TabDrawMode</strong>
+    </dt>
+    <dd>
+    Set how tabs are drawn when visible.
+
+
+    <ul>
+        <li><span class="parameter">TabDrawMode</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTABDRAWMODE">SCI_SETTABDRAWMODE</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.ExtraAscent"></a>
     <strong>Editor.ExtraAscent</strong>
     </dt>
@@ -6741,6 +7135,32 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSEDOWNCAPTURES">SCI_SETMOUSEDOWNCAPTURES</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.MouseWheelCaptures"></a>
+    <strong>Editor.MouseWheelCaptures</strong>
+    </dt>
+    <dd>
+    Set whether the mouse wheel can be active outside the window.
+
+
+    <ul>
+        <li><span class="parameter">MouseWheelCaptures</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSEWHEELCAPTURES">SCI_SETMOUSEWHEELCAPTURES</a>
     </ul>
 
 
@@ -6907,6 +7327,255 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Words"></a>Words </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Editor:WordEndPosition"></a>
+    <strong>Editor:WordEndPosition(pos, onlyWordCharacters)</strong>
+    </dt>
+    <dd>
+    Get position of end of word.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">onlyWordCharacters</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_WORDENDPOSITION">SCI_WORDENDPOSITION</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:WordStartPosition"></a>
+    <strong>Editor:WordStartPosition(pos, onlyWordCharacters)</strong>
+    </dt>
+    <dd>
+    Get position of start of word.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">onlyWordCharacters</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_WORDSTARTPOSITION">SCI_WORDSTARTPOSITION</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:IsRangeWord"></a>
+    <strong>Editor:IsRangeWord(start, end)</strong>
+    </dt>
+    <dd>
+    Is the range start..end considered a word?
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">end</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_ISRANGEWORD">SCI_ISRANGEWORD</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.WordChars"></a>
+    <strong>Editor.WordChars</strong>
+    </dt>
+    <dd>
+    Set the set of characters making up words for when moving or selecting by word.  First sets defaults like SetCharsDefault.
+
+
+    <ul>
+        <li><span class="parameter">WordChars</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETWORDCHARS">SCI_SETWORDCHARS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.WhitespaceChars"></a>
+    <strong>Editor.WhitespaceChars</strong>
+    </dt>
+    <dd>
+    Set the set of characters making up whitespace for when moving or selecting by word.  Should be called after SetWordChars.
+
+
+    <ul>
+        <li><span class="parameter">WhitespaceChars</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETWHITESPACECHARS">SCI_SETWHITESPACECHARS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.PunctuationChars"></a>
+    <strong>Editor.PunctuationChars</strong>
+    </dt>
+    <dd>
+    Set the set of characters making up punctuation characters Should be called after SetWordChars.
+
+
+    <ul>
+        <li><span class="parameter">PunctuationChars</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETPUNCTUATIONCHARS">SCI_SETPUNCTUATIONCHARS</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:SetCharsDefault"></a>
+    <strong>Editor:SetCharsDefault()</strong>
+    </dt>
+    <dd>
+    Reset the set of characters for whitespace and word characters to the defaults.
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETCHARSDEFAULT">SCI_SETCHARSDEFAULT</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.CharacterCategoryOptimization"></a>
+    <strong>Editor.CharacterCategoryOptimization</strong>
+    </dt>
+    <dd>
+    Set the number of characters to have directly indexed categories
+
+
+    <ul>
+        <li><span class="parameter">CharacterCategoryOptimization</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETCHARACTERCATEGORYOPTIMIZATION">SCI_SETCHARACTERCATEGORYOPTIMIZATION</a>
+    </ul>
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Styling"></a>Styling </h2>
 
     <dl class="function">
@@ -6938,21 +7607,21 @@
 </dd>
     <dt>
     <a name = "Editor:StartStyling"></a>
-    <strong>Editor:StartStyling(pos, mask)</strong>
+    <strong>Editor:StartStyling(start, unused)</strong>
     </dt>
     <dd>
-    Set the current styling position to pos and the styling mask to mask.  The styling mask can be used to protect some bits in each styling byte from modification.
+    Set the current styling position to start.  The unused parameter is no longer used and should be set to 0.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pos</span>
+        <li><span class="parameter">start</span>
             <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">mask</span>
+        <li><span class="parameter">unused</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -7025,6 +7694,32 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETSTYLINGEX">SCI_SETSTYLINGEX</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.IdleStyling"></a>
+    <strong>Editor.IdleStyling</strong>
+    </dt>
+    <dd>
+    Sets limits to idle styling.
+
+
+    <ul>
+        <li><span class="parameter">IdleStyling</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETIDLESTYLING">SCI_SETIDLESTYLING</a>
     </ul>
 
 
@@ -7738,6 +8433,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.CaretLineFrame"></a>
+    <strong>Editor.CaretLineFrame</strong>
+    </dt>
+    <dd>
+    Display the caret line framed.  Set width != 0 to enable this option and width = 0 to disable it.
+
+
+    <ul>
+        <li><span class="parameter">CaretLineFrame</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETCARETLINEFRAME">SCI_SETCARETLINEFRAME</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.CaretLineVisibleAlways"></a>
     <strong>Editor.CaretLineVisibleAlways</strong>
     </dt>
@@ -8143,6 +8864,32 @@
 
     <dl class="function">
     <dt>
+    <a name = "Editor.Margins"></a>
+    <strong>Editor.Margins</strong>
+    </dt>
+    <dd>
+    Allocate a non-standard number of margins.
+
+
+    <ul>
+        <li><span class="parameter">Margins</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETMARGINS">SCI_SETMARGINS</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.MarginTypeN"></a>
     <strong>Editor.MarginTypeN[margin]</strong>
     </dt>
@@ -8273,6 +9020,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.MarginBackN"></a>
+    <strong>Editor.MarginBackN[margin]</strong>
+    </dt>
+    <dd>
+    Set the background colour of a margin.  Only visible for SC_MARGIN_COLOUR.
+
+
+    <ul>
+        <li><span class="parameter">margin</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETMARGINBACKN">SCI_SETMARGINBACKN</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.MarginLeft"></a>
     <strong>Editor.MarginLeft</strong>
     </dt>
@@ -8329,7 +9102,7 @@
     <strong>Editor:SetFoldMarginColour(useSetting, back)</strong>
     </dt>
     <dd>
-    Set the colours used as a chequerboard pattern in the fold margin
+    Set one of the colours used as a chequerboard pattern in the fold margin
 
 
     <h3>Parameters:</h3>
@@ -8362,7 +9135,7 @@
     <strong>Editor:SetFoldMarginHiColour(useSetting, fore)</strong>
     </dt>
     <dd>
-    Set the colours used as a chequerboard pattern in the fold margin
+    Set the other colour used as a chequerboard pattern in the fold margin
 
 
     <h3>Parameters:</h3>
@@ -8773,32 +9546,6 @@
 
 </dd>
     <dt>
-    <a name = "Editor.TwoPhaseDraw"></a>
-    <strong>Editor.TwoPhaseDraw</strong>
-    </dt>
-    <dd>
-    In twoPhaseDraw mode, drawing is performed in two phases, first the background and then the foreground.  This avoids chopping off characters that overlap the next run.
-
-
-    <ul>
-        <li><span class="parameter">TwoPhaseDraw</span>
-            <span class="types"><span class="type">bool</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTWOPHASEDRAW">SCI_SETTWOPHASEDRAW</a>
-    </ul>
-
-
-</dd>
-    <dt>
     <a name = "Editor.Technology"></a>
     <strong>Editor.Technology</strong>
     </dt>
@@ -8903,16 +9650,16 @@
 
 </dd>
     <dt>
-    <a name = "Editor.WordChars"></a>
-    <strong>Editor.WordChars</strong>
+    <a name = "Editor.Bidirectional"></a>
+    <strong>Editor.Bidirectional</strong>
     </dt>
     <dd>
-    Set the set of characters making up words for when moving or selecting by word.  First sets defaults like SetCharsDefault.
+    Set bidirectional text display state.
 
 
     <ul>
-        <li><span class="parameter">WordChars</span>
-            <span class="types"><span class="type">string</span></span>
+        <li><span class="parameter">Bidirectional</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
@@ -8923,77 +9670,7 @@
 
     <h3>See also:</h3>
     <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETWORDCHARS">SCI_SETWORDCHARS</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor.WhitespaceChars"></a>
-    <strong>Editor.WhitespaceChars</strong>
-    </dt>
-    <dd>
-    Set the set of characters making up whitespace for when moving or selecting by word.  Should be called after SetWordChars.
-
-
-    <ul>
-        <li><span class="parameter">WhitespaceChars</span>
-            <span class="types"><span class="type">string</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETWHITESPACECHARS">SCI_SETWHITESPACECHARS</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor.PunctuationChars"></a>
-    <strong>Editor.PunctuationChars</strong>
-    </dt>
-    <dd>
-    Set the set of characters making up punctuation characters Should be called after SetWordChars.
-
-
-    <ul>
-        <li><span class="parameter">PunctuationChars</span>
-            <span class="types"><span class="type">string</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETPUNCTUATIONCHARS">SCI_SETPUNCTUATIONCHARS</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "Editor:SetCharsDefault"></a>
-    <strong>Editor:SetCharsDefault()</strong>
-    </dt>
-    <dd>
-    Reset the set of characters for whitespace and word characters to the defaults.
-
-
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETCHARSDEFAULT">SCI_SETCHARSDEFAULT</a>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETBIDIRECTIONAL">SCI_SETBIDIRECTIONAL</a>
     </ul>
 
 
@@ -9048,7 +9725,7 @@
     <dl class="function">
     <dt>
     <a name = "Editor:BraceHighlight"></a>
-    <strong>Editor:BraceHighlight(pos1, pos2)</strong>
+    <strong>Editor:BraceHighlight(posA, posB)</strong>
     </dt>
     <dd>
     Highlight the characters at two positions.
@@ -9056,13 +9733,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pos1</span>
+        <li><span class="parameter">posA</span>
             <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">pos2</span>
+        <li><span class="parameter">posB</span>
             <span class="types"><span class="type">position</span></span>
 
 
@@ -9108,7 +9785,7 @@
 </dd>
     <dt>
     <a name = "Editor:BraceHighlightIndicator"></a>
-    <strong>Editor:BraceHighlightIndicator(useBraceHighlightIndicator, indicator)</strong>
+    <strong>Editor:BraceHighlightIndicator(useSetting, indicator)</strong>
     </dt>
     <dd>
     Use specified indicator to highlight matching braces instead of changing their style.
@@ -9116,7 +9793,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">useBraceHighlightIndicator</span>
+        <li><span class="parameter">useSetting</span>
             <span class="types"><span class="type">bool</span></span>
 
 
@@ -9141,7 +9818,7 @@
 </dd>
     <dt>
     <a name = "Editor:BraceBadLightIndicator"></a>
-    <strong>Editor:BraceBadLightIndicator(useBraceBadLightIndicator, indicator)</strong>
+    <strong>Editor:BraceBadLightIndicator(useSetting, indicator)</strong>
     </dt>
     <dd>
     Use specified indicator to highlight non matching brace instead of changing its style.
@@ -9149,7 +9826,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">useBraceBadLightIndicator</span>
+        <li><span class="parameter">useSetting</span>
             <span class="types"><span class="type">bool</span></span>
 
 
@@ -9174,16 +9851,22 @@
 </dd>
     <dt>
     <a name = "Editor:BraceMatch"></a>
-    <strong>Editor:BraceMatch(pos)</strong>
+    <strong>Editor:BraceMatch(pos, maxReStyle)</strong>
     </dt>
     <dd>
-    Find the position of a matching brace or INVALID_POSITION if no match.
+    Find the position of a matching brace or INVALID_POSITION if no match.  The maxReStyle must be 0 for now. It may be defined in a future release.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">pos</span>
             <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">maxReStyle</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
@@ -9936,7 +10619,7 @@
 </dd>
     <dt>
     <a name = "Editor:MarkerAddSet"></a>
-    <strong>Editor:MarkerAddSet(line, set)</strong>
+    <strong>Editor:MarkerAddSet(line, markerSet)</strong>
     </dt>
     <dd>
     Add a set of markers to a line.
@@ -9950,7 +10633,7 @@
 
 
         </li>
-        <li><span class="parameter">set</span>
+        <li><span class="parameter">markerSet</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10146,7 +10829,7 @@
 </dd>
     <dt>
     <a name = "Editor:MarkerLineFromHandle"></a>
-    <strong>Editor:MarkerLineFromHandle(handle)</strong>
+    <strong>Editor:MarkerLineFromHandle(markerHandle)</strong>
     </dt>
     <dd>
     Retrieve the line number at which a particular marker is located.
@@ -10154,7 +10837,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">handle</span>
+        <li><span class="parameter">markerHandle</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10181,7 +10864,7 @@
 </dd>
     <dt>
     <a name = "Editor:MarkerDeleteHandle"></a>
-    <strong>Editor:MarkerDeleteHandle(handle)</strong>
+    <strong>Editor:MarkerDeleteHandle(markerHandle)</strong>
     </dt>
     <dd>
     Delete a marker.
@@ -10189,7 +10872,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">handle</span>
+        <li><span class="parameter">markerHandle</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10212,14 +10895,14 @@
     <dl class="function">
     <dt>
     <a name = "Editor.IndicStyle"></a>
-    <strong>Editor.IndicStyle[indic]</strong>
+    <strong>Editor.IndicStyle[indicator]</strong>
     </dt>
     <dd>
     Set an indicator to plain, squiggle or TT.
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10238,14 +10921,14 @@
 </dd>
     <dt>
     <a name = "Editor.IndicFore"></a>
-    <strong>Editor.IndicFore[indic]</strong>
+    <strong>Editor.IndicFore[indicator]</strong>
     </dt>
     <dd>
     Set the foreground colour of an indicator.
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10316,14 +10999,14 @@
 </dd>
     <dt>
     <a name = "Editor.IndicUnder"></a>
-    <strong>Editor.IndicUnder[indic]</strong>
+    <strong>Editor.IndicUnder[indicator]</strong>
     </dt>
     <dd>
     Set an indicator to draw under text or over(default).
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10342,14 +11025,14 @@
 </dd>
     <dt>
     <a name = "Editor.IndicHoverStyle"></a>
-    <strong>Editor.IndicHoverStyle[indic]</strong>
+    <strong>Editor.IndicHoverStyle[indicator]</strong>
     </dt>
     <dd>
     Set a hover indicator to plain, squiggle or TT.
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10368,14 +11051,14 @@
 </dd>
     <dt>
     <a name = "Editor.IndicHoverFore"></a>
-    <strong>Editor.IndicHoverFore[indic]</strong>
+    <strong>Editor.IndicHoverFore[indicator]</strong>
     </dt>
     <dd>
     Set the foreground hover colour of an indicator.
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10394,14 +11077,14 @@
 </dd>
     <dt>
     <a name = "Editor.IndicFlags"></a>
-    <strong>Editor.IndicFlags[indic]</strong>
+    <strong>Editor.IndicFlags[indicator]</strong>
     </dt>
     <dd>
     Set the attributes of an indicator.
 
 
     <ul>
-        <li><span class="parameter">indic</span>
+        <li><span class="parameter">indicator</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10472,7 +11155,7 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorFillRange"></a>
-    <strong>Editor:IndicatorFillRange(position, fillLength)</strong>
+    <strong>Editor:IndicatorFillRange(start, lengthFill)</strong>
     </dt>
     <dd>
     Turn a indicator on over a range.
@@ -10480,13 +11163,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">fillLength</span>
+        <li><span class="parameter">lengthFill</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10505,7 +11188,7 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorClearRange"></a>
-    <strong>Editor:IndicatorClearRange(position, clearLength)</strong>
+    <strong>Editor:IndicatorClearRange(start, lengthClear)</strong>
     </dt>
     <dd>
     Turn a indicator off over a range.
@@ -10513,13 +11196,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">clearLength</span>
+        <li><span class="parameter">lengthClear</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10538,16 +11221,16 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorAllOnFor"></a>
-    <strong>Editor:IndicatorAllOnFor(position)</strong>
+    <strong>Editor:IndicatorAllOnFor(pos)</strong>
     </dt>
     <dd>
-    Are any indicators present at position?
+    Are any indicators present at pos?
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -10573,10 +11256,10 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorValueAt"></a>
-    <strong>Editor:IndicatorValueAt(indicator, position)</strong>
+    <strong>Editor:IndicatorValueAt(indicator, pos)</strong>
     </dt>
     <dd>
-    What value does a particular indicator have at at a position?
+    What value does a particular indicator have at a position?
 
 
     <h3>Parameters:</h3>
@@ -10587,8 +11270,8 @@
 
 
         </li>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -10614,7 +11297,7 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorStart"></a>
-    <strong>Editor:IndicatorStart(indicator, position)</strong>
+    <strong>Editor:IndicatorStart(indicator, pos)</strong>
     </dt>
     <dd>
     Where does a particular indicator start?
@@ -10628,8 +11311,8 @@
 
 
         </li>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -10655,7 +11338,7 @@
 </dd>
     <dt>
     <a name = "Editor:IndicatorEnd"></a>
-    <strong>Editor:IndicatorEnd(indicator, position)</strong>
+    <strong>Editor:IndicatorEnd(indicator, pos)</strong>
     </dt>
     <dd>
     Where does a particular indicator end?
@@ -10669,8 +11352,8 @@
 
 
         </li>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -10784,15 +11467,15 @@
     <dl class="function">
     <dt>
     <a name = "Editor:AutoCShow"></a>
-    <strong>Editor:AutoCShow(lenEntered, itemList)</strong>
+    <strong>Editor:AutoCShow(lengthEntered, itemList)</strong>
     </dt>
     <dd>
-    Display a auto-completion list.  The lenEntered parameter indicates how many characters before the caret should be used to provide context.
+    Display a auto-completion list.  The lengthEntered parameter indicates how many characters before the caret should be used to provide context.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">lenEntered</span>
+        <li><span class="parameter">lengthEntered</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -10958,7 +11641,7 @@
 </dd>
     <dt>
     <a name = "Editor:AutoCSelect"></a>
-    <strong>Editor:AutoCSelect(text)</strong>
+    <strong>Editor:AutoCSelect(select)</strong>
     </dt>
     <dd>
     Select the item in the auto-completion list that starts with a string.
@@ -10966,7 +11649,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">text</span>
+        <li><span class="parameter">select</span>
             <span class="types"><span class="type">string</span></span>
 
 
@@ -11603,7 +12286,7 @@
 </dd>
     <dt>
     <a name = "Editor:CallTipSetHlt"></a>
-    <strong>Editor:CallTipSetHlt(start, end)</strong>
+    <strong>Editor:CallTipSetHlt(highlightStart, highlightEnd)</strong>
     </dt>
     <dd>
     Highlight a segment of the definition.
@@ -11611,13 +12294,13 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">start</span>
+        <li><span class="parameter">highlightStart</span>
             <span class="types"><span class="type">int</span></span>
 
 
 
         </li>
-        <li><span class="parameter">end</span>
+        <li><span class="parameter">highlightEnd</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -11770,10 +12453,10 @@
     <dl class="function">
     <dt>
     <a name = "Editor:AssignCmdKey"></a>
-    <strong>Editor:AssignCmdKey(keycode, modifiers, msg)</strong>
+    <strong>Editor:AssignCmdKey(keycode, modifiers, sciCommand)</strong>
     </dt>
     <dd>
-    When key+modifier combination km is pressed perform msg.
+    When key+modifier combination keyDefinition is pressed perform sciCommand.
 
 
     <h3>Parameters:</h3>
@@ -11786,7 +12469,7 @@
             <span class="types"><span class="type">int</span></span>
          e.g. SCMOD_CTRL | SCMOD_SHIFT
         </li>
-        <li><span class="parameter">msg</span>
+        <li><span class="parameter">sciCommand</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -11808,7 +12491,7 @@
     <strong>Editor:ClearCmdKey(keycode, modifiers)</strong>
     </dt>
     <dd>
-    When key+modifier combination km is pressed do nothing.
+    When key+modifier combination keyDefinition is pressed do nothing.
 
 
     <h3>Parameters:</h3>
@@ -13160,16 +13843,16 @@
     <dl class="function">
     <dt>
     <a name = "Editor:UsePopUp"></a>
-    <strong>Editor:UsePopUp(allowPopUp)</strong>
+    <strong>Editor:UsePopUp(popUpMode)</strong>
     </dt>
     <dd>
-    Set whether a pop up menu is displayed automatically when the user presses the wrong mouse button.
+    Set whether a pop up menu is displayed automatically when the user presses the wrong mouse button on certain areas.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">allowPopUp</span>
-            <span class="types"><span class="type">bool</span></span>
+        <li><span class="parameter">popUpMode</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
@@ -13391,21 +14074,21 @@
 </dd>
     <dt>
     <a name = "Editor:GetRangePointer"></a>
-    <strong>Editor:GetRangePointer(position, rangeLength)</strong>
+    <strong>Editor:GetRangePointer(start, lengthRange)</strong>
     </dt>
     <dd>
-    Return a read-only pointer to a range of characters in the document.  May move the gap so that the range is contiguous, but will only move up to rangeLength bytes.
+    Return a read-only pointer to a range of characters in the document.  May move the gap so that the range is contiguous, but will only move up to lengthRange bytes.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">position</span>
-            <span class="types"><span class="type">int</span></span>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
-        <li><span class="parameter">rangeLength</span>
+        <li><span class="parameter">lengthRange</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -13488,12 +14171,27 @@
 </dd>
     <dt>
     <a name = "Editor:CreateDocument"></a>
-    <strong>Editor:CreateDocument()</strong>
+    <strong>Editor:CreateDocument(bytes, documentOptions)</strong>
     </dt>
     <dd>
     Create a new document object.  Starts with reference count of 1 and not selected into editor.
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">bytes</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">documentOptions</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
 
     <h3>Returns:</h3>
     <ol>
@@ -13566,13 +14264,39 @@
 
 
 </dd>
+    <dt>
+    <a name = "Editor.DocumentOptions"></a>
+    <strong>Editor.DocumentOptions</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">DocumentOptions</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETDOCUMENTOPTIONS">SCI_GETDOCUMENTOPTIONS</a>
+    </ul>
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Background_loading_and_saving"></a>Background loading and saving </h2>
 
     <dl class="function">
     <dt>
     <a name = "Editor:CreateLoader"></a>
-    <strong>Editor:CreateLoader(bytes)</strong>
+    <strong>Editor:CreateLoader(bytes, documentOptions)</strong>
     </dt>
     <dd>
     Create an ILoader*.
@@ -13581,6 +14305,12 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bytes</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">documentOptions</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -13611,7 +14341,7 @@
     <dl class="function">
     <dt>
     <a name = "Editor:VisibleFromDocLine"></a>
-    <strong>Editor:VisibleFromDocLine(line)</strong>
+    <strong>Editor:VisibleFromDocLine(docLine)</strong>
     </dt>
     <dd>
     Find the display line of a document line taking hidden lines into account.
@@ -13619,7 +14349,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">line</span>
+        <li><span class="parameter">docLine</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -13646,7 +14376,7 @@
 </dd>
     <dt>
     <a name = "Editor:DocLineFromVisible"></a>
-    <strong>Editor:DocLineFromVisible(lineDisplay)</strong>
+    <strong>Editor:DocLineFromVisible(displayLine)</strong>
     </dt>
     <dd>
     Find the document line of a display line taking hidden lines into account.
@@ -13654,7 +14384,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">lineDisplay</span>
+        <li><span class="parameter">displayLine</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -13939,6 +14669,118 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_TOGGLEFOLD">SCI_TOGGLEFOLD</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:ToggleFoldShowText"></a>
+    <strong>Editor:ToggleFoldShowText(line, text)</strong>
+    </dt>
+    <dd>
+    Switch a header line between expanded and contracted and show some text after the line.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">text</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_TOGGLEFOLDSHOWTEXT">SCI_TOGGLEFOLDSHOWTEXT</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.FoldDisplayTextStyle"></a>
+    <strong>Editor.FoldDisplayTextStyle</strong>
+    </dt>
+    <dd>
+    Set the style of fold display text.
+
+
+    <ul>
+        <li><span class="parameter">FoldDisplayTextStyle</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_FOLDDISPLAYTEXTSETSTYLE">SCI_FOLDDISPLAYTEXTSETSTYLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:SetDefaultFoldDisplayText"></a>
+    <strong>Editor:SetDefaultFoldDisplayText(text)</strong>
+    </dt>
+    <dd>
+    Set the default fold display text.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETDEFAULTFOLDDISPLAYTEXT">SCI_SETDEFAULTFOLDDISPLAYTEXT</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:GetDefaultFoldDisplayText"></a>
+    <strong>Editor:GetDefaultFoldDisplayText()</strong>
+    </dt>
+    <dd>
+    Get the default fold display text.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETDEFAULTFOLDDISPLAYTEXT">SCI_GETDEFAULTFOLDDISPLAYTEXT</a>
     </ul>
 
 
@@ -14443,7 +15285,7 @@
 </dd>
     <dt>
     <a name = "Editor:WrapCount"></a>
-    <strong>Editor:WrapCount(line)</strong>
+    <strong>Editor:WrapCount(docLine)</strong>
     </dt>
     <dd>
     The number of display lines needed to wrap a document line
@@ -14451,7 +15293,7 @@
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">line</span>
+        <li><span class="parameter">docLine</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -14551,7 +15393,7 @@
     <strong>Editor.EdgeMode</strong>
     </dt>
     <dd>
-    The edge may be displayed by a line (EDGE_LINE) or by highlighting text that goes beyond it (EDGE_BACKGROUND) or not displayed at all (EDGE_NONE).
+    The edge may be displayed by a line (EDGE_LINE/EDGE_MULTILINE) or by highlighting text that goes beyond it (EDGE_BACKGROUND) or not displayed at all (EDGE_NONE).
 
 
     <ul>
@@ -14620,6 +15462,87 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETEDGECOLOUR">SCI_SETEDGECOLOUR</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:MultiEdgeAddLine"></a>
+    <strong>Editor:MultiEdgeAddLine(column, edgeColour)</strong>
+    </dt>
+    <dd>
+    Add a new vertical edge to the view.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">column</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">edgeColour</span>
+            <span class="types"><span class="type">colour</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIEDGEADDLINE">SCI_MULTIEDGEADDLINE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:MultiEdgeClearAll"></a>
+    <strong>Editor:MultiEdgeClearAll()</strong>
+    </dt>
+    <dd>
+    Clear all vertical edges.
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIEDGECLEARALL">SCI_MULTIEDGECLEARALL</a>
+    </ul>
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Accessibility"></a>Accessibility </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Editor.Accessibility"></a>
+    <strong>Editor.Accessibility</strong>
+    </dt>
+    <dd>
+    Enable or disable accessibility.
+
+
+    <ul>
+        <li><span class="parameter">Accessibility</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETACCESSIBILITY">SCI_SETACCESSIBILITY</a>
     </ul>
 
 
@@ -14930,13 +15853,14 @@
 
 </dd>
     <dt>
-    <a name = "Editor.PropertyInt"></a>
-    <strong>Editor.PropertyInt[key]</strong>
+    <a name = "Editor:GetPropertyInt"></a>
+    <strong>Editor:GetPropertyInt(key, defaultValue)</strong>
     </dt>
     <dd>
-    read-only
+    Retrieve a "property" value previously set with SetProperty, interpreted as an int AFTER any "$()" variable replacement.
 
 
+    <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">key</span>
             <span class="types"><span class="type">string</span></span>
@@ -14944,8 +15868,22 @@
 
 
         </li>
+        <li><span class="parameter">defaultValue</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
 
 
     <h3>See also:</h3>
@@ -14957,14 +15895,14 @@
 </dd>
     <dt>
     <a name = "Editor.KeyWords"></a>
-    <strong>Editor.KeyWords[keywordSet]</strong>
+    <strong>Editor.KeyWords[keyWordSet]</strong>
     </dt>
     <dd>
     Set up the key words used by the lexer.
 
 
     <ul>
-        <li><span class="parameter">keywordSet</span>
+        <li><span class="parameter">keyWordSet</span>
             <span class="types"><span class="type">int</span></span>
 
 
@@ -15248,6 +16186,178 @@
 
 
 </dd>
+    <dt>
+    <a name = "Editor:PrivateLexerCall"></a>
+    <strong>Editor:PrivateLexerCall(operation, pointer)</strong>
+    </dt>
+    <dd>
+    For private communication between an application and a known lexer.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">operation</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">pointer</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_PRIVATELEXERCALL">SCI_PRIVATELEXERCALL</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.NamedStyles"></a>
+    <strong>Editor.NamedStyles</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">NamedStyles</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETNAMEDSTYLES">SCI_GETNAMEDSTYLES</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:NameOfStyle"></a>
+    <strong>Editor:NameOfStyle(style)</strong>
+    </dt>
+    <dd>
+    Retrieve the name of a style.  Result is NUL-terminated.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">style</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_NAMEOFSTYLE">SCI_NAMEOFSTYLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:TagsOfStyle"></a>
+    <strong>Editor:TagsOfStyle(style)</strong>
+    </dt>
+    <dd>
+    Retrieve a ' ' separated list of style tags like "literal quoted string".  Result is NUL-terminated.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">style</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_TAGSOFSTYLE">SCI_TAGSOFSTYLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:DescriptionOfStyle"></a>
+    <strong>Editor:DescriptionOfStyle(style)</strong>
+    </dt>
+    <dd>
+    Retrieve a description of a style.  Result is NUL-terminated.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">style</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">string</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_DESCRIPTIONOFSTYLE">SCI_DESCRIPTIONOFSTYLE</a>
+    </ul>
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Notifications"></a>Notifications </h2>
 
@@ -15305,6 +16415,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.CommandEvents"></a>
+    <strong>Editor.CommandEvents</strong>
+    </dt>
+    <dd>
+    Set whether command events are sent to the container.
+
+
+    <ul>
+        <li><span class="parameter">CommandEvents</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETCOMMANDEVENTS">SCI_SETCOMMANDEVENTS</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.MouseDwellTime"></a>
     <strong>Editor.MouseDwellTime</strong>
     </dt>
@@ -15326,36 +16462,6 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETMOUSEDWELLTIME">SCI_SETMOUSEDWELLTIME</a>
-    </ul>
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Deprecated_messages_and_notifications"></a>Deprecated messages and notifications </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "Editor.StyleBitsNeeded"></a>
-    <strong>Editor.StyleBitsNeeded</strong>
-    </dt>
-    <dd>
-    read-only
-
-
-    <ul>
-        <li><span class="parameter">StyleBitsNeeded</span>
-            <span class="types"><span class="type">int</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETSTYLEBITSNEEDED">SCI_GETSTYLEBITSNEEDED</a>
     </ul>
 
 
