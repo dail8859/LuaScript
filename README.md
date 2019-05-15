@@ -13,7 +13,7 @@ Major features include:
 - Requires no special permissions
 
 ## Getting Started
-Install the plugin using the Notepad++ Plugin Manager, or download it from the [Release](https://github.com/dail8859/LuaScript/releases) page and copy `LuaScript.dll` to your `\plugins` folder.
+Install the plugin using the Notepad++ Plugin Admin, or you can manually download it from the [Release](https://github.com/dail8859/LuaScript/releases) page and extract the zip into your `plugins` folder.
 
 #### Lua Console
 LuaScript provides an interactive console for running Lua commands. This can be shown by `Plugins > LuaScript > Show Console`.
