@@ -31,7 +31,7 @@ Scripts can also register functions to be called when certain events occur, such
 The full API documentation can be found [here](http://dail8859.github.io/LuaScript/). Also be sure to check out the [examples](/examples/) directory.
 
 ## Development
-The code has been developed using MSVC 2015. To compile the code:
+The code has been developed using MSVC 2017. To compile the code:
 
 1. Open the `LuaScript.sln` file
 1. Press `F7` and that's it!
