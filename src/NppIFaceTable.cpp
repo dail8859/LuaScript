@@ -647,6 +647,7 @@ static std::vector<IFaceFunction> ifaceFunctions = {
 
 static std::vector<IFaceProperty> ifaceProperties = {
 	{ "AppDataPluginsAllowed", NPPM_GETAPPDATAPLUGINSALLOWED, 0, iface_bool, iface_void },
+	{ "BufferEncoding", NPPM_GETBUFFERENCODING, NPPM_SETBUFFERENCODING, iface_int, iface_int },
 	{ "BufferFormat", NPPM_GETBUFFERFORMAT, NPPM_SETBUFFERFORMAT, iface_int, iface_int },
 	{ "BufferLangType", NPPM_GETBUFFERLANGTYPE, NPPM_SETBUFFERLANGTYPE, iface_int, iface_int },
 	{ "CurrentBufferID", NPPM_GETCURRENTBUFFERID, 0, iface_int, iface_void },
