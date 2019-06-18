@@ -30,6 +30,7 @@
 // Extra helper functions not from the IFace tables
 static const std::vector<std::string> moreSciFuncs = { "append", "findtext", "match", "remove", "set_text_direction", "textrange" };
 static const std::vector<std::string> moreNppFuncs = { "AddEventHandler", "AddShortcut", "ClearConsole", "ConstantName", "RemoveAllEventHandlers", "RemoveEventHandler", "SendEditor", "StartTimer", "StopTimer", "WriteError" };
+static const std::vector<std::string> moreNppProps = { "UniMode" };
 
 // Copied from Scintilla
 inline int MakeUpperCase(int ch) {
@@ -191,6 +192,7 @@ LuaConsole::LuaConsole(HWND hNotepad) : mp_consoleDlg(new ConsoleDialog()), m_hN
 	// Notepad++ properties
 	auto nppPropNames = NppIFaceTable.GetAllPropertyNames();
 	nppPropNames.insert(nppPropNames.end(), moreNppFuncs.begin(), moreNppFuncs.end());
+	nppPropNames.insert(nppPropNames.end(), moreNppProps.begin(), moreNppProps.end());
 	nppProperties = join(sortCaseInsensitive(nppPropNames), ' ');
 
 	// Notepad++ functions

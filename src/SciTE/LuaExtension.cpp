@@ -1561,6 +1561,42 @@ static bool InitGlobalScope() {
 
 		lua_pushcfunction(luaState, cf_npp_stoptimer);
 		lua_setfield(luaState, -2, "StopTimer");
+
+		lua_createtable(luaState, 0, 8);
+
+		lua_pushstring(luaState, "ANSI");
+		lua_pushinteger(luaState, 0);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF8_BOM");
+		lua_pushinteger(luaState, 1);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF16BE_BOM");
+		lua_pushinteger(luaState, 2);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF16LE_BOM");
+		lua_pushinteger(luaState, 3);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF8");
+		lua_pushinteger(luaState, 4);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "ASCII");
+		lua_pushinteger(luaState, 5);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF16BE");
+		lua_pushinteger(luaState, 6);
+		lua_settable(luaState, -3);
+
+		lua_pushstring(luaState, "UTF16LE");
+		lua_pushinteger(luaState, 7);
+		lua_settable(luaState, -3);
+
+		lua_setfield(luaState, -2, "UniMode");
 	}
 	lua_setmetatable(luaState, -2);
 
