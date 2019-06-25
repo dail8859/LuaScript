@@ -190,9 +190,9 @@
 #define LUA_LDIR    LUA_CDIR"lua\\"
 #define LUA_PATH_DEFAULT  \
     LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
-    LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;"
+    LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua"
 #define LUA_CPATH_DEFAULT \
-    LUA_CDIR"?.dll;"  LUA_CDIR"?\\loadall.dll;"
+    LUA_CDIR"?.dll;"  LUA_CDIR"?\\loadall.dll"
 
 #else			/* }{ */
 
