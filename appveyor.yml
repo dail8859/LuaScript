@@ -35,15 +35,13 @@ after_build:
       Push-AppveyorArtifact "$($BuildPath)\LuaScript.dll" -FileName LuaScript.dll
 
       if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
-        mkdir LuaScript
-        Move-Item -Path "$($BuildPath)\LuaScript.dll" -Destination .\LuaScript
-        if ($env:BUILD_PLATFORM -eq "x64"){
+        if ($env:BUILD_PLATFORM -eq "x64") {
           $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
         }
-        if ($env:BUILD_PLATFORM -eq "Win32"){
+        if ($env:BUILD_PLATFORM -eq "Win32") {
           $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME).zip"
         }
-        7z a $ZipFileName .\LuaScript
+        7z a $ZipFileName "$($BuildPath)\LuaScript.dll"
       }
 
 artifacts:
