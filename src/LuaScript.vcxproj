@@ -120,6 +120,7 @@
       <Command>if EXIST "%PROGRAMFILES(X86)%\Notepad++\plugins\" (
   mkdir "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
   copy "$(TargetPath)" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+  copy "$(OutDir)Lua.dll" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
 )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -154,6 +155,7 @@
       <Command>if EXIST "%PROGRAMFILES%\Notepad++\plugins\" (
   mkdir "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
   copy "$(TargetPath)" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+  copy "$(OutDir)Lua.dll" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
 )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -184,6 +186,7 @@
       <Command>if EXIST "%PROGRAMFILES(X86)%\Notepad++\plugins\" (
   mkdir "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
   copy "$(TargetPath)" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
+  copy "$(OutDir)Lua.dll" "%PROGRAMFILES(X86)%\Notepad++\plugins\LuaScript"
 )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -213,6 +216,7 @@
       <Command>if EXIST "%PROGRAMFILES%\Notepad++\plugins\" (
   mkdir "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
   copy "$(TargetPath)" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
+  copy "$(OutDir)Lua.dll" "%PROGRAMFILES%\Notepad++\plugins\LuaScript"
 )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
