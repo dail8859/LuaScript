@@ -1,5 +1,5 @@
 /*
-** $Id: lapi.c,v 2.259 2016/02/29 14:27:14 roberto Exp $
+** $Id: lapi.c,v 2.259.1.2 2017/12/06 18:35:12 roberto Exp $
 ** Lua API
 ** See Copyright Notice in lua.h
 */
@@ -395,7 +395,7 @@ LUA_API size_t lua_rawlen (lua_State *L, int idx) {
     case LUA_TSHRSTR: return tsvalue(o)->shrlen;
     case LUA_TLNGSTR: return tsvalue(o)->u.lnglen;
     case LUA_TUSERDATA: return uvalue(o)->len;
-    case LUA_TTABLE: return luaH_getn(hvalue(o));
+    case LUA_TTABLE: return (size_t)luaH_getn(hvalue(o));
     default: return 0;
   }
 }
@@ -533,6 +533,7 @@ LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n) {
   lua_lock(L);
   if (n == 0) {
     setfvalue(L->top, fn);
+    api_incr_top(L);
   }
   else {
     CClosure *cl;
@@ -546,9 +547,9 @@ LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n) {
       /* does not need barrier because closure is white */
     }
     setclCvalue(L, L->top, cl);
+    api_incr_top(L);
+    luaC_checkGC(L);
   }
-  api_incr_top(L);
-  luaC_checkGC(L);
   lua_unlock(L);
 }
 
