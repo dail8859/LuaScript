@@ -33,6 +33,23 @@ after_build:
       $BuildPath = "$($env:APPVEYOR_BUILD_FOLDER)\bin\$($env:CONFIGURATION)_$($env:BUILD_PLATFORM)"
 
       Push-AppveyorArtifact "$($BuildPath)\LuaScript.dll" -FileName LuaScript.dll
+      Push-AppveyorArtifact "$($BuildPath)\Lua.dll" -FileName Lua.dll
+
+      if ($env:BUILD_PLATFORM -eq "x64") {
+        $SdkFileName = "LuaScript_SDK_x64.zip"
+      }
+      if ($env:BUILD_PLATFORM -eq "Win32") {
+        $SdkFileName = "LuaScript_SDK.zip"
+      }
+
+      7z a $SdkFileName "$($env:APPVEYOR_BUILD_FOLDER)\src\lua\src\lauxlib.h"
+      7z a $SdkFileName "$($env:APPVEYOR_BUILD_FOLDER)\src\lua\src\lua.h"
+      7z a $SdkFileName "$($env:APPVEYOR_BUILD_FOLDER)\src\lua\src\lua.hpp"
+      7z a $SdkFileName "$($env:APPVEYOR_BUILD_FOLDER)\src\lua\src\luaconf.h"
+      7z a $SdkFileName "$($env:APPVEYOR_BUILD_FOLDER)\src\lua\src\lualib.h"
+      7z a $SdkFileName "$($BuildPath)\Lua.lib"
+
+      Push-AppveyorArtifact $SdkFileName -FileName $SdkFileName
 
       if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
         if ($env:BUILD_PLATFORM -eq "x64") {
