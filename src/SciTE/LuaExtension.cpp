@@ -1056,7 +1056,7 @@ static bool CallNamedFunction(const char *name, const char *varfmt, ...) {
 					while (*type) {
 						switch (*type++) {
 						case 's': lua_pushstring(luaState, va_arg(vl, char *)); break;
-						case 'i': lua_pushinteger(luaState, va_arg(vl, int)); break;
+						case 'i': lua_pushinteger(luaState, va_arg(vl, lua_Integer)); break;
 						case 'b': lua_pushboolean(luaState, va_arg(vl, int)); break;
 						default: raise_error(luaState, varfmt);
 						}
