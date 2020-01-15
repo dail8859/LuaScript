@@ -26,16 +26,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef PLUGININTERFACE_H
-#define PLUGININTERFACE_H
+#pragma once
 
-#ifndef SCINTILLA_H
 #include "Scintilla.h"
-#endif //SCINTILLA_H
-
-#ifndef NOTEPAD_PLUS_MSGS_H
 #include "Notepad_plus_msgs.h"
-#endif //NOTEPAD_PLUS_MSGS_H
 
 const int nbChar = 64;
 
@@ -85,5 +79,3 @@ extern "C" __declspec(dllexport) BOOL isUnicode();
 
 #define SCI_UNUSED 0
 const wchar_t NPP_PLUGIN_NAME[] = TEXT("LuaScript");
-
-#endif //PLUGININTERFACE_H

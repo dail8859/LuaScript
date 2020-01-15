@@ -9,6 +9,10 @@
 import sys
 import os
 
+srcRoot = "../.."
+
+sys.path.append(srcRoot + "/scintilla/scripts")
+
 import Face
 from FileGenerator import Regenerate
 
@@ -22,6 +26,12 @@ def CommentString(prop):
 	if prop and prop["Comment"]:
 		return (" -- " + " ".join(prop["Comment"])).replace("<", "&lt;")
 	return ""
+
+def ConvertEnu(t):
+	if Face.IsEnumeration(t):
+		return "int"
+	else:
+		return t
 
 def GetScriptableInterface(f):
 	"""Returns a tuple of (constants, functions, properties)
@@ -84,6 +94,7 @@ properties - a sorted list of (name, property), where property is a
 				getterType = getter['Param2Type']
 			else:
 				getterType = getter['ReturnType']
+			getterType = ConvertEnu(getterType)
 			getterValue = getter['Value']
 			getterIndex = getter['Param1Type'] or 'void'
 			getterIndexName = getter['Param1Name']
@@ -92,12 +103,12 @@ properties - a sorted list of (name, property), where property is a
 
 		if isok and setter:
 			setterValue = setter['Value']
-			setterType = setter['Param1Type'] or 'void'
+			setterType = ConvertEnu(setter['Param1Type']) or 'void'
 			setterIndex = 'void'
 			if (setter['Param2Type'] or 'void') != 'void':
 				setterIndex = setterType
 				setterIndexName = setter['Param1Name']
-				setterType = setter['Param2Type']
+				setterType = ConvertEnu(setter['Param2Type'])
 
 			isok = (setter['ReturnType'] == 'void') or (setter['ReturnType'] == 'int' and setterType=='string')
 
@@ -110,8 +121,8 @@ properties - a sorted list of (name, property), where property is a
 
 		if isok:
 			# do the types appear to be useable?  THIS IS OVERRIDDEN BELOW
-			isok = (propType in ('int', 'position', 'colour', 'bool', 'string', 'stringresult')
-				and propIndex in ('void','int','position','string','bool'))
+			isok = (propType in ('int', 'position', 'line', 'pointer', 'colour', 'bool', 'string', 'stringresult')
+				and propIndex in ('void','int','position','line','string','bool'))
 
 			# getters on string properties follow a different protocol with this signature
 			# for a string getter and setter:
@@ -172,7 +183,7 @@ properties - a sorted list of (name, property), where property is a
 	return (constants, funclist, proplist)
 
 
-def printIFaceTableCppFile(faceAndIDs):
+def printIFaceTableCXXFile(faceAndIDs):
 	out = []
 	f, ids = faceAndIDs
 	(constants, functions, properties) = GetScriptableInterface(f)
@@ -205,27 +216,25 @@ def printIFaceTableCppFile(faceAndIDs):
 		for name, features in functions:
 			comma = "" if name == lastName else ","
 
-			paramTypes = [
-				features["Param1Type"] or "void",
-				features["Param2Type"] or "void"
-			]
+			returnType = ConvertEnu(features["ReturnType"])
+			param1Type = ConvertEnu(features["Param1Type"]) or "void"
+			param2Type = ConvertEnu(features["Param2Type"]) or "void"
 
-			returnType = features["ReturnType"]
+			# Fix-up: if a param is an int (or position) named length, change to iface_type_length.
+			if param1Type in ["int", "position"] and features["Param1Name"] == "length":
+				param1Type = "length"
 
-			# Fix-up: if a param is an int named length, change to iface_type_length.
-			if features["Param1Type"] == "int" and features["Param1Name"] == "length":
-				paramTypes[0] = "length"
-
-			if features["Param2Type"] == "int" and features["Param2Name"] == "length":
-				paramTypes[1] = "length"
+			if param2Type in ["int", "position"] and features["Param2Name"] == "length":
+				param2Type = "length"
 
 			out.append('\t{ "%s", %s, iface_%s, { iface_%s, iface_%s } }%s' % (
-				name, features["Value"], returnType, paramTypes[0], paramTypes[1], comma
+				name, features["Value"], returnType, param1Type, param2Type, comma
 			))
 
 		out.append("};")
 	else:
 		out.append('{"",0,iface_void,{iface_void,iface_void}} };')
+
 
 	out.append("")
 	out.append("static std::vector<IFaceProperty> ifaceProperties = {")
@@ -283,7 +292,7 @@ def printIFaceTableHTMLFile(faceAndIDs):
 		explanation = ""
 		href = ""
 		hrefEnd = ""
-		href = "<a href='http://www.scintilla.org/ScintillaDoc.html#" + featureDefineName + "'>"
+		href = "<a href='https://www.scintilla.org/ScintillaDoc.html#" + featureDefineName + "'>"
 		hrefEnd = "</a>"
 
 		if features['Param1Type'] in nonScriptableTypes or features['Param2Type'] in nonScriptableTypes:
@@ -298,16 +307,18 @@ def printIFaceTableHTMLFile(faceAndIDs):
 				parameters += features['Param1Type'] + " " + features['Param1Name']
 		else:
 			if features['Param1Name']:
-				parameters += features['Param1Type'] + " " + features['Param1Name']
+				parameters += ConvertEnu(features['Param1Type']) + " " + features['Param1Name']
 				if features['Param1Name'] == "length" and features['Param2Type'] == "string":
 					# special case removal
 					parameters = ""
 			if features['Param2Name']:
 				if parameters:
 					parameters += ", "
-				parameters += features['Param2Type'] + " " + features['Param2Name']
+				parameters += ConvertEnu(features['Param2Type']) + " " + features['Param2Name']
 
 		returnType = stringresult
+		if not returnType and Face.IsEnumeration(features["ReturnType"]):
+			returnType = "int "
 		if not returnType and features["ReturnType"] != "void":
 			returnType = convertStringResult(features["ReturnType"]) + " "
 
@@ -327,7 +338,7 @@ def printIFaceTableHTMLFile(faceAndIDs):
 		functionName = property['SetterName'] or property['GetterName']
 		featureDefineName = "SCI_" + functionName.upper()
 		explanation = ""
-		href = "<a href='http://www.scintilla.org/ScintillaDoc.html#" + featureDefineName + "'>"
+		href = "<a href='https://www.scintilla.org/ScintillaDoc.html#" + featureDefineName + "'>"
 		hrefEnd = "</a>"
 
 		direction = ""
@@ -383,7 +394,7 @@ def RegenerateAll():
 	f = Face.Face()
 	f.ReadFromFile("Scintilla.iface")
 	#idsInOrder = idsFromDocumentation(srcRoot + "/scintilla/doc/ScintillaDoc.html")
-	Regenerate("../src/SciIFaceTable.cpp", "//", printIFaceTableCppFile([f, []]))
+	Regenerate("../src/SciIFaceTable.cpp", "//", printIFaceTableCXXFile([f, []]))
 	#Regenerate(srcRoot + "/scite/doc/PaneAPI.html", "<!--", printIFaceTableHTMLFile([f, menuIDs, idsInOrder]))
 
 if __name__=="__main__":
