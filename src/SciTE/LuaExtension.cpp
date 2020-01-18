@@ -1626,6 +1626,14 @@ static bool InitGlobalScope() {
 	// "onlyFuncs" is used to get only functions when a ':' is typed since it
 	// can only access functions
 	luaL_dostring(luaState, R"(
+local function PackagePaths()
+	local md = npp:GetPluginsConfigDir() .. [[\LuaScriptLibs\]]
+	local cp = md.."?.dll;"..md.."?\\loadall.dll"
+	local lp = md.."lua\\?.lua;"..md.."lua\\?\\init.lua;"..md.."?.lua;"..md.."?\\init.lua"
+	return lp, cp
+end
+package.path, package.cpath = PackagePaths()
+
 function GetAutoComplete(object, onlyFuncs)
 	local function GetKeys(tbl, list, onlyFuncs)
 		if type(tbl) == "table" then
