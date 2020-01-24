@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.9</sub></h1>
+<h1>LuaScript <sub>v0.10</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -223,11 +223,11 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:ReleaseAllExtendedStyles">Editor:ReleaseAllExtendedStyles()</a></td>
-	<td class="summary">Release all extended (>255) style numbers</td>
+	<td class="summary">Release all extended (&gt;255) style numbers</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:AllocateExtendedStyles">Editor:AllocateExtendedStyles(numberStyles)</a></td>
-	<td class="summary">Allocate some extended (>255) style numbers and return the start of the range</td>
+	<td class="summary">Allocate some extended (&gt;255) style numbers and return the start of the range</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:TargetAsUTF8">Editor:TargetAsUTF8()</a></td>
@@ -249,8 +249,16 @@
 	<td class="summary">Sets the position that starts the target which is used for updating the document without affecting the scroll position.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.TargetStartVirtualSpace">Editor.TargetStartVirtualSpace</a></td>
+	<td class="summary">Sets the virtual space of the target start</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.TargetEnd">Editor.TargetEnd</a></td>
 	<td class="summary">Sets the position that ends the target which is used for updating the document without affecting the scroll position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.TargetEndVirtualSpace">Editor.TargetEndVirtualSpace</a></td>
+	<td class="summary">Sets the virtual space of the target end</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:SetTargetRange">Editor:SetTargetRange(start, end)</a></td>
@@ -627,7 +635,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionModifier">Editor.RectangularSelectionModifier</a></td>
-	<td class="summary">On GTK+, allow selecting the modifier key to use for mouse-based rectangular selection.</td>
+	<td class="summary">On GTK, allow selecting the modifier key to use for mouse-based rectangular selection.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.Selections">Editor.Selections</a></td>
@@ -678,8 +686,16 @@
 	<td class="summary">Sets the position that starts the selection - this becomes the anchor.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Editor.SelectionNStartVirtualSpace">Editor.SelectionNStartVirtualSpace[selection]</a></td>
+	<td class="summary">read-only</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Editor.SelectionNEnd">Editor.SelectionNEnd[selection]</a></td>
 	<td class="summary">Sets the position that ends the selection - this becomes the currentPosition.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.SelectionNEndVirtualSpace">Editor.SelectionNEndVirtualSpace[selection]</a></td>
+	<td class="summary">read-only</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.RectangularSelectionCaret">Editor.RectangularSelectionCaret</a></td>
@@ -1274,6 +1290,10 @@
 </table>
 <h2><a href="#Tabs_and_Indentation_Guides">Tabs and Indentation Guides </a></h2>
 <table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor.TabMinimumWidth">Editor.TabMinimumWidth</a></td>
+	<td class="summary">Set the minimum visual width of a tab.</td>
+	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.TabWidth">Editor.TabWidth</a></td>
 	<td class="summary">Change the visible size of a tab to be a multiple of the width of a space character.</td>
@@ -2631,8 +2651,8 @@
 
 </dd>
     <dt>
-    <a name = "Editor:set"></a>
-    <strong>Editor:set(direction)</strong>
+    <a name = "Editor:set_text_direction"></a>
+    <strong>Editor:set_text_direction(direction)</strong>
     </dt>
     <dd>
     Sets the text direction.
@@ -2737,7 +2757,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -2825,7 +2845,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bytes</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -2990,7 +3010,7 @@
 
         </li>
         <li><span class="parameter">lengthDelete</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3081,7 +3101,7 @@
     <strong>Editor:ReleaseAllExtendedStyles()</strong>
     </dt>
     <dd>
-    Release all extended (>255) style numbers
+    Release all extended (&gt;255) style numbers
 
 
 
@@ -3099,7 +3119,7 @@
     <strong>Editor:AllocateExtendedStyles(numberStyles)</strong>
     </dt>
     <dd>
-    Allocate some extended (>255) style numbers and return the start of the range
+    Allocate some extended (&gt;255) style numbers and return the start of the range
 
 
     <h3>Parameters:</h3>
@@ -3201,7 +3221,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bytes</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3248,6 +3268,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.TargetStartVirtualSpace"></a>
+    <strong>Editor.TargetStartVirtualSpace</strong>
+    </dt>
+    <dd>
+    Sets the virtual space of the target start
+
+
+    <ul>
+        <li><span class="parameter">TargetStartVirtualSpace</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTARGETSTARTVIRTUALSPACE">SCI_SETTARGETSTARTVIRTUALSPACE</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.TargetEnd"></a>
     <strong>Editor.TargetEnd</strong>
     </dt>
@@ -3269,6 +3315,32 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTARGETEND">SCI_SETTARGETEND</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.TargetEndVirtualSpace"></a>
+    <strong>Editor.TargetEndVirtualSpace</strong>
+    </dt>
+    <dd>
+    Sets the virtual space of the target end
+
+
+    <ul>
+        <li><span class="parameter">TargetEndVirtualSpace</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTARGETENDVIRTUALSPACE">SCI_SETTARGETENDVIRTUALSPACE</a>
     </ul>
 
 
@@ -3373,7 +3445,7 @@
     <strong>Editor:SearchInTarget(text)</strong>
     </dt>
     <dd>
-    Search for a counted string in the target and set the target to the found range.  Text is counted so it can contain NULs. Returns length of range or -1 for failure in which case target is not moved.
+    Search for a counted string in the target and set the target to the found range.  Text is counted so it can contain NULs. Returns start of found range or -1 for failure in which case target is not moved.
 
 
     <h3>Parameters:</h3>
@@ -3389,7 +3461,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3450,7 +3522,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3485,7 +3557,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3570,7 +3642,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -3611,7 +3683,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -4110,7 +4182,7 @@
 
     <ul>
         <li><span class="parameter">TextLength</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -4136,7 +4208,7 @@
 
     <ul>
         <li><span class="parameter">Length</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -4162,7 +4234,7 @@
 
     <ul>
         <li><span class="parameter">LineCount</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4188,7 +4260,7 @@
 
     <ul>
         <li><span class="parameter">LinesOnScreen</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4301,7 +4373,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4487,7 +4559,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4512,7 +4584,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4546,7 +4618,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4573,7 +4645,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4583,7 +4655,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -4738,7 +4810,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4773,7 +4845,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4937,7 +5009,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -4998,13 +5070,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
         </li>
         <li><span class="parameter">column</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5014,7 +5086,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5390,7 +5462,7 @@
 
         </li>
         <li><span class="parameter">relative</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5441,7 +5513,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5472,7 +5544,7 @@
 
         </li>
         <li><span class="parameter">relative</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5523,7 +5595,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -5644,7 +5716,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -5669,7 +5741,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -5812,7 +5884,7 @@
     <strong>Editor.RectangularSelectionModifier</strong>
     </dt>
     <dd>
-    On GTK+, allow selecting the modifier key to use for mouse-based rectangular selection.  Often the window manager requires Alt+Mouse Drag for moving windows. Valid values are SCMOD_CTRL(default), SCMOD_ALT, or SCMOD_SUPER.
+    On GTK, allow selecting the modifier key to use for mouse-based rectangular selection.  Often the window manager requires Alt+Mouse Drag for moving windows. Valid values are SCMOD_CTRL(default), SCMOD_ALT, or SCMOD_SUPER.
 
 
     <ul>
@@ -6153,6 +6225,32 @@
 
 </dd>
     <dt>
+    <a name = "Editor.SelectionNStartVirtualSpace"></a>
+    <strong>Editor.SelectionNStartVirtualSpace[selection]</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">selection</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETSELECTIONNSTARTVIRTUALSPACE">SCI_GETSELECTIONNSTARTVIRTUALSPACE</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.SelectionNEnd"></a>
     <strong>Editor.SelectionNEnd[selection]</strong>
     </dt>
@@ -6174,6 +6272,32 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETSELECTIONNEND">SCI_SETSELECTIONNEND</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.SelectionNEndVirtualSpace"></a>
+    <strong>Editor.SelectionNEndVirtualSpace[selection]</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">selection</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETSELECTIONNENDVIRTUALSPACE">SCI_GETSELECTIONNENDVIRTUALSPACE</a>
     </ul>
 
 
@@ -6214,7 +6338,7 @@
 
     <ul>
         <li><span class="parameter">RectangularSelectionCaretVirtualSpace</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -6266,7 +6390,7 @@
 
     <ul>
         <li><span class="parameter">RectangularSelectionAnchorVirtualSpace</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -6524,7 +6648,7 @@
 
     <ul>
         <li><span class="parameter">FirstVisibleLine</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -6577,13 +6701,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">columns</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
         <li><span class="parameter">lines</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -7357,7 +7481,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -7398,7 +7522,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -7649,7 +7773,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">length</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -7734,7 +7858,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9173,7 +9297,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9199,7 +9323,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9225,7 +9349,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9325,7 +9449,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9351,7 +9475,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9377,7 +9501,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9403,7 +9527,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9895,6 +10019,32 @@
 
     <dl class="function">
     <dt>
+    <a name = "Editor.TabMinimumWidth"></a>
+    <strong>Editor.TabMinimumWidth</strong>
+    </dt>
+    <dd>
+    Set the minimum visual width of a tab.
+
+
+    <ul>
+        <li><span class="parameter">TabMinimumWidth</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_SETTABMINIMUMWIDTH">SCI_SETTABMINIMUMWIDTH</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "Editor.TabWidth"></a>
     <strong>Editor.TabWidth</strong>
     </dt>
@@ -9931,7 +10081,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9958,7 +10108,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -9991,7 +10141,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10135,7 +10285,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10161,7 +10311,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10213,7 +10363,7 @@
 
     <ul>
         <li><span class="parameter">HighlightGuide</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -10587,7 +10737,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10628,7 +10778,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10661,7 +10811,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10721,7 +10871,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10756,7 +10906,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lineStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10772,7 +10922,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10797,7 +10947,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lineStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -10813,7 +10963,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -11170,7 +11320,7 @@
 
         </li>
         <li><span class="parameter">lengthFill</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -11203,7 +11353,7 @@
 
         </li>
         <li><span class="parameter">lengthClear</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -11476,7 +11626,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lengthEntered</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -12268,7 +12418,7 @@
 
     <ul>
         <li><span class="parameter">CallTipPosStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -14004,7 +14154,7 @@
 
     <ul>
         <li><span class="parameter">DirectFunction</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14030,7 +14180,7 @@
 
     <ul>
         <li><span class="parameter">DirectPointer</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14056,7 +14206,7 @@
 
     <ul>
         <li><span class="parameter">CharacterPointer</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14089,7 +14239,7 @@
 
         </li>
         <li><span class="parameter">lengthRange</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -14099,7 +14249,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14153,7 +14303,7 @@
 
     <ul>
         <li><span class="parameter">DocPointer</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14180,7 +14330,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bytes</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -14196,7 +14346,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14221,7 +14371,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">doc</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14248,7 +14398,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">doc</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14305,7 +14455,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bytes</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -14321,7 +14471,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -14350,7 +14500,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">docLine</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14360,7 +14510,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14385,7 +14535,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">displayLine</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14395,7 +14545,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14420,13 +14570,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lineStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
         </li>
         <li><span class="parameter">lineEnd</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14453,13 +14603,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lineStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
         </li>
         <li><span class="parameter">lineEnd</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14485,7 +14635,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14537,7 +14687,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14590,7 +14740,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14606,7 +14756,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14630,7 +14780,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14657,7 +14807,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14684,7 +14834,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14795,7 +14945,7 @@
 
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14822,7 +14972,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14855,7 +15005,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14915,7 +15065,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14974,7 +15124,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">lineStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -14984,7 +15134,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -15009,7 +15159,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -15036,7 +15186,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">line</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -15294,7 +15444,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">docLine</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">line</span></span>
 
 
 
@@ -15304,7 +15454,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -15424,7 +15574,7 @@
 
     <ul>
         <li><span class="parameter">EdgeColumn</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -15477,7 +15627,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">column</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -16203,7 +16353,7 @@
 
         </li>
         <li><span class="parameter">pointer</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">pointer</span></span>
 
 
 
@@ -16213,7 +16363,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">pointer</span></span>
 
 
 

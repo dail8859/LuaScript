@@ -87,13 +87,13 @@ for m in editor:match([[[ \t]+<h2>(.*?)</h2>]], SCFIND_REGEXP) do
 end
 
 -- Do the hard work. Replace any API call with the appropriate documentation
-for m in editor:match([[^[ \t]*<p>(.+?)<a.+?#(SCI_[\w_]+)'>(.+?)</a>(.*?)<span class="comment"> -- (.+?)</span></p>]], SCFIND_REGEXP) do
+for m in editor:match([[^[ \t]*<p>(.+?)<a.+?#(SCI_[\w_]+)['"]>(.+?)</a>(.*?)<span class="comment">[-\r\n ]+(.+?)</span></p>]], SCFIND_REGEXP | SCFIND_DOTMATCHESNL) do
 	local rettype = editor.Tag[1]
 	local reference = editor.Tag[2]
 	local name = editor.Tag[3]
 	local parameters = editor.Tag[4]
 	local description = editor.Tag[5]
-	local t = "--- " .. description .. "\r\n"
+	local t = "--- " .. description:gsub("\r\n", "") .. "\r\n"
 	local ch = parameters and string.sub(parameters, 1, 1)
 
 	-- It can either be a function, array, or field
