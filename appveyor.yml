@@ -65,6 +65,8 @@ after_build:
           $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME).zip"
         }
         7z a $ZipFileName "$($BuildPath)\LuaScript.dll"
+
+        7z a $ZipFileName "$($BuildPath)\Lua.dll"
       }
 
 artifacts:
