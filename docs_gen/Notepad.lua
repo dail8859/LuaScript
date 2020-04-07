@@ -318,7 +318,7 @@
 -- @function AddShortcut
 -- @static
 -- @tparam string name the user-friendly name of the shortcut (this is displayed in the menu)
--- @tparam string shortcut the modifier and key (e.g. "Ctrl+Alt+Shift+D"). The key must be A-Z, 0-9, or F1-F12
+-- @tparam string shortcut the modifier and key (e.g. "`Ctrl+Alt+Shift+D`"). The _key_ must be one of: `A`-`Z`, `0`-`9`, `F1`-`F12`, `;`, `/`, `~`, `[`, `\`, `]`, `\`, `,`, `-`, `.`, `=`, `up`, `down`, `left`, `right`, `space`, `pageup`, `pagedown`, `backspace`, `delete`, `escape`
 -- @tparam function callback function to call when the shortcut is triggered
 
 --- Writes an error message to the console.
