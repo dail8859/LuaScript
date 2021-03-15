@@ -20,6 +20,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 enum IFaceType {
 	iface_void,

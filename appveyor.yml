@@ -1,5 +1,5 @@
-version: 0.9.0.{build}
-image: Visual Studio 2017
+version: 0.10.1.{build}
+image: Visual Studio 2019
 
 platform:
   - x64
@@ -16,7 +16,7 @@ install:
   - if "%platform%"=="Win32" set archi=x86
   - if "%platform%"=="Win32" set build_platform=Win32
 
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
 build:
   parallel: true
