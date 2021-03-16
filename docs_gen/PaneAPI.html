@@ -419,6 +419,12 @@ segment.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_ANNOTATIONCLEARALL">AnnotationClearAll</a>()<span class="comment"> -- Clear the annotations from all lines</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_ANNOTATIONSETVISIBLE">AnnotationVisible</a><span class="comment"> -- Set the visibility for the annotations for a view</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_ANNOTATIONSETSTYLEOFFSET">AnnotationStyleOffset</a><span class="comment"> -- Get the start of the range of style numbers used for annotations</span></p>
+	<h2>End of Line Annotations</h2>
+	<p>string editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETTEXT">EOLAnnotationText</a>[line line]<span class="comment"> -- Set the end of line annotation text for a line</span></p>
+	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETSTYLE">EOLAnnotationStyle</a>[line line]<span class="comment"> -- Set the style number for the end of line annotations for a line</span></p>
+	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONCLEARALL">EOLAnnotationClearAll</a>()<span class="comment"> -- Clear the end of annotations from all lines</span></p>
+	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETVISIBLE">EOLAnnotationVisible</a><span class="comment"> -- Set the visibility for the end of line annotations for a view</span></p>
+	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETSTYLEOFFSET">EOLAnnotationStyleOffset</a><span class="comment"> -- Get the start of the range of style numbers used for end of line annotations</span></p>
 	<h2>Other settings</h2>
 	<p>bool editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETBUFFEREDDRAW">BufferedDraw</a><span class="comment">
  -- If drawing is buffered then each line of text is drawn into a bitmap
@@ -434,7 +440,7 @@ from one line to the next.</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETCODEPAGE">CodePage</a><span class="comment">
  -- Set the code page used to interpret the bytes of the document as 
 characters. The SC_CP_UTF8 value can be used to enter Unicode mode.</span></p>
-	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETIMEINTERACTION">IMEInteraction</a><span class="comment"> -- Choose to display the the IME in a winow or inline.</span></p>
+	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETIMEINTERACTION">IMEInteraction</a><span class="comment"> -- Choose to display the IME in a window or inline.</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETBIDIRECTIONAL">Bidirectional</a><span class="comment"> -- Set bidirectional text display state.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_GRABFOCUS">GrabFocus</a>()<span class="comment"> -- Set the focus to this Scintilla widget.</span></p>
 	<p>bool editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETFOCUS">Focus</a><span class="comment"> -- Change internal focus flag.</span></p>
@@ -447,6 +453,7 @@ characters. The SC_CP_UTF8 value can be used to enter Unicode mode.</span></p>
  -- Find the position of a matching brace or INVALID_POSITION if no 
 match. The maxReStyle must be 0 for now. It may be defined in a future 
 release.</span></p>
+	<p>position editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_BRACEMATCHNEXT">BraceMatchNext</a>(position pos, position startPos)<span class="comment"> -- Similar to BraceMatch, but matching starts at the explicit start position.</span></p>
 	<h2>Tabs and Indentation Guides</h2>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETTABMINIMUMWIDTH">TabMinimumWidth</a><span class="comment"> -- Set the minimum visual width of a tab.</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETTABWIDTH">TabWidth</a><span class="comment"> -- Change the visible size of a tab to be a multiple of the width of a space character.</span></p>
@@ -472,7 +479,7 @@ release.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERSETFORE">MarkerFore</a>[int markerNumber] write-only<span class="comment"> -- Set the foreground colour used for a particular marker number.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERSETBACK">MarkerBack</a>[int markerNumber] write-only<span class="comment"> -- Set the background colour used for a particular marker number.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERSETBACKSELECTED">MarkerBackSelected</a>[int markerNumber] write-only<span class="comment"> -- Set the background colour used for a particular marker number when its folding block is selected.</span></p>
-	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERENABLEHIGHLIGHT">MarkerEnableHighlight</a>(bool enabled)<span class="comment"> -- Enable/disable highlight for current folding bloc (smallest one that contains the caret)</span></p>
+	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERENABLEHIGHLIGHT">MarkerEnableHighlight</a>(bool enabled)<span class="comment"> -- Enable/disable highlight for current folding block (smallest one that contains the caret)</span></p>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERSETALPHA">MarkerAlpha</a>[int markerNumber] write-only<span class="comment"> -- Set the alpha used for a marker that is drawn in the text area, not the margin.</span></p>
 	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERADD">MarkerAdd</a>(line line, int markerNumber)<span class="comment"> -- Add a marker to a line, returning an ID which can be used to find or delete the marker.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERADDSET">MarkerAddSet</a>(line line, int markerSet)<span class="comment"> -- Add a set of markers to a line.</span></p>
@@ -481,8 +488,10 @@ release.</span></p>
 	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERGET">MarkerGet</a>(line line)<span class="comment"> -- Get a bit mask of all the markers set on a line.</span></p>
 	<p>line editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERNEXT">MarkerNext</a>(line lineStart, int markerMask)<span class="comment"> -- Find the next line at or after lineStart that includes a marker in mask. Return -1 when no more lines.</span></p>
 	<p>line editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERPREVIOUS">MarkerPrevious</a>(line lineStart, int markerMask)<span class="comment"> -- Find the previous line before lineStart that includes a marker in mask.</span></p>
-	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERLINEFROMHANDLE">MarkerLineFromHandle</a>(int markerHandle)<span class="comment"> -- Retrieve the line number at which a particular marker is located.</span></p>
+	<p>line editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERLINEFROMHANDLE">MarkerLineFromHandle</a>(int markerHandle)<span class="comment"> -- Retrieve the line number at which a particular marker is located.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERDELETEHANDLE">MarkerDeleteHandle</a>(int markerHandle)<span class="comment"> -- Delete a marker.</span></p>
+	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERHANDLEFROMLINE">MarkerHandleFromLine</a>(line line, int which)<span class="comment"> -- Retrieve marker handles of a line</span></p>
+	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERNUMBERFROMLINE">MarkerNumberFromLine</a>(line line, int which)<span class="comment"> -- Retrieve marker number of a marker handle</span></p>
 	<h2>Indicators</h2>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETSTYLE">IndicStyle</a>[int indicator]<span class="comment"> -- Set an indicator to plain, squiggle or TT.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETFORE">IndicFore</a>[int indicator]<span class="comment"> -- Set the foreground colour of an indicator.</span></p>
@@ -498,8 +507,8 @@ release.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATORCLEARRANGE">IndicatorClearRange</a>(position start, position lengthClear)<span class="comment"> -- Turn a indicator off over a range.</span></p>
 	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATORALLONFOR">IndicatorAllOnFor</a>(position pos)<span class="comment"> -- Are any indicators present at pos?</span></p>
 	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATORVALUEAT">IndicatorValueAt</a>(int indicator, position pos)<span class="comment"> -- What value does a particular indicator have at a position?</span></p>
-	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATORSTART">IndicatorStart</a>(int indicator, position pos)<span class="comment"> -- Where does a particular indicator start?</span></p>
-	<p>int editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATOREND">IndicatorEnd</a>(int indicator, position pos)<span class="comment"> -- Where does a particular indicator end?</span></p>
+	<p>position editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATORSTART">IndicatorStart</a>(int indicator, position pos)<span class="comment"> -- Where does a particular indicator start?</span></p>
+	<p>position editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_INDICATOREND">IndicatorEnd</a>(int indicator, position pos)<span class="comment"> -- Where does a particular indicator end?</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_FINDINDICATORSHOW">FindIndicatorShow</a>(position start, position end)<span class="comment"> -- On OS X, show a find indicator.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_FINDINDICATORFLASH">FindIndicatorFlash</a>(position start, position end)<span class="comment"> -- On OS X, flash a find indicator, then fade out.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_FINDINDICATORHIDE">FindIndicatorHide</a>()<span class="comment"> -- On OS X, hide the find indicator.</span></p>
@@ -548,7 +557,7 @@ lists. Set to 0 to autosize to fit longest item, which is the default.</span></p
 	<p>bool editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPACTIVE">CallTipActive</a>()<span class="comment"> -- Is there an active call tip?</span></p>
 	<p>position editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPPOSSTART">CallTipPosStart</a>()<span class="comment"> -- Retrieve the position where the caret was before displaying the call tip.</span></p>
 	<p>position editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETPOSSTART">CallTipPosStart</a> write-only<span class="comment"> -- Set the start position in order to change when backspacing removes the calltip.</span></p>
-	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETHLT">CallTipSetHlt</a>(int highlightStart, int highlightEnd)<span class="comment"> -- Highlight a segment of the definition.</span></p>
+	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETHLT">CallTipSetHlt</a>(position highlightStart, position highlightEnd)<span class="comment"> -- Highlight a segment of the definition.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETBACK">CallTipBack</a> write-only<span class="comment"> -- Set the background colour for the call tip.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETFORE">CallTipFore</a> write-only<span class="comment"> -- Set the foreground colour for the call tip.</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_CALLTIPSETFOREHLT">CallTipForeHlt</a> write-only<span class="comment"> -- Set the foreground colour for the highlighted part of the call tip.</span></p>
@@ -642,6 +651,7 @@ displayed at all (EDGE_NONE).</span></p>
 	<p>colour editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETEDGECOLOUR">EdgeColour</a><span class="comment"> -- Change the colour used in edge indication.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MULTIEDGEADDLINE">MultiEdgeAddLine</a>(position column, colour edgeColour)<span class="comment"> -- Add a new vertical edge to the view.</span></p>
 	<p>editor:<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_MULTIEDGECLEARALL">MultiEdgeClearAll</a>()<span class="comment"> -- Clear all vertical edges.</span></p>
+	<p>position editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_GETMULTIEDGECOLUMN">MultiEdgeColumn</a>[int which] read-only</p>
 	<h2>Accessibility</h2>
 	<p>int editor.<a href="https://www.scintilla.org/ScintillaDoc.html#SCI_SETACCESSIBILITY">Accessibility</a><span class="comment"> -- Enable or disable accessibility.</span></p>
 	<h2>Lexer</h2>

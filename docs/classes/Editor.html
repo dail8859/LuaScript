@@ -23,7 +23,7 @@
 
 <div id="navigation">
 <br/>
-<h1>LuaScript <sub>v0.10</sub></h1>
+<h1>LuaScript <sub>v0.11</sub></h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -53,6 +53,7 @@
 <li><a href="#Character_representations">Character representations </a></li>
 <li><a href="#Margins">Margins </a></li>
 <li><a href="#Annotations">Annotations </a></li>
+<li><a href="#End_of_Line_Annotations">End of Line Annotations </a></li>
 <li><a href="#Other_settings">Other settings </a></li>
 <li><a href="#Brace_highlighting">Brace highlighting </a></li>
 <li><a href="#Tabs_and_Indentation_Guides">Tabs and Indentation Guides </a></li>
@@ -1226,6 +1227,29 @@
 	<td class="summary">Get the start of the range of style numbers used for annotations</td>
 	</tr>
 </table>
+<h2><a href="#End_of_Line_Annotations">End of Line Annotations </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Editor.EOLAnnotationText">Editor.EOLAnnotationText[line]</a></td>
+	<td class="summary">Set the end of line annotation text for a line</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.EOLAnnotationStyle">Editor.EOLAnnotationStyle[line]</a></td>
+	<td class="summary">Set the style number for the end of line annotations for a line</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:EOLAnnotationClearAll">Editor:EOLAnnotationClearAll()</a></td>
+	<td class="summary">Clear the end of annotations from all lines</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.EOLAnnotationVisible">Editor.EOLAnnotationVisible</a></td>
+	<td class="summary">Set the visibility for the end of line annotations for a view</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.EOLAnnotationStyleOffset">Editor.EOLAnnotationStyleOffset</a></td>
+	<td class="summary">Get the start of the range of style numbers used for end of line annotations</td>
+	</tr>
+</table>
 <h2><a href="#Other_settings">Other settings </a></h2>
 <table class="function_list">
 	<tr>
@@ -1250,7 +1274,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.IMEInteraction">Editor.IMEInteraction</a></td>
-	<td class="summary">Choose to display the the IME in a winow or inline.</td>
+	<td class="summary">Choose to display the IME in a window or inline.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.Bidirectional">Editor.Bidirectional</a></td>
@@ -1286,6 +1310,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor:BraceMatch">Editor:BraceMatch(pos, maxReStyle)</a></td>
 	<td class="summary">Find the position of a matching brace or INVALID_POSITION if no match.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:BraceMatchNext">Editor:BraceMatchNext(pos, startPos)</a></td>
+	<td class="summary">Similar to BraceMatch, but matching starts at the explicit start position.</td>
 	</tr>
 </table>
 <h2><a href="#Tabs_and_Indentation_Guides">Tabs and Indentation Guides </a></h2>
@@ -1387,7 +1415,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor:MarkerEnableHighlight">Editor:MarkerEnableHighlight(enabled)</a></td>
-	<td class="summary">Enable/disable highlight for current folding bloc (smallest one that contains the caret)</td>
+	<td class="summary">Enable/disable highlight for current folding block (smallest one that contains the caret)</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Editor.MarkerAlpha">Editor.MarkerAlpha[markerNumber]</a></td>
@@ -1428,6 +1456,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor:MarkerDeleteHandle">Editor:MarkerDeleteHandle(markerHandle)</a></td>
 	<td class="summary">Delete a marker.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MarkerHandleFromLine">Editor:MarkerHandleFromLine(line, which)</a></td>
+	<td class="summary">Retrieve marker handles of a line</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor:MarkerNumberFromLine">Editor:MarkerNumberFromLine(line, which)</a></td>
+	<td class="summary">Retrieve marker number of a marker handle</td>
 	</tr>
 </table>
 <h2><a href="#Indicators">Indicators </a></h2>
@@ -2324,6 +2360,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Editor:MultiEdgeClearAll">Editor:MultiEdgeClearAll()</a></td>
 	<td class="summary">Clear all vertical edges.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Editor.MultiEdgeColumn">Editor.MultiEdgeColumn[which]</a></td>
+	<td class="summary">read-only</td>
 	</tr>
 </table>
 <h2><a href="#Accessibility">Accessibility </a></h2>
@@ -9614,6 +9654,132 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="End_of_Line_Annotations"></a>End of Line Annotations </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Editor.EOLAnnotationText"></a>
+    <strong>Editor.EOLAnnotationText[line]</strong>
+    </dt>
+    <dd>
+    Set the end of line annotation text for a line
+
+
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">line</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETTEXT">SCI_EOLANNOTATIONSETTEXT</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.EOLAnnotationStyle"></a>
+    <strong>Editor.EOLAnnotationStyle[line]</strong>
+    </dt>
+    <dd>
+    Set the style number for the end of line annotations for a line
+
+
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">line</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETSTYLE">SCI_EOLANNOTATIONSETSTYLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:EOLAnnotationClearAll"></a>
+    <strong>Editor:EOLAnnotationClearAll()</strong>
+    </dt>
+    <dd>
+    Clear the end of annotations from all lines
+
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONCLEARALL">SCI_EOLANNOTATIONCLEARALL</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.EOLAnnotationVisible"></a>
+    <strong>Editor.EOLAnnotationVisible</strong>
+    </dt>
+    <dd>
+    Set the visibility for the end of line annotations for a view
+
+
+    <ul>
+        <li><span class="parameter">EOLAnnotationVisible</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETVISIBLE">SCI_EOLANNOTATIONSETVISIBLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.EOLAnnotationStyleOffset"></a>
+    <strong>Editor.EOLAnnotationStyleOffset</strong>
+    </dt>
+    <dd>
+    Get the start of the range of style numbers used for end of line annotations
+
+
+    <ul>
+        <li><span class="parameter">EOLAnnotationStyleOffset</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_EOLANNOTATIONSETSTYLEOFFSET">SCI_EOLANNOTATIONSETSTYLEOFFSET</a>
+    </ul>
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Other_settings"></a>Other settings </h2>
 
     <dl class="function">
@@ -9752,7 +9918,7 @@
     <strong>Editor.IMEInteraction</strong>
     </dt>
     <dd>
-    Choose to display the the IME in a winow or inline.
+    Choose to display the IME in a window or inline.
 
 
     <ul>
@@ -10010,6 +10176,47 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_BRACEMATCH">SCI_BRACEMATCH</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:BraceMatchNext"></a>
+    <strong>Editor:BraceMatchNext(pos, startPos)</strong>
+    </dt>
+    <dd>
+    Similar to BraceMatch, but matching starts at the explicit start position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">startPos</span>
+            <span class="types"><span class="type">position</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">position</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_BRACEMATCHNEXT">SCI_BRACEMATCHNEXT</a>
     </ul>
 
 
@@ -10678,7 +10885,7 @@
     <strong>Editor:MarkerEnableHighlight(enabled)</strong>
     </dt>
     <dd>
-    Enable/disable highlight for current folding bloc (smallest one that contains the caret)
+    Enable/disable highlight for current folding block (smallest one that contains the caret)
 
 
     <h3>Parameters:</h3>
@@ -10998,7 +11205,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">line</span></span>
 
 
 
@@ -11035,6 +11242,88 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MARKERDELETEHANDLE">SCI_MARKERDELETEHANDLE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:MarkerHandleFromLine"></a>
+    <strong>Editor:MarkerHandleFromLine(line, which)</strong>
+    </dt>
+    <dd>
+    Retrieve marker handles of a line
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">line</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">which</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MARKERHANDLEFROMLINE">SCI_MARKERHANDLEFROMLINE</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor:MarkerNumberFromLine"></a>
+    <strong>Editor:MarkerNumberFromLine(line, which)</strong>
+    </dt>
+    <dd>
+    Retrieve marker number of a marker handle
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">line</span>
+            <span class="types"><span class="type">line</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">which</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">int</span></span>
+
+
+
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MARKERNUMBERFROMLINE">SCI_MARKERNUMBERFROMLINE</a>
     </ul>
 
 
@@ -11472,7 +11761,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -11513,7 +11802,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">int</span></span>
+           <span class="types"><span class="type">position</span></span>
 
 
 
@@ -12445,13 +12734,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">highlightStart</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
         </li>
         <li><span class="parameter">highlightEnd</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">position</span></span>
 
 
 
@@ -15663,6 +15952,32 @@
     <h3>See also:</h3>
     <ul>
          <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_MULTIEDGECLEARALL">SCI_MULTIEDGECLEARALL</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Editor.MultiEdgeColumn"></a>
+    <strong>Editor.MultiEdgeColumn[which]</strong>
+    </dt>
+    <dd>
+    read-only
+
+
+    <ul>
+        <li><span class="parameter">which</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="http://www.scintilla.org/ScintillaDoc.html#SCI_GETMULTIEDGECOLUMN">SCI_GETMULTIEDGECOLUMN</a>
     </ul>
 
 
