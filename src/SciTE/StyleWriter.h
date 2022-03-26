@@ -19,17 +19,17 @@ protected:
 	 * and retrieval overhead.
 	 * @a slopSize positions the buffer before the desired position
 	 * in case there is some backtracking. */
-	enum {bufferSize=4000, slopSize=bufferSize/8};
+	enum : intptr_t {bufferSize=4000, slopSize=bufferSize/8};
 	char buf[bufferSize+1];
-	int startPos;
-	int endPos;
+	intptr_t startPos;
+	intptr_t endPos;
 	int codePage;
 
 	GUI::ScintillaWindow &sw;
-	int lenDoc;
+	intptr_t lenDoc;
 
 	bool InternalIsLeadByte(char ch) const;
-	void Fill(int position);
+	void Fill(intptr_t position);
 public:
 	explicit TextReader(GUI::ScintillaWindow &sw_);
 	char operator[](int position) {
@@ -39,7 +39,7 @@ public:
 		return buf[position - startPos];
 	}
 	/** Safe version of operator[], returning a defined value for invalid position. */
-	char SafeGetCharAt(int position, char chDefault=' ') {
+	char SafeGetCharAt(intptr_t position, char chDefault=' ') {
 		if (position < startPos || position >= endPos) {
 			Fill(position);
 			if (position < startPos || position >= endPos) {
@@ -56,12 +56,12 @@ public:
 		codePage = codePage_;
 	}
 	bool Match(int pos, const char *s);
-	int StyleAt(int position);
-	int GetLine(int position);
-	int LineStart(int line);
-	int LevelAt(int line);
-	int Length();
-	int GetLineState(int line);
+	int StyleAt(intptr_t position);
+	intptr_t GetLine(intptr_t position);
+	intptr_t LineStart(intptr_t line);
+	int LevelAt(intptr_t line);
+	intptr_t Length();
+	int GetLineState(intptr_t line);
 };
 
 // Adds methods needed to write styles and folding
@@ -72,17 +72,17 @@ class StyleWriter : public TextReader {
 protected:
 	char styleBuf[bufferSize];
 	int validLen;
-	unsigned int startSeg;
+	uintptr_t startSeg;
 public:
 	explicit StyleWriter(GUI::ScintillaWindow &sw_);
 	void Flush();
-	int SetLineState(int line, int state);
+	int SetLineState(intptr_t line, int state);
 
-	void StartAt(unsigned int start, char chMask=31);
-	unsigned int GetStartSegment() const { return startSeg; }
-	void StartSegment(unsigned int pos);
-	void ColourTo(unsigned int pos, int chAttr);
-	void SetLevel(int line, int level);
+	void StartAt(uintptr_t start, char chMask=31);
+	uintptr_t GetStartSegment() const { return startSeg; }
+	void StartSegment(uintptr_t pos);
+	void ColourTo(uintptr_t pos, int chAttr);
+	void SetLevel(intptr_t line, int level);
 };
 
 #endif

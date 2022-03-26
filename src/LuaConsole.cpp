@@ -90,7 +90,7 @@ static bool inline isBrace(int ch) {
 	return strchr("[]{}()", ch) != NULL;
 }
 
-static std::string getRange(GUI::ScintillaWindow *sw, int start, int end) {
+static std::string getRange(GUI::ScintillaWindow *sw, intptr_t start, intptr_t end) {
 	if (end <= start) return std::string();
 
 	std::vector<char> buffer(end - start + 1);
@@ -104,14 +104,14 @@ static std::string getRange(GUI::ScintillaWindow *sw, int start, int end) {
 	return std::string(buffer.begin(), buffer.end() - 1); // don't copy the null
 }
 
-static std::string getWordAt(GUI::ScintillaWindow *sw, int pos) {
-	int word_start = sw->Call(SCI_WORDSTARTPOSITION, pos, true);
-	int word_end = sw->Call(SCI_WORDENDPOSITION, pos, true);
+static std::string getWordAt(GUI::ScintillaWindow *sw, intptr_t pos) {
+	intptr_t word_start = sw->Call(SCI_WORDSTARTPOSITION, pos, true);
+	intptr_t word_end = sw->Call(SCI_WORDENDPOSITION, pos, true);
 	return getRange(sw, word_start, word_end);
 }
 
-static std::string getLuaIdentifierAt(GUI::ScintillaWindow *sw, int pos) {
-	const int line = sw->Call(SCI_LINEFROMPOSITION);
+static std::string getLuaIdentifierAt(GUI::ScintillaWindow *sw, intptr_t pos) {
+	const intptr_t line = sw->Call(SCI_LINEFROMPOSITION);
 
 	Sci_TextToFind ttf = {
 		{
@@ -317,29 +317,29 @@ bool LuaConsole::processNotification(const SCNotification *scn) {
 }
 
 void LuaConsole::maintainIndentation() {
-	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
-	int curLine = m_sciInput->Call(SCI_LINEFROMPOSITION, curPos);
-	int prevIndent = m_sciInput->Call(SCI_GETLINEINDENTATION, curLine - 1);
+	intptr_t curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
+	intptr_t curLine = m_sciInput->Call(SCI_LINEFROMPOSITION, curPos);
+	intptr_t prevIndent = m_sciInput->Call(SCI_GETLINEINDENTATION, curLine - 1);
 	m_sciInput->Call(SCI_SETLINEINDENTATION, curLine, prevIndent);
 	curPos = m_sciInput->Call(SCI_GETLINEINDENTPOSITION, curLine);
 	m_sciInput->Call(SCI_SETEMPTYSELECTION, curPos);
 }
 
 void LuaConsole::braceMatch() {
-	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
-	int bracePos = INVALID_POSITION;
+	intptr_t curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
+	intptr_t bracePos = INVALID_POSITION;
 
 	// Check on both sides
-	if (isBrace(m_sciInput->Call(SCI_GETCHARAT, curPos - 1))) {
+	if (isBrace(static_cast<int>(m_sciInput->Call(SCI_GETCHARAT, curPos - 1)))) {
 		bracePos = curPos - 1;
 	}
-	else if (isBrace(m_sciInput->Call(SCI_GETCHARAT, curPos))) {
+	else if (isBrace(static_cast<int>(m_sciInput->Call(SCI_GETCHARAT, curPos)))) {
 		bracePos = curPos;
 	}
 
 	// See if we are next to a brace
 	if (bracePos != INVALID_POSITION) {
-		int otherPos = m_sciInput->Call(SCI_BRACEMATCH, bracePos, 0);
+		intptr_t otherPos = m_sciInput->Call(SCI_BRACEMATCH, bracePos, 0);
 		if (otherPos != INVALID_POSITION) {
 			m_sciInput->Call(SCI_BRACEHIGHLIGHT, bracePos, otherPos);
 		}
@@ -354,15 +354,15 @@ void LuaConsole::braceMatch() {
 
 void LuaConsole::showAutoCompletion() {
 	std::string partialWord;
-	int curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
-	int prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1);
+	intptr_t curPos = m_sciInput->Call(SCI_GETCURRENTPOS);
+	int prevCh = static_cast<int>(m_sciInput->Call(SCI_GETCHARAT, curPos - 1));
 
 	// The cursor could be at the end of a partial word e.g. editor.Sty|
 	if (isalpha(prevCh) || prevCh == '_') {
 		partialWord = getWordAt(m_sciInput, curPos - 1);
 
 		// Back up past the partial word
-		prevCh = m_sciInput->Call(SCI_GETCHARAT, curPos - 1 - partialWord.size());
+		prevCh = static_cast<int>(m_sciInput->Call(SCI_GETCHARAT, curPos - 1 - partialWord.size()));
 		curPos = curPos - static_cast<int>(partialWord.size());
 	}
 

@@ -55,7 +55,7 @@ public:
 	void CallShortcut(int id);
 
 	// Scintilla callbacks
-	bool OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler);
+	bool OnStyle(uintptr_t startPos, intptr_t lengthDoc, int initStyle, StyleWriter *styler);
 	bool OnChar(const SCNotification *sc);
 	bool OnSavePointReached(const SCNotification *sc);
 	bool OnSavePointLeft(const SCNotification *sc);

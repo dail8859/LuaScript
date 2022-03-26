@@ -1896,15 +1896,15 @@ void LuaExtension::CallShortcut(int id) {
 
 // Similar to StyleContext class in Scintilla
 struct StylingContext {
-	unsigned int startPos;
-	int lengthDoc;
+	uintptr_t startPos;
+	intptr_t lengthDoc;
 	int initStyle;
 	StyleWriter *styler;
 
-	unsigned int endPos;
-	unsigned int endDoc;
+	uintptr_t endPos;
+	uintptr_t endDoc;
 
-	unsigned int currentPos;
+	uintptr_t currentPos;
 	bool atLineStart;
 	bool atLineEnd;
 	int state;
@@ -1920,7 +1920,7 @@ struct StylingContext {
 	}
 
 	void Colourize() {
-		int end = currentPos - 1;
+		intptr_t end = currentPos - 1;
 		if (end >= static_cast<int>(endDoc))
 			end = static_cast<int>(endDoc)-1;
 		styler->ColourTo(end, state);
@@ -1981,7 +1981,7 @@ struct StylingContext {
 	void GetNextChar() {
 		lenCurrent = lenNext;
 		lenNext = 1;
-		int nextPos = currentPos + lenCurrent;
+		intptr_t nextPos = currentPos + lenCurrent;
 		unsigned char byteNext = static_cast<unsigned char>(styler->SafeGetCharAt(nextPos));
 		unsigned int nextSlot = (cursorPos + 1) % 3;
 		memcpy(cursor[nextSlot], "\0\0\0\0\0\0\0\0", 8);
@@ -2149,13 +2149,13 @@ struct StylingContext {
 
 	static int Token(lua_State *L) {
 		StylingContext *context = Context(L);
-		int start = context->styler->GetStartSegment();
-		int end = context->currentPos - 1;
-		int len = end - start + 1;
+		intptr_t start = context->styler->GetStartSegment();
+		intptr_t end = context->currentPos - 1;
+		intptr_t len = end - start + 1;
 		if (len <= 0)
 			len = 1;
 		char *sReturn = new char[len + 1];
-		for (int i = 0; i < len; i++) {
+		for (intptr_t i = 0; i < len; i++) {
 			sReturn[i] = context->styler->SafeGetCharAt(start + i);
 		}
 		sReturn[len] = '\0';
@@ -2187,7 +2187,7 @@ struct StylingContext {
 	}
 };
 
-bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler) {
+bool LuaExtension::OnStyle(uintptr_t startPos, intptr_t lengthDoc, int initStyle, StyleWriter *styler) {
 	if (luaState) {
 		lua_pushstring(luaState, "Npp_Callbacks");
 		lua_gettable(luaState, LUA_REGISTRYINDEX);

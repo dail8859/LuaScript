@@ -24,7 +24,7 @@ bool TextReader::InternalIsLeadByte(char ch) const {
 	return GUI::IsDBCSLeadByte(codePage, ch);
 }
 
-void TextReader::Fill(int position) {
+void TextReader::Fill(intptr_t position) {
 	if (lenDoc == -1)
 		lenDoc = sw.Call(SCI_GETTEXTLENGTH, 0, 0);
 	startPos = position - slopSize;
@@ -48,30 +48,30 @@ bool TextReader::Match(int pos, const char *s) {
 	return true;
 }
 
-int TextReader::StyleAt(int position) {
+int TextReader::StyleAt(intptr_t position) {
 	return static_cast<unsigned char>(sw.Call(SCI_GETSTYLEAT, position, 0));
 }
 
-int TextReader::GetLine(int position) {
+intptr_t TextReader::GetLine(intptr_t position) {
 	return sw.Call(SCI_LINEFROMPOSITION, position, 0);
 }
 
-int TextReader::LineStart(int line) {
+intptr_t TextReader::LineStart(intptr_t line) {
 	return sw.Call(SCI_POSITIONFROMLINE, line, 0);
 }
 
-int TextReader::LevelAt(int line) {
-	return sw.Call(SCI_GETFOLDLEVEL, line, 0);
+int TextReader::LevelAt(intptr_t line) {
+	return static_cast<int>(sw.Call(SCI_GETFOLDLEVEL, line, 0));
 }
 
-int TextReader::Length() {
+intptr_t TextReader::Length() {
 	if (lenDoc == -1)
 		lenDoc = sw.Call(SCI_GETTEXTLENGTH, 0, 0);
 	return lenDoc;
 }
 
-int TextReader::GetLineState(int line) {
-	return sw.Call(SCI_GETLINESTATE, line);
+int TextReader::GetLineState(intptr_t line) {
+	return static_cast<int>(sw.Call(SCI_GETLINESTATE, line));
 }
 
 StyleWriter::StyleWriter(GUI::ScintillaWindow &sw_) :
@@ -81,19 +81,19 @@ StyleWriter::StyleWriter(GUI::ScintillaWindow &sw_) :
 	styleBuf[0] = 0;
 }
 
-int StyleWriter::SetLineState(int line, int state) {
-	return sw.Call(SCI_SETLINESTATE, line, state);
+int StyleWriter::SetLineState(intptr_t line, int state) {
+	return static_cast<int>(sw.Call(SCI_SETLINESTATE, line, state));
 }
 
-void StyleWriter::StartAt(unsigned int start, char chMask) {
+void StyleWriter::StartAt(uintptr_t start, char chMask) {
 	sw.Call(SCI_STARTSTYLING, start, chMask);
 }
 
-void StyleWriter::StartSegment(unsigned int pos) {
+void StyleWriter::StartSegment(uintptr_t pos) {
 	startSeg = pos;
 }
 
-void StyleWriter::ColourTo(unsigned int pos, int chAttr) {
+void StyleWriter::ColourTo(uintptr_t pos, int chAttr) {
 	// Only perform styling if non empty range
 	if (pos != startSeg - 1) {
 		if (validLen + (pos - startSeg + 1) >= bufferSize)
@@ -102,7 +102,7 @@ void StyleWriter::ColourTo(unsigned int pos, int chAttr) {
 			// Too big for buffer so send directly
 			sw.Call(SCI_SETSTYLING, pos - startSeg + 1, chAttr);
 		} else {
-			for (unsigned int i = startSeg; i <= pos; i++) {
+			for (uintptr_t i = startSeg; i <= pos; i++) {
 				styleBuf[validLen++] = static_cast<char>(chAttr);
 			}
 		}
@@ -110,7 +110,7 @@ void StyleWriter::ColourTo(unsigned int pos, int chAttr) {
 	startSeg = pos+1;
 }
 
-void StyleWriter::SetLevel(int line, int level) {
+void StyleWriter::SetLevel(intptr_t line, int level) {
 	sw.Call(SCI_SETFOLDLEVEL, line, level);
 }
 
