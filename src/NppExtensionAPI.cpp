@@ -39,7 +39,7 @@ sptr_t NppExtensionAPI::Send(NppExtensionAPI::Pane p, unsigned int msg, uptr_t w
 		return scis[p].Call(msg, wParam, lParam);
 }
 
-char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, int start, int end) {
+char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, intptr_t start, intptr_t end) {
 	if (end <= start) return nullptr;
 
 	char *dest = new char[end - start + 1];
@@ -52,14 +52,14 @@ char *NppExtensionAPI::Range(NppExtensionAPI::Pane p, int start, int end) {
 	return dest;
 }
 
-void NppExtensionAPI::Remove(NppExtensionAPI::Pane p, int start, int end) {
+void NppExtensionAPI::Remove(NppExtensionAPI::Pane p, intptr_t start, intptr_t end) {
 	if (end <= start) return;
 
-	int deleteLength = end - start;
+	intptr_t deleteLength = end - start;
 	this->Send(p, SCI_DELETERANGE, start, deleteLength);
 }
 
-void NppExtensionAPI::Insert(NppExtensionAPI::Pane p, int pos, const char *s) {
+void NppExtensionAPI::Insert(NppExtensionAPI::Pane p, intptr_t pos, const char *s) {
 	this->Send(p, SCI_INSERTTEXT, pos, reinterpret_cast<LPARAM>(s));
 }
 

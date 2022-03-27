@@ -170,7 +170,7 @@ public:
 		status = fn(ptr, SCI_GETSTATUS, 0, 0);
 		if (status > 0 && status < SC_STATUS_WARN_START)
 			throw ScintillaFailure(status);
-		return static_cast<int>(retVal);
+		return retVal;
 	}
 	sptr_t CallReturnPointer(unsigned int msg, uptr_t wParam=0, sptr_t lParam=0) {
 		sptr_t retVal = fn(ptr, msg, wParam, lParam);

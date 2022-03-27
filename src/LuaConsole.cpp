@@ -363,7 +363,7 @@ void LuaConsole::showAutoCompletion() {
 
 		// Back up past the partial word
 		prevCh = static_cast<int>(m_sciInput->Call(SCI_GETCHARAT, curPos - 1 - partialWord.size()));
-		curPos = curPos - static_cast<int>(partialWord.size());
+		curPos = curPos - partialWord.size();
 	}
 
 	if (prevCh == '.' || prevCh == ':') {
