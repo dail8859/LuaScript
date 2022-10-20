@@ -299,13 +299,13 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode) {
 			// Copied from SciTE
 			GUI::ScintillaWindow wEditor;
 			wEditor.SetID(curScintilla);
-			int lineEndStyled = wEditor.Call(SCI_LINEFROMPOSITION, wEditor.Call(SCI_GETENDSTYLED));
-			int endStyled = wEditor.Call(SCI_POSITIONFROMLINE, lineEndStyled);
+			intptr_t lineEndStyled = wEditor.Call(SCI_LINEFROMPOSITION, wEditor.Call(SCI_GETENDSTYLED));
+			intptr_t endStyled = wEditor.Call(SCI_POSITIONFROMLINE, lineEndStyled);
 			StyleWriter styler(wEditor);
 			int styleStart = 0;
 			if (endStyled > 0) styleStart = styler.StyleAt(endStyled - 1);
-			styler.SetCodePage(wEditor.Call(SCI_GETCODEPAGE));
-			LuaExtension::Instance().OnStyle(endStyled, static_cast<int>(notifyCode->position) - endStyled, styleStart, &styler);
+			styler.SetCodePage(static_cast<int>(wEditor.Call(SCI_GETCODEPAGE)));
+			LuaExtension::Instance().OnStyle(endStyled, notifyCode->position - endStyled, styleStart, &styler);
 			styler.Flush();
 			break;
 		}

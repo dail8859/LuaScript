@@ -108,7 +108,7 @@ INT_PTR CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 			return FALSE;
 		case WM_SIZE: {
 			RECT rect = { 0, 0, LOWORD(lParam), HIWORD(lParam) };
-			int h = min(m_sciInput.Call(SCI_GETLINECOUNT), 8) * m_sciInput.Call(SCI_TEXTHEIGHT, 1);
+			int h = static_cast<int>(min(m_sciInput.Call(SCI_GETLINECOUNT), 8) * m_sciInput.Call(SCI_TEXTHEIGHT, 1));
 			MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, rect.right, rect.bottom - h - 14, TRUE);
 			MoveWindow((HWND)m_sciInput.GetID(), 0, rect.bottom - h - 14, rect.right - 50, h + 9, TRUE);
 			m_sciOutput.Call(SCI_DOCUMENTEND);
@@ -169,16 +169,16 @@ INT_PTR CALLBACK ConsoleDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 							if (scn->linesAdded != 0) {
 								RECT rect;
 								GetClientRect(_hSelf, &rect);
-								int h = min(m_sciInput.Call(SCI_GETLINECOUNT), 8) * m_sciInput.Call(SCI_TEXTHEIGHT, 1);
+								int h = static_cast<int>(min(m_sciInput.Call(SCI_GETLINECOUNT), 8) * m_sciInput.Call(SCI_TEXTHEIGHT, 1));
 								MoveWindow((HWND)m_sciOutput.GetID(), 0, 0, rect.right, rect.bottom - h - 14, TRUE);
 								MoveWindow((HWND)m_sciInput.GetID(), 0, rect.bottom - h - 14, rect.right - 50, h + 9, TRUE);
 								m_sciOutput.Call(SCI_DOCUMENTEND);
 							}
 
 							// Not the most efficient way but by far the easiest to do it here
-							int startLine = 0;
-							int endLine = m_sciInput.Call(SCI_GETLINECOUNT);
-							for (int i = startLine; i < endLine; ++i) {
+							intptr_t startLine = 0;
+							intptr_t endLine = m_sciInput.Call(SCI_GETLINECOUNT);
+							for (intptr_t i = startLine; i < endLine; ++i) {
 								m_sciInput.CallString(SCI_MARGINSETTEXT, i, ">");
 								m_sciInput.Call(SCI_MARGINSETSTYLE, i, STYLE_LINENUMBER);
 							}
@@ -299,8 +299,8 @@ LRESULT CALLBACK ConsoleDialog::inputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 void ConsoleDialog::runStatement() {
-	int prevLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
-	int newLastLine = 0;
+	intptr_t prevLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
+	intptr_t newLastLine = 0;
 
 	Sci_TextRange tr;
 	tr.chrg.cpMin = 0;
@@ -318,7 +318,7 @@ void ConsoleDialog::runStatement() {
 
 	newLastLine = m_sciOutput.Call(SCI_GETLINECOUNT);
 
-	for (int i = prevLastLine; i < newLastLine; ++i) {
+	for (intptr_t i = prevLastLine; i < newLastLine; ++i) {
 		m_sciOutput.CallString(SCI_MARGINSETTEXT, i - 1, ">");
 		m_sciOutput.Call(SCI_MARGINSETSTYLE, i - 1, STYLE_LINENUMBER);
 	}

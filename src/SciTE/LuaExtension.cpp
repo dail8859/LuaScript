@@ -646,8 +646,8 @@ static int cf_pane_textrange(lua_State *L) {
 	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 
 	if (lua_gettop(L) >= 3) {
-		int cpMin = static_cast<int>(luaL_checkinteger(L, 2));
-		int cpMax = static_cast<int>(luaL_checkinteger(L, 3));
+		intptr_t cpMin = static_cast<intptr_t>(luaL_checkinteger(L, 2));
+		intptr_t cpMax = static_cast<intptr_t>(luaL_checkinteger(L, 3));
 
 		if (cpMax >= 0) {
 			char *range = host->Range(p, cpMin, cpMax);
@@ -668,7 +668,7 @@ static int cf_pane_textrange(lua_State *L) {
 
 static int cf_pane_insert(lua_State *L) {
 	NppExtensionAPI::Pane p = check_pane_object(L, 1);
-	int pos = (int)luaL_checkinteger(L, 2);
+	intptr_t pos = static_cast<intptr_t>(luaL_checkinteger(L, 2));
 	const char *s = luaL_checkstring(L, 3);
 	host->Insert(p, pos, s);
 	return 0;
@@ -676,8 +676,8 @@ static int cf_pane_insert(lua_State *L) {
 
 static int cf_pane_remove(lua_State *L) {
 	NppExtensionAPI::Pane p = check_pane_object(L, 1);
-	int cpMin = static_cast<int>(luaL_checkinteger(L, 2));
-	int cpMax = static_cast<int>(luaL_checkinteger(L, 3));
+	intptr_t cpMin = static_cast<intptr_t>(luaL_checkinteger(L, 2));
+	intptr_t cpMax = static_cast<intptr_t>(luaL_checkinteger(L, 3));
 	host->Remove(p, cpMin, cpMax);
 	return 0;
 }
@@ -685,7 +685,7 @@ static int cf_pane_remove(lua_State *L) {
 static int cf_pane_append(lua_State *L) {
 	NppExtensionAPI::Pane p = check_pane_object(L, 1);
 	const char *s = luaL_checkstring(L, 2);
-	host->Insert(p, static_cast<int>(host->Send(p, SCI_GETLENGTH, 0, 0)), s);
+	host->Insert(p, host->Send(p, SCI_GETLENGTH, 0, 0), s);
 	return 0;
 }
 
@@ -719,17 +719,17 @@ static int cf_pane_findtext(lua_State *L) {
 
 		if (!hasError) {
 			if (nArgs > 3) {
-				ft.chrg.cpMin = static_cast<int>(luaL_checkinteger(L, 4));
+				ft.chrg.cpMin = static_cast<intptr_t>(luaL_checkinteger(L, 4));
 				hasError = (lua_gettop(L) > nArgs);
 			}
 		}
 
 		if (!hasError) {
 			if (nArgs > 4) {
-				ft.chrg.cpMax = static_cast<int>(luaL_checkinteger(L, 5));
+				ft.chrg.cpMax = static_cast<intptr_t>(luaL_checkinteger(L, 5));
 				hasError = (lua_gettop(L) > nArgs);
 			} else {
-				ft.chrg.cpMax = static_cast<long>(host->Send(p, SCI_GETLENGTH, 0, 0));
+				ft.chrg.cpMax = host->Send(p, SCI_GETLENGTH, 0, 0);
 			}
 		}
 
@@ -759,10 +759,10 @@ static int cf_pane_findtext(lua_State *L) {
 
 struct PaneMatchObject {
 	NppExtensionAPI::Pane pane;
-	int startPos;
-	int endPos;
+	intptr_t startPos;
+	intptr_t endPos;
 	int flags; // this is really part of the state, but is kept here for convenience
-	int endPosOrig; // has to do with preventing infinite loop on a 0-length match
+	intptr_t endPosOrig; // has to do with preventing infinite loop on a 0-length match
 };
 
 static int cf_match_replace(lua_State *L) {
@@ -786,7 +786,7 @@ static int cf_match_replace(lua_State *L) {
 	host->Send(pmo->pane, SCI_SETTARGETSTART, pmo->startPos, 0);
 	host->Send(pmo->pane, SCI_SETTARGETEND, pmo->endPos, 0);
 	host->Send(pmo->pane, SCI_REPLACETARGET, lua_rawlen(L, 2), SptrFromString(replacement));
-	pmo->endPos = static_cast<int>(host->Send(pmo->pane, SCI_GETTARGETEND, 0, 0));
+	pmo->endPos = host->Send(pmo->pane, SCI_GETTARGETEND, 0, 0);
 	return 0;
 }
 
@@ -878,7 +878,7 @@ static int cf_pane_match(lua_State *L) {
 		if (nargs >= 3) {
 			pmo->flags = (int)luaL_checkinteger(L, 3);
 			if (nargs >= 4) {
-				pmo->endPos = pmo->endPosOrig = (int)luaL_checkinteger(L, 4);
+				pmo->endPos = pmo->endPosOrig = (intptr_t)luaL_checkinteger(L, 4);
 				if (pmo->endPos < 0) {
 					raise_error(L, "Invalid argument 3 for <pane>:match.  Positive number or zero expected.");
 					return 0;
@@ -921,7 +921,7 @@ static int cf_pane_match_generator(lua_State *L) {
 		return 0;
 	}
 
-	int searchPos = pmo->endPos;
+	intptr_t searchPos = pmo->endPos;
 	if ((pmo->startPos == pmo->endPosOrig) && (pmo->endPos == pmo->endPosOrig)) {
 		// prevent infinite loop on zero-length match by stepping forward
 		searchPos++;
@@ -935,8 +935,8 @@ static int cf_pane_match_generator(lua_State *L) {
 	if (ft.chrg.cpMax > ft.chrg.cpMin) {
 		sptr_t result = host->Send(pmo->pane, SCI_FINDTEXT, static_cast<uptr_t>(pmo->flags), SptrFromPointer(&ft));
 		if (result >= 0) {
-			pmo->startPos = static_cast<int>(ft.chrgText.cpMin);
-			pmo->endPos = pmo->endPosOrig = static_cast<int>(ft.chrgText.cpMax);
+			pmo->startPos = ft.chrgText.cpMin;
+			pmo->endPos = pmo->endPosOrig = ft.chrgText.cpMax;
 			lua_pushvalue(L, 2);
 			return 1;
 		}
@@ -1896,15 +1896,15 @@ void LuaExtension::CallShortcut(int id) {
 
 // Similar to StyleContext class in Scintilla
 struct StylingContext {
-	unsigned int startPos;
-	int lengthDoc;
+	uintptr_t startPos;
+	intptr_t lengthDoc;
 	int initStyle;
 	StyleWriter *styler;
 
-	unsigned int endPos;
-	unsigned int endDoc;
+	uintptr_t endPos;
+	uintptr_t endDoc;
 
-	unsigned int currentPos;
+	uintptr_t currentPos;
 	bool atLineStart;
 	bool atLineEnd;
 	int state;
@@ -1920,43 +1920,43 @@ struct StylingContext {
 	}
 
 	void Colourize() {
-		int end = currentPos - 1;
-		if (end >= static_cast<int>(endDoc))
-			end = static_cast<int>(endDoc)-1;
+		intptr_t end = currentPos - 1;
+		if (end >= static_cast<intptr_t>(endDoc))
+			end = endDoc - 1;
 		styler->ColourTo(end, state);
 	}
 
 	static int Line(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = (int)luaL_checkinteger(L, 2);
+		intptr_t position = (intptr_t)luaL_checkinteger(L, 2);
 		lua_pushinteger(L, context->styler->GetLine(position));
 		return 1;
 	}
 
 	static int CharAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = (int)luaL_checkinteger(L, 2);
+		intptr_t position = (intptr_t)luaL_checkinteger(L, 2);
 		lua_pushinteger(L, context->styler->SafeGetCharAt(position));
 		return 1;
 	}
 
 	static int StyleAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int position = (int)luaL_checkinteger(L, 2);
+		intptr_t position = (intptr_t)luaL_checkinteger(L, 2);
 		lua_pushinteger(L, context->styler->StyleAt(position));
 		return 1;
 	}
 
 	static int LevelAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = (int)luaL_checkinteger(L, 2);
+		intptr_t line = (intptr_t)luaL_checkinteger(L, 2);
 		lua_pushinteger(L, context->styler->LevelAt(line));
 		return 1;
 	}
 
 	static int SetLevelAt(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = (int)luaL_checkinteger(L, 2);
+		intptr_t line = (intptr_t)luaL_checkinteger(L, 2);
 		int level = (int)luaL_checkinteger(L, 3);
 		context->styler->SetLevel(line, level);
 		return 0;
@@ -1964,14 +1964,14 @@ struct StylingContext {
 
 	static int LineState(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = (int)luaL_checkinteger(L, 2);
+		intptr_t line = (intptr_t)luaL_checkinteger(L, 2);
 		lua_pushinteger(L, context->styler->GetLineState(line));
 		return 1;
 	}
 
 	static int SetLineState(lua_State *L) {
 		StylingContext *context = Context(L);
-		int line = (int)luaL_checkinteger(L, 2);
+		intptr_t line = (intptr_t)luaL_checkinteger(L, 2);
 		int stateOfLine = (int)luaL_checkinteger(L, 3);
 		context->styler->SetLineState(line, stateOfLine);
 		return 0;
@@ -1981,7 +1981,7 @@ struct StylingContext {
 	void GetNextChar() {
 		lenCurrent = lenNext;
 		lenNext = 1;
-		int nextPos = currentPos + lenCurrent;
+		intptr_t nextPos = currentPos + lenCurrent;
 		unsigned char byteNext = static_cast<unsigned char>(styler->SafeGetCharAt(nextPos));
 		unsigned int nextSlot = (cursorPos + 1) % 3;
 		memcpy(cursor[nextSlot], "\0\0\0\0\0\0\0\0", 8);
@@ -2018,7 +2018,7 @@ struct StylingContext {
 			(currentPos >= endPos);
 	}
 
-	void StartStyling(unsigned int startPos_, unsigned int length, int initStyle_) {
+	void StartStyling(uintptr_t startPos_, uintptr_t length, int initStyle_) {
 		endDoc = styler->Length();
 		endPos = startPos_ + length;
 		if (endPos == endDoc)
@@ -2049,8 +2049,8 @@ struct StylingContext {
 
 	static int StartStyling(lua_State *L) {
 		StylingContext *context = Context(L);
-		unsigned int startPosStyle = (int)luaL_checkinteger(L, 2);
-		unsigned int lengthStyle = (int)luaL_checkinteger(L, 3);
+		uintptr_t startPosStyle = (uintptr_t)luaL_checkinteger(L, 2);
+		uintptr_t lengthStyle = (uintptr_t)luaL_checkinteger(L, 3);
 		int initialStyle = (int)luaL_checkinteger(L, 4);
 		context->StartStyling(startPosStyle, lengthStyle, initialStyle);
 		return 0;
@@ -2149,13 +2149,13 @@ struct StylingContext {
 
 	static int Token(lua_State *L) {
 		StylingContext *context = Context(L);
-		int start = context->styler->GetStartSegment();
-		int end = context->currentPos - 1;
-		int len = end - start + 1;
+		intptr_t start = context->styler->GetStartSegment();
+		intptr_t end = context->currentPos - 1;
+		intptr_t len = end - start + 1;
 		if (len <= 0)
 			len = 1;
 		char *sReturn = new char[len + 1];
-		for (int i = 0; i < len; i++) {
+		for (intptr_t i = 0; i < len; i++) {
 			sReturn[i] = context->styler->SafeGetCharAt(start + i);
 		}
 		sReturn[len] = '\0';
@@ -2187,7 +2187,7 @@ struct StylingContext {
 	}
 };
 
-bool LuaExtension::OnStyle(unsigned int startPos, int lengthDoc, int initStyle, StyleWriter *styler) {
+bool LuaExtension::OnStyle(uintptr_t startPos, intptr_t lengthDoc, int initStyle, StyleWriter *styler) {
 	if (luaState) {
 		lua_pushstring(luaState, "Npp_Callbacks");
 		lua_gettable(luaState, LUA_REGISTRYINDEX);

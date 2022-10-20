@@ -61,9 +61,9 @@ public:
 	Pane getCurrentPane();
 
 	sptr_t Send(Pane p, unsigned int msg, uptr_t wParam = 0, sptr_t lParam = 0);
-	char *Range(Pane p, int start, int end);
-	void Remove(Pane p, int start, int end);
-	void Insert(Pane p, int pos, const char *s);
+	char *Range(Pane p, intptr_t start, intptr_t end);
+	void Remove(Pane p, intptr_t start, intptr_t end);
+	void Insert(Pane p, intptr_t pos, const char *s);
 	void SetTextDirection(Pane p, bool rtl);
 	void Trace(const char *s);
 	void TraceError(const char *s);
