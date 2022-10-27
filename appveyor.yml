@@ -4,6 +4,7 @@ image: Visual Studio 2019
 platform:
   - x64
   - Win32
+  - arm64
 
 configuration:
   - Release
@@ -16,15 +17,15 @@ install:
   - if "%platform%"=="Win32" set archi=x86
   - if "%platform%"=="Win32" set build_platform=Win32
 
+  - if "%platform%"=="arm64" set archi=amd64_arm64
+  - if "%platform%"=="arm64" set build_platform=arm64
+
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
-build:
-  parallel: true
-  verbosity: minimal
 
 build_script:
   - cd "%APPVEYOR_BUILD_FOLDER%"
-  - msbuild LuaScript.sln /p:Configuration="%configuration%" /p:Platform="%build_platform%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - msbuild LuaScript.sln /m /p:Configuration="%configuration%" /p:Platform="%build_platform%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
   - cd "%APPVEYOR_BUILD_FOLDER%"
@@ -38,6 +39,9 @@ after_build:
 
       if ($env:BUILD_PLATFORM -eq "x64") {
         $SdkFileName = "LuaScript_SDK_x64.zip"
+      }
+      if ($env:BUILD_PLATFORM -eq "arm64") {
+        $SdkFileName = "LuaScript_SDK_arm64.zip"
       }
       if ($env:BUILD_PLATFORM -eq "Win32") {
         $SdkFileName = "LuaScript_SDK.zip"
@@ -60,6 +64,9 @@ after_build:
       if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
         if ($env:BUILD_PLATFORM -eq "x64") {
           $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+        }
+        if ($env:BUILD_PLATFORM -eq "arm64") {
+          $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME)_arm64.zip"
         }
         if ($env:BUILD_PLATFORM -eq "Win32") {
           $ZipFileName = "LuaScript_$($env:APPVEYOR_REPO_TAG_NAME).zip"

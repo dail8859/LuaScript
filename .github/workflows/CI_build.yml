@@ -1,0 +1,33 @@
+name: CI_build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      max-parallel: 6
+      matrix:
+        build_configuration: [Release, Debug]
+        build_platform: [x64, Win32, ARM64]
+        
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: MSBuild of plugin dll
+      working-directory: .\
+      run: msbuild LuaScript.sln /m /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}" /p:PlatformToolset="v143"
+
+    - name: Archive artifacts
+      if: matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v3
+      with:
+          name: plugin_dll_${{ matrix.build_platform }}
+          path: |
+                bin\${{ matrix.build_configuration }}_${{ matrix.build_platform }}\LuaScript.dll
+                bin\${{ matrix.build_configuration }}_${{ matrix.build_platform }}\Lua.dll
